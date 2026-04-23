@@ -1,0 +1,75 @@
+{
+  "feature": "F0-foundation",
+  "status": "pending",
+  "current_stage": "not_started",
+  "current_owner": null,
+  "next_step": "run tools/run_codex.sh .ai/features/F0-foundation to execute T01 and T02",
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Initialize FastAPI backend with folder structure and health endpoint",
+      "owner": "codex",
+      "type": "scaffold",
+      "depends_on": [],
+      "status": "pending",
+      "artifact": "codex-build-report.md"
+    },
+    {
+      "id": "T02",
+      "title": "Initialize Next.js frontend with Tailwind and shadcn",
+      "owner": "codex",
+      "type": "scaffold",
+      "depends_on": [],
+      "status": "pending",
+      "artifact": "codex-build-report.md"
+    },
+    {
+      "id": "T03",
+      "title": "Scaffold minimal frontend health status page",
+      "owner": "gemini",
+      "type": "ui",
+      "depends_on": ["T01", "T02"],
+      "status": "pending",
+      "artifact": "gemini-build-report.md"
+    },
+    {
+      "id": "T04",
+      "title": "Write root README with local setup instructions",
+      "owner": "codex",
+      "type": "docs",
+      "depends_on": ["T01", "T02"],
+      "status": "pending",
+      "artifact": "codex-build-report.md"
+    },
+    {
+      "id": "T05",
+      "title": "Review F0 implementation against acceptance criteria",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": ["T01", "T02", "T03", "T04"],
+      "status": "pending",
+      "artifact": "review.md"
+    },
+    {
+      "id": "T06",
+      "title": "Validate F0 and write final acceptance result",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": ["T05"],
+      "status": "pending",
+      "artifact": "final-report.md"
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-04-24T00:00:00Z",
+      "event": "feature workspace initialized",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-24T01:00:00Z",
+      "event": "task dependencies corrected; T06 acceptance task added; runtime fields added",
+      "by": "claude"
+    }
+  ]
+}

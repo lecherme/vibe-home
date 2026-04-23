@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+# tools/run_codex_review.sh
+# Run Codex review for a feature workspace.
+# Usage: tools/run_codex_review.sh .ai/features/<feature>
+# Output: <feature>/review.md
+# Log:    <feature>/codex-review.log
+# NEVER modifies status.json.
+
+set -euo pipefail
+
+FEATURE_DIR="${1:-}"
+if [[ -z "$FEATURE_DIR" ]]; then
+  echo "Usage: $0 <feature-dir>" >&2
+  exit 1
+fi
+
+FEATURE_DIR="${FEATURE_DIR%/}"  # strip trailing slash
+
+for f in spec.md tasks.md owner.md acceptance.md; do
+  if [[ ! -f "$FEATURE_DIR/$f" ]]; then
+    echo "ERROR: missing required file: $FEATURE_DIR/$f" >&2
+    exit 1
+  fi
+done
+
+SPEC=$(cat "$FEATURE_DIR/spec.md")
+TASKS=$(cat "$FEATURE_DIR/tasks.md")
+OWNER=$(cat "$FEATURE_DIR/owner.md")
+ACCEPTANCE=$(cat "$FEATURE_DIR/acceptance.md")
+
+# Include build reports if they exist
+CODEX_REPORT=""
+if [[ -f "$FEATURE_DIR/codex-build-report.md" ]]; then
+  CODEX_REPORT=$(cat "$FEATURE_DIR/codex-build-report.md")
+fi
+
+GEMINI_REPORT=""
+if [[ -f "$FEATURE_DIR/gemini-build-report.md" ]]; then
+  GEMINI_REPORT=$(cat "$FEATURE_DIR/gemini-build-report.md")
+fi
+
+PROMPT="You are Codex, performing a code review for a completed feature.
+
+## Your Review Role
+- Validate the implementation against every acceptance criterion
+- Identify gaps, bugs, missing tests, and boundary violations
+- Check that business logic is NOT in frontend components
+- Check that status.json was NOT modified by Codex or Gemini
+- Check that all API types are published to frontend/types/
+- Do NOT modify status.json
+- Output a structured review.md with a clear pass/fail verdict per criterion
+
+## Feature Spec
+$SPEC
+
+## Tasks
+$TASKS
+
+## Acceptance Criteria
+$ACCEPTANCE
+
+## Codex Build Report
+$CODEX_REPORT
+
+## Gemini Build Report
+$GEMINI_REPORT
+
+## Owner Context
+$OWNER
+
+## Instructions
+Review the implementation against every acceptance criterion listed above.
+Output a review report in this format:
+
+# Review
+
+## Verdict
+PASS or FAIL
+
+## Criteria Results
+| Criterion | Result | Notes |
+|-----------|--------|-------|
+| <criterion> | PASS/FAIL | <notes> |
+
+## Issues Found
+- list each issue with severity: BLOCKER / WARNING / MINOR
+
+## Required Fixes
+- list specific fixes required before acceptance (blockers only)
+
+## Approved Items
+- list items that are correctly implemented
+"
+
+REVIEW_FILE="$FEATURE_DIR/review.md"
+LOG_FILE="$FEATURE_DIR/codex-review.log"
+
+echo "Running codex review for: $FEATURE_DIR"
+echo "Review → $REVIEW_FILE"
+echo "Log    → $LOG_FILE"
+
+codex exec --skip-git-repo-check "$PROMPT" \
+  1>"$REVIEW_FILE" \
+  2>"$LOG_FILE"
+
+EXIT_CODE=$?
+
+if [[ $EXIT_CODE -ne 0 ]]; then
+  echo "ERROR: codex review exited with code $EXIT_CODE. See $LOG_FILE" >&2
+  exit $EXIT_CODE
+fi
+
+echo "Done. Review written to $REVIEW_FILE"
