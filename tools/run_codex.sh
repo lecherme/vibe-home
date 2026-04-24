@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # tools/run_codex.sh
-# Run codex-owned tasks for a feature workspace.
-# Usage: tools/run_codex.sh .ai/features/<feature>
+# Run a single codex-owned task for a feature workspace.
+# Usage: tools/run_codex.sh .ai/features/<feature> <task-id>
 # Output: <feature>/codex-build-report.md
 # Log:    <feature>/codex-build.log
 # NEVER modifies status.json.
@@ -9,12 +9,14 @@
 set -euo pipefail
 
 FEATURE_DIR="${1:-}"
-if [[ -z "$FEATURE_DIR" ]]; then
-  echo "Usage: $0 <feature-dir>" >&2
+TASK_ID="${2:-}"
+
+if [[ -z "$FEATURE_DIR" || -z "$TASK_ID" ]]; then
+  echo "Usage: $0 <feature-dir> <task-id>" >&2
   exit 1
 fi
 
-FEATURE_DIR="${FEATURE_DIR%/}"  # strip trailing slash
+FEATURE_DIR="${FEATURE_DIR%/}"
 
 for f in spec.md tasks.md owner.md; do
   if [[ ! -f "$FEATURE_DIR/$f" ]]; then
@@ -27,12 +29,18 @@ SPEC=$(cat "$FEATURE_DIR/spec.md")
 TASKS=$(cat "$FEATURE_DIR/tasks.md")
 OWNER=$(cat "$FEATURE_DIR/owner.md")
 
-# Extract only codex-owned tasks from tasks.md (lines containing "owner: codex")
-CODEX_TASKS=$(awk '
-  /^##/ { task=$0; owner="" }
-  /owner:[[:space:]]*codex/ { owner="codex" }
-  owner=="codex" { print task; task=""; owner="" }
-' "$FEATURE_DIR/tasks.md" 2>/dev/null || grep -i "owner.*codex\|codex.*owner" "$FEATURE_DIR/tasks.md" || echo "(see tasks.md for codex tasks)")
+# Extract only the requested task block from tasks.md
+# A task block starts at "## T<id>" and ends before the next "## T" or EOF
+TASK_BLOCK=$(awk -v tid="## $TASK_ID" '
+  substr($0, 1, length(tid)) == tid { found=1; print; next }
+  found && /^## T[0-9]/ { exit }
+  found { print }
+' "$FEATURE_DIR/tasks.md")
+
+if [[ -z "$TASK_BLOCK" ]]; then
+  echo "ERROR: task $TASK_ID not found in $FEATURE_DIR/tasks.md" >&2
+  exit 1
+fi
 
 PROMPT="You are Codex, a backend and critical-logic implementation worker.
 
@@ -48,23 +56,23 @@ PROMPT="You are Codex, a backend and critical-logic implementation worker.
 ## Feature Spec
 $SPEC
 
-## All Tasks
+## All Tasks (for context)
 $TASKS
 
-## Your Tasks (codex-owned only)
-$CODEX_TASKS
+## Task to Execute Now: $TASK_ID
+$TASK_BLOCK
 
 ## Owner Context
 $OWNER
 
 ## Instructions
-Implement all codex-owned tasks listed above. Follow the spec and constraints exactly.
+Implement ONLY the task above ($TASK_ID). Do not implement any other tasks.
 When done, output a build report in this format:
 
 # Codex Build Report
 
-## Tasks Completed
-- list each task
+## Task Completed
+- $TASK_ID
 
 ## Files Changed
 - list each file
@@ -79,16 +87,16 @@ When done, output a build report in this format:
 - list any blockers or incomplete items
 "
 
-REPORT_FILE="$FEATURE_DIR/codex-build-report.md"
-LOG_FILE="$FEATURE_DIR/codex-build.log"
+REPORT_FILE="$FEATURE_DIR/codex-build-${TASK_ID}.md"
+LOG_FILE="$FEATURE_DIR/codex-build-${TASK_ID}.log"
 
-echo "Running codex for: $FEATURE_DIR"
+echo "Running codex for: $FEATURE_DIR task=$TASK_ID"
 echo "Report → $REPORT_FILE"
 echo "Log    → $LOG_FILE"
 
 codex exec --skip-git-repo-check "$PROMPT" \
-  1>"$REPORT_FILE" \
-  2>"$LOG_FILE"
+  2> >(tee "$LOG_FILE" >&2) \
+  | tee "$REPORT_FILE"
 
 EXIT_CODE=$?
 

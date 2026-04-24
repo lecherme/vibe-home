@@ -120,6 +120,14 @@ Do not resolve escalations by making assumptions. Block, write the blocker in th
 
 ---
 
+## Enforcement Rule
+
+If a worker modifies a restricted directory:
+- It MUST be explicitly approved by Claude
+- Otherwise review should FAIL
+
+---
+
 ## Review and Acceptance Flow
 
 ```

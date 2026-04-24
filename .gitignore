@@ -30,6 +30,9 @@ out/
 codex-build.log
 gemini-build.log
 codex-review.log
+.ai/features/**/codex-build-*.log
+.ai/features/**/gemini-build-*.log
+.ai/features/**/codex-review.log
 
 # OS
 .DS_Store

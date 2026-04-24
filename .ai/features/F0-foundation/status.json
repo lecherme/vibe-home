@@ -1,9 +1,9 @@
 {
   "feature": "F0-foundation",
-  "status": "pending",
-  "current_stage": "not_started",
+  "status": "done",
+  "current_stage": "T06_done",
   "current_owner": null,
-  "next_step": "run tools/run_codex.sh .ai/features/F0-foundation to execute T01 and T02",
+  "next_step": "F0 complete",
   "tasks": [
     {
       "id": "T01",
@@ -11,8 +11,8 @@
       "owner": "codex",
       "type": "scaffold",
       "depends_on": [],
-      "status": "pending",
-      "artifact": "codex-build-report.md"
+      "status": "done",
+      "artifact": "codex-build-T01.md"
     },
     {
       "id": "T02",
@@ -20,34 +20,45 @@
       "owner": "codex",
       "type": "scaffold",
       "depends_on": [],
-      "status": "pending",
-      "artifact": "codex-build-report.md"
+      "status": "done",
+      "artifact": "codex-build-T02.md"
     },
     {
       "id": "T03",
       "title": "Scaffold minimal frontend health status page",
       "owner": "gemini",
       "type": "ui",
-      "depends_on": ["T01", "T02"],
-      "status": "pending",
-      "artifact": "gemini-build-report.md"
+      "depends_on": [
+        "T01",
+        "T02"
+      ],
+      "status": "done",
+      "artifact": "gemini-build-T03.md"
     },
     {
       "id": "T04",
       "title": "Write root README with local setup instructions",
       "owner": "codex",
       "type": "docs",
-      "depends_on": ["T01", "T02"],
-      "status": "pending",
-      "artifact": "codex-build-report.md"
+      "depends_on": [
+        "T01",
+        "T02"
+      ],
+      "status": "done",
+      "artifact": "codex-build-T04.md"
     },
     {
       "id": "T05",
       "title": "Review F0 implementation against acceptance criteria",
       "owner": "codex",
       "type": "review",
-      "depends_on": ["T01", "T02", "T03", "T04"],
-      "status": "pending",
+      "depends_on": [
+        "T01",
+        "T02",
+        "T03",
+        "T04"
+      ],
+      "status": "done",
       "artifact": "review.md"
     },
     {
@@ -55,8 +66,10 @@
       "title": "Validate F0 and write final acceptance result",
       "owner": "claude",
       "type": "acceptance",
-      "depends_on": ["T05"],
-      "status": "pending",
+      "depends_on": [
+        "T05"
+      ],
+      "status": "done",
       "artifact": "final-report.md"
     }
   ],
@@ -69,6 +82,41 @@
     {
       "timestamp": "2026-04-24T01:00:00Z",
       "event": "task dependencies corrected; T06 acceptance task added; runtime fields added",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-24T14:59:39Z",
+      "event": "T01 done \u2014 backend skeleton created; artifact validated",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-24T15:20:53Z",
+      "event": "T02 done \u2014 frontend skeleton created; artifact validated",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-24T15:24:28Z",
+      "event": "runtime owner corrected to gemini before T03 execution",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-24T16:30:59Z",
+      "event": "T03 done \u2014 health status page created by Gemini and validated.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-24T16:33:30Z",
+      "event": "T04 done \u2014 root README written by Codex and validated.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-24T17:02:23Z",
+      "event": "T05 done \u2014 Codex review passed on all code/structural criteria. Runtime checks B2, B5, F6, H1, H3, H6 deferred (deps not installable in sandbox). Accepted with caveat.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-24T17:03:15Z",
+      "event": "T06 done \u2014 final-report.md written with disposition accepted_with_caveat. Feature F0 complete.",
       "by": "claude"
     }
   ]

@@ -29,8 +29,8 @@ Based on the task's `owner` field:
 
 | Owner | Command |
 |-------|---------|
-| `codex` | `tools/run_codex.sh .ai/features/<feature>` |
-| `gemini` | `tools/run_gemini.sh .ai/features/<feature>` |
+| `codex` | `tools/run_codex.sh .ai/features/<feature> <TASK_ID>` |
+| `gemini` | `tools/run_gemini.sh .ai/features/<feature> <TASK_ID>` |
 
 Claude passes the feature directory path. The script reads all required files and constructs the prompt internally.
 
@@ -40,12 +40,12 @@ The worker runs and writes its output to the feature workspace:
 
 | Worker | Report artifact (stdout) | Diagnostic log (stderr) |
 |--------|--------------------------|------------------------|
-| Codex | `<feature>/codex-build-report.md` | `<feature>/codex-build.log` |
-| Gemini | `<feature>/gemini-build-report.md` | `<feature>/gemini-build.log` |
+| Codex | `<feature>/codex-build-<TASK_ID>.md` | `<feature>/codex-build-<TASK_ID>.log` |
+| Gemini | `<feature>/gemini-build-<TASK_ID>.md` | `<feature>/gemini-build-<TASK_ID>.log` |
 
-`codex-build-report.md` and `gemini-build-report.md` are structured report artifacts derived from the worker's stdout. They are the authoritative record of what was built and are read by Claude and Codex review.
+`codex-build-<TASK_ID>.md` and `gemini-build-<TASK_ID>.md` are structured report artifacts derived from the worker's stdout. They are the authoritative record of what was built and are read by Claude and Codex review.
 
-`codex-build.log` and `gemini-build.log` are diagnostic logs derived from stderr and raw execution output. They are for debugging only and are not read as part of the orchestration flow.
+`codex-build-<TASK_ID>.log` and `gemini-build-<TASK_ID>.log` are diagnostic logs derived from stderr and raw execution output. They are for debugging only and are not read as part of the orchestration flow.
 
 ### Step 4 — Claude reads the artifact and updates status.json
 
@@ -61,7 +61,7 @@ Claude is the only writer of `status.json`.
 After all implementation tasks are done, Claude invokes:
 
 ```
-tools/run_codex_review.sh .ai/features/<feature>
+tools/run_codex_review.sh .ai/features/<feature> <TASK_ID>
 ```
 
 Codex reads `acceptance.md` and all implementation artifacts, then writes `review.md`.
@@ -99,8 +99,8 @@ If a dependency is in a different feature, that feature must be fully `done` bef
 | `owner.md` | Claude | Workers | Yes — static ownership map written once before implementation |
 | `acceptance.md` | Claude | Codex (review) | Yes — changes require re-review |
 | `status.json` | Claude | All | No — updated after every task |
-| `codex-build-report.md` | Codex | Claude, Codex (review) | Yes — rewritten only if task is retried |
-| `gemini-build-report.md` | Gemini | Claude, Codex (review) | Yes — rewritten only if task is retried |
+| `codex-build-<TASK_ID>.md` | Codex | Claude, Codex (review) | Yes — rewritten only if task is retried |
+| `gemini-build-<TASK_ID>.md` | Gemini | Claude, Codex (review) | Yes — rewritten only if task is retried |
 | `review.md` | Codex | Claude | Yes — rewritten only if review is retried |
 | `final-report.md` | Claude | Human | Yes |
 
@@ -114,6 +114,51 @@ If a dependency is in a different feature, that feature must be fully `done` bef
 - `final-report.md` is written only for final acceptance outcomes (accepted or failed after review), never for intermediate blocked states.
 
 ---
+## CI Responsibilities
+
+CI (or human local environment) is responsible for runtime validation.
+
+### Responsibilities
+- Install dependencies (backend + frontend)
+- Start backend service (uvicorn)
+- Start frontend (Next.js dev server)
+- Execute runtime verification checklist
+- Validate success and failure scenarios
+
+### Notes
+- Runtime validation is NOT required inside Codex/Gemini sandbox
+- Sandbox reviews may mark runtime criteria as DEFERRED
+- CI is the source of truth for runtime correctness
+
+### Trigger Conditions
+CI should be triggered:
+- At feature completion (e.g. F0, F3, F7)
+- Before final acceptance
+- When integration-heavy features are introduced
+
+---
+## Git Responsibilities
+
+Claude may perform git operations under controlled conditions.
+
+### Allowed
+- git add
+- git commit
+
+### Conditional
+- git push is allowed ONLY IF:
+  - final-report.md exists
+  - disposition is accepted or accepted_with_caveat
+
+### Forbidden
+- git reset --hard
+- git rebase
+- git clean -fd
+
+### Notes
+- Workers (Codex, Gemini) MUST NOT run git commands
+- Claude is the only agent allowed to modify repository history
+---
 
 ## Feature Workspace Layout
 
@@ -124,10 +169,10 @@ If a dependency is in a different feature, that feature must be fully `done` bef
 ├── owner.md                  # Claude — static ownership map and per-owner constraints
 ├── acceptance.md             # Claude — review checklist
 ├── status.json               # Claude only — runtime state: task statuses + activity log
-├── codex-build-report.md     # Codex — structured report artifact (stdout)
-├── codex-build.log           # Codex — diagnostic log (stderr)
-├── gemini-build-report.md    # Gemini — structured report artifact (stdout)
-├── gemini-build.log          # Gemini — diagnostic log (stderr)
+├── codex-build-<TASK_ID>.md     # Codex — structured report artifact (stdout)
+├── codex-build-<TASK_ID>.log           # Codex — diagnostic log (stderr)
+├── gemini-build-<TASK_ID>.md    # Gemini — structured report artifact (stdout)
+├── gemini-build-<TASK_ID>.log          # Gemini — diagnostic log (stderr)
 ├── review.md                 # Codex — review findings (stdout)
 ├── codex-review.log          # Codex — diagnostic log (stderr)
 └── final-report.md           # Claude — final acceptance decision only
