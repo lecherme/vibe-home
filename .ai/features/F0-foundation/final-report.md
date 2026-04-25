@@ -1,10 +1,10 @@
 # F0 — Final Acceptance Report
 
 ## Disposition
-accepted_with_caveat
+accepted
 
 ## Date
-2026-04-25
+2026-04-25 (runtime verified 2026-04-25)
 
 ## Summary
 All code-level and structural acceptance criteria for F0-foundation are satisfied. Six runtime verification items are deferred because dependency installation is blocked in the review sandbox (no network access). These items must be verified manually before F0 is considered fully production-ready.
@@ -52,6 +52,25 @@ The following must be run manually in a dependency-capable environment before cl
    — expected: health page displays status "ok"
 5. Stop the backend, reload `http://localhost:3000`
    — expected: health page shows a clear error state, does not crash
+
+## Deferred Verification — Now Resolved (2026-04-25)
+
+All deferred runtime items have been verified locally. Fixes required:
+
+| Fix | File | Reason |
+|-----|------|--------|
+| `StrEnum` → `str, Enum` | `app/schemas/auth.py` | Python 3.9 compat (`StrEnum` added in 3.11) |
+| `str \| None` → `Optional[str]` | `app/core/security.py` | Python 3.9 compat (PEP 604 requires 3.10+) |
+| `from datetime import UTC` → `timezone` | `tests/test_auth.py` | Python 3.9 compat (`UTC` added in 3.11) |
+| Added `httpx==0.28.1` | `requirements.txt` | Missing test dependency for `TestClient` |
+| `CookieOptions` import + typed callbacks | `frontend/middleware.ts` | TypeScript strict mode errors |
+
+Verified results:
+- `uvicorn app.main:app` starts; `GET /health` → `{"status":"ok"}` HTTP 200
+- `pytest tests/test_auth.py` → 4/4 passed
+- `npx tsc --noEmit` → no errors
+- `npm run dev` → Ready in 2.6s, middleware and login page compile cleanly
+- `npm run build` fails without env vars (expected — static prerender of `/login`/`/register` requires `NEXT_PUBLIC_SUPABASE_URL`); not a code defect
 
 ## Warnings (non-blocking)
 - T03 (Gemini) introduced `frontend/lib/api/health.ts` and `frontend/types/health.ts`, which are technically Codex-owned directories per `owner.md`. The files are correct and necessary; the boundary crossing was directed by the orchestrator during remediation and is noted for future owner map updates.

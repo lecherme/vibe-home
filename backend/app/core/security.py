@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Optional
 
 import jwt
 from fastapi import Depends, Header, HTTPException, status
@@ -39,7 +39,7 @@ def verify_jwt(token: str) -> dict[str, Any]:
     return payload
 
 
-async def get_current_user(authorization: str | None = Header(default=None)) -> UserRead:
+async def get_current_user(authorization: Optional[str] = Header(default=None)) -> UserRead:
     if authorization is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

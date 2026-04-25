@@ -1,9 +1,9 @@
-from enum import StrEnum
+from enum import Enum
 
 from pydantic import BaseModel, EmailStr
 
 
-class AppRole(StrEnum):
+class AppRole(str, Enum):
     USER = "user"
     ADMIN = "admin"
 

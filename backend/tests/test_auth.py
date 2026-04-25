@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import jwt
 import pytest
@@ -40,7 +40,7 @@ def build_token(
     role: str = "user",
     expires_delta: timedelta = timedelta(minutes=5),
 ) -> str:
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     payload = {
         "sub": "user-123",
         "email": "user@example.com",

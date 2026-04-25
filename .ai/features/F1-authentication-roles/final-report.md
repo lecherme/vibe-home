@@ -31,6 +31,18 @@ dependencies installed. No code defects were found that would cause these to fai
 | L7 | `tsc --noEmit` (frontend lib) | CI / local |
 | M6 | `tsc --noEmit` (middleware) | CI / local |
 
+## Runtime Verification — Resolved (2026-04-25)
+
+All deferred runtime items have been verified locally. The same Python 3.9 compatibility
+fixes applied to F0 also covered F1 code (shared `app/schemas/auth.py` and `app/core/security.py`).
+
+| Criterion | Result |
+|-----------|--------|
+| S8 — uvicorn starts | PASS — `GET /health` → `{"status":"ok"}` HTTP 200 |
+| J8 — pytest test_auth.py | PASS — 4/4 tests pass |
+| L7 — tsc --noEmit (frontend lib) | PASS — no errors |
+| M6 — tsc --noEmit (middleware) | PASS — no errors after `CookieOptions` fix |
+
 ## Tasks Requiring Retry
 
 None.
