@@ -73,12 +73,6 @@ git commit -m "$COMMIT_MSG"
 echo "✅ Commit done."
 
 if [ "$AUTO_PUSH" = "true" ]; then
-  PUSH_CONFIRM="y"
-else
-  read -p "Push to remote? (y/n): " PUSH_CONFIRM
-fi
-
-if [ "$PUSH_CONFIRM" = "y" ]; then
   git push
   echo "🚀 Pushed."
 else
