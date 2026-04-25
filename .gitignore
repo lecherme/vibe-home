@@ -11,6 +11,8 @@ build/
 venv/
 env/
 *.egg
+.pytest_cache/
+.coverage
 
 # Node / Next.js
 node_modules/

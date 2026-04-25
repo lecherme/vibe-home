@@ -2,8 +2,8 @@
 # tools/run_codex.sh
 # Run a single codex-owned task for a feature workspace.
 # Usage: tools/run_codex.sh .ai/features/<feature> <task-id>
-# Output: <feature>/codex-build-report.md
-# Log:    <feature>/codex-build.log
+# Output: <feature>/codex-build-<TASK_ID>.md  (wrapper captures stdout)
+# Log:    <feature>/codex-build-<TASK_ID>.log (stderr)
 # NEVER modifies status.json.
 
 set -euo pipefail
@@ -51,7 +51,11 @@ PROMPT="You are Codex, a backend and critical-logic implementation worker.
 - Do NOT modify status.json
 - Do NOT make product or architecture decisions
 - Write tests for all service-layer functions
-- At the end, write a codex-build-report.md summarizing: files changed, tests written, API types published, and any open issues
+- Do NOT create or write any report files yourself. Any attempt to write report files directly is a contract violation.
+- Do NOT create codex-build-report.md.
+- Do NOT create files at repo root unless the current task explicitly requires it.
+- Your final answer on stdout must be the build report.
+- The wrapper script will capture stdout into the correct feature-scoped artifact.
 
 ## Feature Spec
 $SPEC

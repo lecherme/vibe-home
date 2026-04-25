@@ -34,18 +34,18 @@ Based on the task's `owner` field:
 
 Claude passes the feature directory path. The script reads all required files and constructs the prompt internally.
 
-### Step 3 — Worker executes and writes artifact
+### Step 3 — Worker executes; wrapper captures output
 
-The worker runs and writes its output to the feature workspace:
+The worker outputs its report to stdout only. The wrapper script captures stdout into the feature-scoped artifact and stderr into the log file. Workers must NOT create report files themselves. Any attempt to write report files directly is a contract violation.
 
-| Worker | Report artifact (stdout) | Diagnostic log (stderr) |
-|--------|--------------------------|------------------------|
+| Worker | Report artifact (wrapper captures stdout) | Diagnostic log (stderr) |
+|--------|-------------------------------------------|------------------------|
 | Codex | `<feature>/codex-build-<TASK_ID>.md` | `<feature>/codex-build-<TASK_ID>.log` |
 | Gemini | `<feature>/gemini-build-<TASK_ID>.md` | `<feature>/gemini-build-<TASK_ID>.log` |
 
-`codex-build-<TASK_ID>.md` and `gemini-build-<TASK_ID>.md` are structured report artifacts derived from the worker's stdout. They are the authoritative record of what was built and are read by Claude and Codex review.
+`codex-build-<TASK_ID>.md` and `gemini-build-<TASK_ID>.md` are structured report artifacts written by the wrapper from the worker's stdout. They are the authoritative record of what was built and are read by Claude and Codex review.
 
-`codex-build-<TASK_ID>.log` and `gemini-build-<TASK_ID>.log` are diagnostic logs derived from stderr and raw execution output. They are for debugging only and are not read as part of the orchestration flow.
+`codex-build-<TASK_ID>.log` and `gemini-build-<TASK_ID>.log` are diagnostic logs from stderr. They are for debugging only and are not read as part of the orchestration flow.
 
 ### Step 4 — Claude reads the artifact and updates status.json
 
@@ -107,11 +107,20 @@ If a dependency is in a different feature, that feature must be fully `done` bef
 ## State Update Rules
 
 - `status.json` is updated by Claude after every task completion, failure, or block.
-- `activity_log` entries are append-only. Entries are never deleted or modified.
 - Feature-level `status` in `status.json` transitions: `pending` → `in_progress` → `done` | `failed` | `blocked`
 - Task-level `status` transitions: `pending` → `in_progress` → `done` | `failed` | `blocked`
 - A feature is `done` only when `final-report.md` exists with disposition `accepted`.
 - `final-report.md` is written only for final acceptance outcomes (accepted or failed after review), never for intermediate blocked states.
+
+### status.json edit discipline
+- Only modify the exact fields required — never rewrite adjacent objects
+- Never remove or reflow array structure
+- `activity_log` is append-only: never delete or modify existing entries, always add a new entry at the end
+
+### Verification output discipline
+- Each table or section must appear exactly once
+- No repeated blocks
+- Stop after full coverage is achieved
 
 ---
 ## CI Responsibilities

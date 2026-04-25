@@ -49,7 +49,9 @@ PROMPT="You are Codex, performing a code review for a completed feature.
 - Check that status.json was NOT modified by Codex or Gemini
 - Check that all API types are published to frontend/types/
 - Do NOT modify status.json
-- Output a structured review.md with a clear pass/fail verdict per criterion
+- Do NOT create or write review.md yourself. Any attempt to write report files directly is a contract violation.
+- Output the review report ONLY to stdout.
+- The wrapper script will capture stdout into the correct feature-scoped review.md.
 
 ## Feature Spec
 $SPEC

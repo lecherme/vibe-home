@@ -1,0 +1,114 @@
+{
+  "feature": "F1-authentication-roles",
+  "status": "done",
+  "current_stage": "T07_done",
+  "current_owner": null,
+  "next_step": null,
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Scaffold backend auth module structure and env config",
+      "owner": "codex",
+      "type": "scaffold",
+      "depends_on": [],
+      "status": "done",
+      "artifact": "codex-build-T01.md"
+    },
+    {
+      "id": "T02",
+      "title": "Implement JWT middleware and GET /api/v1/auth/me",
+      "owner": "codex",
+      "type": "backend",
+      "depends_on": ["T01"],
+      "status": "done",
+      "artifact": "codex-build-T02.md"
+    },
+    {
+      "id": "T03",
+      "title": "Implement lib/auth/ helpers and lib/api/auth.ts",
+      "owner": "codex",
+      "type": "infra",
+      "depends_on": ["T01"],
+      "status": "done",
+      "artifact": "codex-build-T03.md"
+    },
+    {
+      "id": "T04",
+      "title": "Implement Next.js middleware for route protection",
+      "owner": "codex",
+      "type": "backend",
+      "depends_on": ["T03"],
+      "status": "done",
+      "artifact": "codex-build-T04.md"
+    },
+    {
+      "id": "T05",
+      "title": "Scaffold login and register pages with form components",
+      "owner": "gemini",
+      "type": "ui",
+      "depends_on": ["T03", "T04"],
+      "status": "done",
+      "artifact": "gemini-build-T05.md"
+    },
+    {
+      "id": "T06",
+      "title": "Review F1 implementation against acceptance criteria",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": ["T01", "T02", "T03", "T04", "T05"],
+      "status": "done",
+      "artifact": "review.md"
+    },
+    {
+      "id": "T07",
+      "title": "Validate F1 and write final acceptance result",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": ["T06"],
+      "status": "done",
+      "artifact": "final-report.md"
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-04-25T00:00:00Z",
+      "event": "feature workspace initialized",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-25T00:01:00Z",
+      "event": "T01 done — backend auth skeleton created, schema and types published, scope validated.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-25T00:02:00Z",
+      "event": "T02 done — JWT verification, current user dependency, role guard, /me endpoint, and auth tests implemented; runtime test execution deferred to CI.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-25T00:03:00Z",
+      "event": "T03 done — frontend auth library and typed auth API wrapper implemented; TypeScript runtime verification deferred to CI.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-25T00:04:00Z",
+      "event": "T04 done — Next.js middleware implemented for route protection and admin role gating; TypeScript verification deferred to CI.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-25T00:05:00Z",
+      "event": "T05 done — auth UI components and pages implemented with loading/error states and strict boundary compliance.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-25T00:06:00Z",
+      "event": "T06 done — Codex review completed; code and boundary checks passed; runtime/toolchain checks deferred to CI.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-25T00:07:00Z",
+      "event": "T07 done — F1 accepted; code and boundary checks passed; runtime verification deferred to CI.",
+      "by": "claude"
+    }
+  ]
+}

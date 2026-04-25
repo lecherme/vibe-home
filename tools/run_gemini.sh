@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 # tools/run_gemini.sh
+# Run a single gemini-owned task for a feature workspace.
+# Usage: tools/run_gemini.sh .ai/features/<feature> <task-id>
+# Output: <feature>/gemini-build-<TASK_ID>.md  (wrapper captures stdout)
+# Log:    <feature>/gemini-build-<TASK_ID>.log (stderr)
+# NEVER modifies status.json.
 set -euo pipefail
 
 FEATURE_DIR="${1:-}"
@@ -38,15 +43,13 @@ PROMPT="You are Gemini, a UI scaffolding and low-risk implementation worker.
 
 You must directly create or update the required files in the repository.
 Do not only output code blocks.
-After modifying files, write the final report to:
-.ai/features/F0-foundation/gemini-build-T03.md
-Only modify files required by T03.
+Only modify files explicitly allowed by the current task block ($TASK_ID).
 
 ABSOLUTE FILE WRITE RULES:
-- You may ONLY create or update: frontend/app/page.tsx
-- You must NOT modify any other file
-- You must NOT modify .ai/, backend/, tools/, package files, config files, or status.json
-- If you cannot comply, stop and report failure
+- You may ONLY create or update files explicitly listed in the current task block.
+- You must NOT modify .ai/, backend/, tools/, package files, config files, or status.json unless the current task explicitly allows it.
+- You must NOT modify any other file.
+- If you cannot comply, stop and report failure.
 
 ## Your Role Constraints
 - Implement page scaffolding, layout composition, feature components
@@ -57,7 +60,9 @@ ABSOLUTE FILE WRITE RULES:
 - Do NOT modify lib/api/ or lib/auth/ (Codex owns these)
 - Do NOT create new API endpoints or modify backend schemas
 - Do NOT modify status.json
-- At the end, write a gemini-build-report.md summarizing: components created, pages scaffolded, and any open issues
+- Do NOT create or write report files yourself. Any attempt to write report files directly is a contract violation.
+- Output the build report ONLY to stdout.
+- The wrapper script will capture stdout into the correct feature-scoped artifact.
 
 ## Feature Spec
 $SPEC
@@ -93,15 +98,20 @@ When done, output a build report in this format:
 REPORT_FILE="$FEATURE_DIR/gemini-build-${TASK_ID}.md"
 LOG_FILE="$FEATURE_DIR/gemini-build-${TASK_ID}.log"
 
-NODE20="/Users/xiangzhifeng/.local/share/fnm/node-versions/v20.20.2/installation/bin/node"
 GEMINI_BIN=$(which gemini)
+# Gemini CLI requires Node >=20. Resolve the fnm v20 node explicitly so this
+# script works regardless of which Node version the parent shell activated.
+NODE_BIN=$(fnm exec --using=v20 node --print-eval "process.execPath" 2>/dev/null || true)
+if [[ -z "$NODE_BIN" ]]; then
+  NODE_BIN=$(ls "$HOME/.local/share/fnm/node-versions/v20."*/installation/bin/node 2>/dev/null | tail -1)
+fi
 
 echo "Running gemini for: $FEATURE_DIR task=$TASK_ID"
 echo "Report → $REPORT_FILE"
 echo "Log    → $LOG_FILE"
 
-# --approval-mode plan = read-only, no file writes, no tool execution
-"$NODE20" "$GEMINI_BIN" --approval-mode yolo -p "$PROMPT" \
+# --approval-mode yolo allows Gemini to apply permitted UI edits; post-run diff review is required.
+"$NODE_BIN" "$GEMINI_BIN" --approval-mode yolo -p "$PROMPT" \
   2> >(tee "$LOG_FILE" >&2) \
   | tee "$REPORT_FILE"
 
