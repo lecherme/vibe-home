@@ -153,3 +153,7 @@ Every feature follows this sequence of sequential tasks:
 
 No task begins until its declared dependency task has a complete output artifact.
 No feature is done until Claude writes `final-report.md` with a passing disposition.
+
+## Dev Requirements
+
+- jq (for git checkpoint script)
