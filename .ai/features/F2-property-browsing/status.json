@@ -1,0 +1,90 @@
+{
+  "feature": "F2-property-browsing",
+  "status": "in_progress",
+  "current_stage": "T02_done",
+  "current_owner": null,
+  "next_step": "Start T03 — Frontend property API library",
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Define Property schema, seed fixtures, and in-memory store",
+      "owner": "codex",
+      "type": "scaffold",
+      "depends_on": [],
+      "status": "done",
+      "artifact": "codex-build-T01.md"
+    },
+    {
+      "id": "T02",
+      "title": "Implement GET /api/v1/properties and GET /api/v1/properties/{id}",
+      "owner": "codex",
+      "type": "backend",
+      "depends_on": ["T01"],
+      "status": "done",
+      "artifact": "codex-build-T02.md"
+    },
+    {
+      "id": "T03",
+      "title": "Implement lib/api/properties.ts typed fetch wrappers",
+      "owner": "codex",
+      "type": "infra",
+      "depends_on": ["T01"],
+      "status": "pending",
+      "artifact": null
+    },
+    {
+      "id": "T04",
+      "title": "Implement property list page, detail page, and dashboard layout",
+      "owner": "gemini",
+      "type": "ui",
+      "depends_on": ["T02", "T03"],
+      "status": "pending",
+      "artifact": null
+    },
+    {
+      "id": "T05",
+      "title": "Review F2 implementation against acceptance criteria",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": ["T01", "T02", "T03", "T04"],
+      "status": "pending",
+      "artifact": null
+    },
+    {
+      "id": "T06",
+      "title": "Validate F2 and write final acceptance result",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": ["T05"],
+      "status": "pending",
+      "artifact": null
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-04-25T00:00:00Z",
+      "event": "feature workspace initialized",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-26T00:01:00Z",
+      "event": "T01 done — Property schema, seed data (16 fixtures), and frontend types created; scope verified.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-26T00:02:00Z",
+      "event": "T02 started — running Codex backend property endpoints task.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-26T00:03:00Z",
+      "event": "T02 done — property endpoints implemented, 8/8 tests pass, router registered in main.py; scope verified.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-26T00:04:00Z",
+      "event": "Paused after T02 completion; ready to resume from T03",
+      "by": "user"
+    }
+  ]
+}

@@ -122,6 +122,32 @@ If a dependency is in a different feature, that feature must be fully `done` bef
 - No repeated blocks
 - Stop after full coverage is achieved
 
+### Document edit discipline (spec/tasks/acceptance)
+
+When Claude edits spec.md, tasks.md, owner.md, or acceptance.md:
+
+- Edits must be minimal-diff: modify only the necessary lines
+- Never duplicate existing sections or rules
+- Never re-insert content that already exists elsewhere in the document
+- Each rule, bullet, or section must appear exactly once
+- If a section is being refined, it must be edited in-place, not re-added
+
+If duplication is detected:
+- Claude must stop further edits
+- Deduplicate the document before continuing
+
+Edits are considered complete when:
+- No repeated sections exist
+- No semantic duplication exists
+- Structure remains stable
+
+### Edit completion rule
+
+Claude must stop editing once all requested changes are applied.
+
+Do NOT re-run the same modification logic multiple times.
+Do NOT re-scan and re-apply identical patches.
+
 ---
 ## CI Responsibilities
 
