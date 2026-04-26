@@ -1,9 +1,9 @@
 {
   "feature": "F2-property-browsing",
   "status": "in_progress",
-  "current_stage": "T05_done",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Start T06 \u2014 Validate F2 and write final acceptance result",
+  "next_step": "Start T04 \u2014 Implement property list page, detail page, and dashboard layout",
   "tasks": [
     {
       "id": "T01",
@@ -45,8 +45,8 @@
         "T02",
         "T03"
       ],
-      "status": "done",
-      "artifact": "gemini-build-T04.md"
+      "status": "pending",
+      "artifact": null
     },
     {
       "id": "T05",
@@ -59,8 +59,8 @@
         "T03",
         "T04"
       ],
-      "status": "done",
-      "artifact": "review.md"
+      "status": "pending",
+      "artifact": null
     },
     {
       "id": "T06",
@@ -173,6 +173,26 @@
     {
       "timestamp": "2026-04-26T17:17:35Z",
       "event": "T05 done \u2014 artifact captured as review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T00:00:00Z",
+      "event": "T05 review verdict FAIL \u2014 L3 blocker: PropertyApiError message does not include HTTP status code. T03 and T05 reverted to pending for retry.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T00:01:00Z",
+      "event": "T04 reverted to pending \u2014 depends on T03 which is pending; will re-run after T03 fix.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-26T17:46:34Z",
+      "event": "T03 started \u2014 Implement lib/api/properties.ts typed fetch wrappers",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-26T17:47:31Z",
+      "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
       "by": "claude"
     }
   ]
