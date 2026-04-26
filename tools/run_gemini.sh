@@ -107,6 +107,15 @@ Re-run safety:
 - Re-running this task must NOT introduce duplicated UI, routes, or components
 - Changes must be deterministic and stable
 
+## stdout / stderr discipline — CRITICAL
+- Your stdout is captured DIRECTLY as the artifact file by the wrapper script.
+- stdout must contain ONLY the final # Gemini Build Report block — nothing else.
+- Do NOT print any reasoning, planning, progress notes, tool call descriptions,
+  file read summaries, or intermediate analysis to stdout.
+- All thinking, exploration notes, and execution logs must go to stderr only.
+- The artifact validation will FAIL and the task will be marked failed if stdout
+  contains anything before '# Gemini Build Report'.
+
 ## Instructions
 Implement ONLY the task above ($TASK_ID). Do not implement any other tasks.
 When done, output a build report in this format:
@@ -144,6 +153,7 @@ echo "Log    → $LOG_FILE"
 # --approval-mode yolo allows Gemini to apply permitted UI edits; post-run diff review is required.
 "$NODE_BIN" "$GEMINI_BIN" --approval-mode yolo -p "$PROMPT" \
   2> >(tee "$LOG_FILE" >&2) \
+  | awk '/^# Gemini Build Report/{found=1} found{print}' \
   | tee "$REPORT_FILE"
 
 EXIT_CODE=$?
