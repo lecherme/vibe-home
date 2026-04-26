@@ -23,16 +23,31 @@ Claude determines the next task by finding the first task whose:
 
 If no such task exists and some tasks are still `pending`, the feature is blocked. Claude updates `status.json` to mark the feature status as `blocked`, appends a blocker entry to `activity_log` with the reason, and stops. `final-report.md` is not written for intermediate blocked states — it is reserved for final acceptance outcomes only.
 
-### Step 2 — Claude invokes the correct worker
+### Step 2 — Claude invokes the task runner
 
-Based on the task's `owner` field:
+For executable worker tasks, Claude invokes the Claude-owned task runner:
+
+```
+tools/run_task.sh .ai/features/<feature> <TASK_ID>
+```
+
+`run_task.sh` performs preflight checks, transitions `status.json` to
+`in_progress`, invokes the correct worker wrapper, validates the output artifact,
+then transitions the task to `done` or `failed`.
+
+Based on the task's `owner` and `type` fields, `run_task.sh` delegates to:
 
 | Owner | Command |
 |-------|---------|
 | `codex` | `tools/run_codex.sh .ai/features/<feature> <TASK_ID>` |
 | `gemini` | `tools/run_gemini.sh .ai/features/<feature> <TASK_ID>` |
+| `codex` + `type=review` | `tools/run_codex_review.sh .ai/features/<feature> <TASK_ID>` |
 
-Claude passes the feature directory path. The script reads all required files and constructs the prompt internally.
+Claude-owned acceptance tasks are not executable through `run_task.sh`. Claude
+performs acceptance directly by reading `review.md`, writing `final-report.md`,
+and updating `status.json`.
+
+Claude passes the feature directory path. The worker wrapper reads all required files and constructs the prompt internally.
 
 ### Step 3 — Worker executes; wrapper captures output
 
@@ -47,14 +62,16 @@ The worker outputs its report to stdout only. The wrapper script captures stdout
 
 `codex-build-<TASK_ID>.log` and `gemini-build-<TASK_ID>.log` are diagnostic logs from stderr. They are for debugging only and are not read as part of the orchestration flow.
 
-### Step 4 — Claude reads the artifact and updates status.json
+### Step 4 — Claude validates the artifact and updates status.json
 
-Claude reads the output artifact and:
+Claude, either directly or through the Claude-owned `run_task.sh` helper, reads
+the output artifact and:
 - Updates the completed task's status to `done` in `status.json`
 - Appends an entry to `activity_log` with timestamp, event, and owner
 - Determines the next task (back to Step 1)
 
-Claude is the only writer of `status.json`.
+Claude is the only owner of `status.json`. Codex and Gemini workers must never
+modify it.
 
 ### Step 5 — Claude invokes Codex review
 
@@ -107,6 +124,7 @@ If a dependency is in a different feature, that feature must be fully `done` bef
 ## State Update Rules
 
 - `status.json` is updated by Claude after every task completion, failure, or block.
+- Claude may use `tools/status_guard.py` or `tools/run_task.sh` as orchestration helpers for these updates.
 - Feature-level `status` in `status.json` transitions: `pending` → `in_progress` → `done` | `failed` | `blocked`
 - Task-level `status` transitions: `pending` → `in_progress` → `done` | `failed` | `blocked`
 - A feature is `done` only when `final-report.md` exists with disposition `accepted`.

@@ -69,6 +69,19 @@ $TASK_BLOCK
 ## Owner Context
 $OWNER
 
+## Idempotent Implementation Discipline
+Before writing code:
+- Inspect existing target files first.
+- If a target file is missing, create it.
+- If a target file exists and is clean but incomplete, patch it minimally.
+- If a target file exists but contains duplicated blocks, conflicting logic, broken structure, or failed previous partial attempts, rewrite the affected file fully.
+- Do not append duplicate functions, exports, routes, schemas, tests, or imports.
+- Do not create alternative filenames such as *_v2, *_new, *_fixed, or duplicate test files.
+- Keep file paths stable and task-scoped.
+- Re-running this task should not introduce duplicate code or duplicate artifacts.
+- When modifying existing code, preserve unrelated behavior.
+- When adding to an existing registry/router/index file, check whether the entry already exists before adding it.
+
 ## Instructions
 Implement ONLY the task above ($TASK_ID). Do not implement any other tasks.
 When done, output a build report in this format:

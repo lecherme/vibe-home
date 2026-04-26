@@ -63,8 +63,8 @@ Every feature gets a workspace at `.ai/features/<feature>/`.
 
 | File | Owner | Purpose |
 |------|-------|---------|
-| `codex-build-report.md` | Codex | Files changed, tests written, API types published, open issues |
-| `gemini-build-report.md` | Gemini | Components created, pages scaffolded, open issues |
+| `codex-build-<TASK_ID>.md` | Codex stdout via wrapper | Files changed, tests written, API types published, open issues |
+| `gemini-build-<TASK_ID>.md` | Gemini stdout via wrapper | Components created, pages scaffolded, open issues |
 | `review.md` | Codex | Review findings: pass/fail per acceptance criterion, required fixes |
 | `final-report.md` | Claude | Acceptance decision, criteria met/failed, disposition |
 
@@ -80,7 +80,7 @@ Every feature gets a workspace at `.ai/features/<feature>/`.
       "name": "JWT middleware",
       "owner": "codex",
       "status": "done",
-      "artifact": "codex-build-report.md"
+      "artifact": "codex-build-T01.md"
     }
   ],
   "activity_log": [
@@ -145,9 +145,9 @@ Required env vars per service are documented in each service's `README.md`.
 Every feature follows this sequence of sequential tasks:
 
 1. **Spec** — Claude writes `spec.md`, `tasks.md`, `acceptance.md`, initializes `status.json`
-2. **Skeleton** — Codex scaffolds folder structure, empty files, type stubs; writes `codex-build-report.md`
-3. **Backend** — Codex implements FastAPI router + service + schema; writes `codex-build-report.md`
-4. **UI** — Gemini scaffolds page + components using published API types; writes `gemini-build-report.md`
+2. **Skeleton** — Codex scaffolds folder structure, empty files, type stubs; wrapper captures `codex-build-<TASK_ID>.md`
+3. **Backend** — Codex implements FastAPI router + service + schema; wrapper captures `codex-build-<TASK_ID>.md`
+4. **UI** — Gemini scaffolds page + components using published API types; wrapper captures `gemini-build-<TASK_ID>.md`
 5. **Review** — Codex reviews all artifacts against `acceptance.md`; writes `review.md`
 6. **Acceptance** — Claude reads `review.md`, writes `final-report.md`, updates `status.json`
 

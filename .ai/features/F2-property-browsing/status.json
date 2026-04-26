@@ -1,9 +1,9 @@
 {
   "feature": "F2-property-browsing",
   "status": "in_progress",
-  "current_stage": "T02_done",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Start T03 — Frontend property API library",
+  "next_step": "Start T04 \u2014 Implement property list page, detail page, and dashboard layout",
   "tasks": [
     {
       "id": "T01",
@@ -19,7 +19,9 @@
       "title": "Implement GET /api/v1/properties and GET /api/v1/properties/{id}",
       "owner": "codex",
       "type": "backend",
-      "depends_on": ["T01"],
+      "depends_on": [
+        "T01"
+      ],
       "status": "done",
       "artifact": "codex-build-T02.md"
     },
@@ -28,16 +30,21 @@
       "title": "Implement lib/api/properties.ts typed fetch wrappers",
       "owner": "codex",
       "type": "infra",
-      "depends_on": ["T01"],
-      "status": "pending",
-      "artifact": null
+      "depends_on": [
+        "T01"
+      ],
+      "status": "done",
+      "artifact": "codex-build-T03.md"
     },
     {
       "id": "T04",
       "title": "Implement property list page, detail page, and dashboard layout",
       "owner": "gemini",
       "type": "ui",
-      "depends_on": ["T02", "T03"],
+      "depends_on": [
+        "T02",
+        "T03"
+      ],
       "status": "pending",
       "artifact": null
     },
@@ -46,7 +53,12 @@
       "title": "Review F2 implementation against acceptance criteria",
       "owner": "codex",
       "type": "review",
-      "depends_on": ["T01", "T02", "T03", "T04"],
+      "depends_on": [
+        "T01",
+        "T02",
+        "T03",
+        "T04"
+      ],
       "status": "pending",
       "artifact": null
     },
@@ -55,7 +67,9 @@
       "title": "Validate F2 and write final acceptance result",
       "owner": "claude",
       "type": "acceptance",
-      "depends_on": ["T05"],
+      "depends_on": [
+        "T05"
+      ],
       "status": "pending",
       "artifact": null
     }
@@ -68,23 +82,48 @@
     },
     {
       "timestamp": "2026-04-26T00:01:00Z",
-      "event": "T01 done — Property schema, seed data (16 fixtures), and frontend types created; scope verified.",
+      "event": "T01 done \u2014 Property schema, seed data (16 fixtures), and frontend types created; scope verified.",
       "by": "claude"
     },
     {
       "timestamp": "2026-04-26T00:02:00Z",
-      "event": "T02 started — running Codex backend property endpoints task.",
+      "event": "T02 started \u2014 running Codex backend property endpoints task.",
       "by": "claude"
     },
     {
       "timestamp": "2026-04-26T00:03:00Z",
-      "event": "T02 done — property endpoints implemented, 8/8 tests pass, router registered in main.py; scope verified.",
+      "event": "T02 done \u2014 property endpoints implemented, 8/8 tests pass, router registered in main.py; scope verified.",
       "by": "claude"
     },
     {
       "timestamp": "2026-04-26T00:04:00Z",
       "event": "Paused after T02 completion; ready to resume from T03",
       "by": "user"
+    },
+    {
+      "timestamp": "2026-04-26T16:36:27Z",
+      "event": "T03 started \u2014 Implement lib/api/properties.ts typed fetch wrappers",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-26T16:36:33Z",
+      "event": "T03 failed \u2014 run_task failed with exit code 1",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-26T16:51:00Z",
+      "event": "T03 requeued \u2014 retry after codex cli upgrade",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-26T16:52:17Z",
+      "event": "T03 started \u2014 Implement lib/api/properties.ts typed fetch wrappers",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-26T16:54:00Z",
+      "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
+      "by": "claude"
     }
   ]
 }

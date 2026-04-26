@@ -22,7 +22,7 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 - Make implementation decisions (file structure, library choices) without a spec
 - Accept a feature without verifying all acceptance criteria
 - Assign a task to more than one owner
-- Write to `codex-build-report.md`, `gemini-build-report.md`, or `review.md`
+- Write worker report artifacts or `review.md` directly
 
 ---
 
@@ -36,15 +36,15 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 - Critical frontend logic: auth flow, API client layer (`lib/api/`)
 - Code review of any logic-bearing code regardless of who wrote it
 
-**Output artifact:** `codex-build-report.md` — written by Codex at the end of every build task.
-**Review artifact:** `review.md` — written by Codex at the end of every review task.
+**Output artifact:** `codex-build-<TASK_ID>.md` — captured by the wrapper from Codex stdout at the end of every build task.
+**Review artifact:** `review.md` — captured by the wrapper from Codex stdout at the end of every review task.
 
 **Must NOT:**
 - Make product or architecture decisions
 - Implement UI layout, styling, or component structure
 - Modify shadcn primitives in `components/ui/`
 - Skip writing tests for service-layer functions
-- Write to `status.json` or `gemini-build-report.md`
+- Write to `status.json` or Gemini report artifacts
 - Begin a task before its declared dependency tasks are complete
 
 ---
@@ -58,7 +58,7 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 - Test drafting: frontend component tests, API integration test stubs
 - Minor UI fixes and copy changes
 
-**Output artifact:** `gemini-build-report.md` — written by Gemini at the end of every build task.
+**Output artifact:** `gemini-build-<TASK_ID>.md` — captured by the wrapper from Gemini stdout at the end of every build task.
 
 **Must NOT:**
 - Implement business logic in components (no data transformation, no auth checks)
@@ -66,7 +66,7 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 - Modify `lib/api/` or `lib/auth/` (Codex owns these)
 - Create new API endpoints or modify backend schemas
 - Make routing or access control decisions
-- Write to `status.json`, `codex-build-report.md`, or `review.md`
+- Write to `status.json`, Codex report artifacts, or `review.md`
 - Begin UI tasks before the relevant API types exist in `frontend/types/`
 
 ---
@@ -75,8 +75,8 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 
 | File | Written by | Purpose |
 |------|-----------|---------|
-| `codex-build-report.md` | Codex | Summary of what was built, files changed, tests written, open issues |
-| `gemini-build-report.md` | Gemini | Summary of what was scaffolded, components created, open issues |
+| `codex-build-<TASK_ID>.md` | Codex stdout via wrapper | Summary of what was built, files changed, tests written, open issues |
+| `gemini-build-<TASK_ID>.md` | Gemini stdout via wrapper | Summary of what was scaffolded, components created, open issues |
 | `review.md` | Codex | Code review findings: pass/fail per criterion, issues, required fixes |
 | `final-report.md` | Claude | Acceptance summary: criteria met, criteria failed, disposition |
 | `status.json` | Claude only | Canonical task list with statuses and activity log |
@@ -92,14 +92,14 @@ Handoffs are artifact-based. A task is handed off when its output artifact is wr
 | From | To | Trigger | Required Artifact |
 |------|----|---------|-------------------|
 | Claude | Codex | Feature spec finalized | `spec.md` + `tasks.md` written in feature workspace |
-| Codex | Claude | Build task complete | `codex-build-report.md` written |
-| Codex | Gemini | API types published | `codex-build-report.md` confirms types in `frontend/types/` |
-| Gemini | Claude | UI task complete | `gemini-build-report.md` written |
+| Codex | Claude | Build task complete | `codex-build-<TASK_ID>.md` written |
+| Codex | Gemini | API types published | `codex-build-<TASK_ID>.md` confirms types in `frontend/types/` |
+| Gemini | Claude | UI task complete | `gemini-build-<TASK_ID>.md` written |
 | Claude | Codex | Review requested | `acceptance.md` with criteria to verify |
 | Codex | Claude | Review complete | `review.md` written |
 | Claude | (done) | Feature accepted | `final-report.md` written; `status.json` updated |
 
-Gemini must not start any UI task until the relevant `codex-build-report.md` confirms API types are published.
+Gemini must not start any UI task until the relevant `codex-build-<TASK_ID>.md` confirms API types are published.
 
 ---
 
@@ -131,7 +131,7 @@ If a worker modifies a restricted directory:
 ## Review and Acceptance Flow
 
 ```
-Codex or Gemini writes output artifact
+Codex or Gemini outputs build report to stdout; wrapper captures output artifact
     │
     ▼
 Claude reads artifact and checks against acceptance.md

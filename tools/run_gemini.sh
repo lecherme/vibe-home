@@ -76,6 +76,37 @@ $TASK_BLOCK
 ## Owner Context
 $OWNER
 
+
+## Idempotent Implementation Discipline
+Before writing code:
+- Inspect existing files first
+
+File handling rules:
+- If file does not exist → create it
+- If file exists and is clean but incomplete → patch minimally
+- If file exists but is broken, duplicated, or inconsistent → rewrite the file cleanly
+
+Strict anti-duplication rules:
+- Do NOT create duplicate components (e.g., PropertyList2, PropertyListNew)
+- Do NOT duplicate pages or routes
+- Do NOT duplicate imports
+- Do NOT duplicate hooks or state logic
+- Do NOT create alternative filenames
+
+Next.js structure safety:
+- Respect existing app/ or pages/ routing structure
+- Do NOT break layout.tsx hierarchy
+- When modifying layout/page, preserve existing structure unless task explicitly requires change
+
+Component discipline:
+- Keep components small and composable
+- Reuse existing components if present
+- Do NOT inline large logic blocks into pages
+
+Re-run safety:
+- Re-running this task must NOT introduce duplicated UI, routes, or components
+- Changes must be deterministic and stable
+
 ## Instructions
 Implement ONLY the task above ($TASK_ID). Do not implement any other tasks.
 When done, output a build report in this format:

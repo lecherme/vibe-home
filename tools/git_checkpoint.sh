@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 AUTO_COMMIT=${1:-false}
 AUTO_PUSH=${2:-false}
+FEATURE_DIR=${3:-}
 set -euo pipefail
 
 echo "=== Git Checkpoint ==="
@@ -20,7 +21,11 @@ echo ""
 echo "[2] git diff summary"
 git diff --stat
 
-STATUS_FILE=$(find .ai/features -name "status.json" -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -n 1 || true)
+if [ -n "$FEATURE_DIR" ]; then
+  STATUS_FILE="$FEATURE_DIR/status.json"
+else
+  STATUS_FILE=$(find .ai/features -name "status.json" -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -n 1 || true)
+fi
 
 if [ -n "$STATUS_FILE" ]; then
   echo ""
@@ -56,10 +61,48 @@ if [ "$CONFIRM" != "y" ]; then
   exit 0
 fi
 
-git add .
+echo ""
+echo "[5] Checking changed files before staging..."
+set +e
+python3 - <<'PY'
+import re
+import subprocess
+import sys
+
+forbidden_re = re.compile(r'(^|/)(\.env($|\.)|node_modules/|\.next/|\.venv/|venv/|.*\.log$)')
+
+def lines(cmd):
+    out = subprocess.check_output(cmd, text=True)
+    return [line for line in out.splitlines() if line]
+
+changed = set(lines(["git", "diff", "--name-only"]))
+changed.update(lines(["git", "diff", "--name-only", "--cached"]))
+changed.update(lines(["git", "ls-files", "--others", "--exclude-standard"]))
+
+if not changed:
+    print("No changed files to stage.")
+    sys.exit(2)
+
+forbidden = sorted(path for path in changed if forbidden_re.search(path))
+if forbidden:
+    print("Found forbidden changed files; nothing was staged:", file=sys.stderr)
+    for path in forbidden:
+        print(f"- {path}", file=sys.stderr)
+    sys.exit(1)
+
+subprocess.run(["git", "add", "--", *sorted(changed)], check=True)
+print(f"Staged {len(changed)} changed file(s).")
+PY
+STAGE_RESULT=$?
+set -e
+if [ "$STAGE_RESULT" = "2" ]; then
+  exit 0
+elif [ "$STAGE_RESULT" != "0" ]; then
+  exit "$STAGE_RESULT"
+fi
 
 echo ""
-echo "[5] Checking staged files for forbidden paths..."
+echo "[6] Checking staged files for forbidden paths..."
 FORBIDDEN=$(git diff --cached --name-only | grep -E '(^|/)(\.env($|\.)|node_modules/|\.next/|\.venv/|venv/|.*\.log$)' || true)
 
 if [ -n "$FORBIDDEN" ]; then

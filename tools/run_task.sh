@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # tools/run_task.sh
-# Usage: bash tools/run_task.sh .ai/features/F2-property-browsing T03
+# Claude-owned task runner for worker tasks.
+#
+# Usage:
+#   bash tools/run_task.sh .ai/features/F2-property-browsing T03
+#
+# This script may update status.json because it is an orchestration helper run by
+# Claude Code. Codex/Gemini worker wrappers still must never modify status.json.
 
 set -euo pipefail
 
@@ -12,84 +18,70 @@ if [[ -z "$FEATURE_DIR" || -z "$TASK_ID" ]]; then
   exit 1
 fi
 
-STATUS_FILE="$FEATURE_DIR/status.json"
-TASKS_FILE="$FEATURE_DIR/tasks.md"
-
-if [[ ! -f "$STATUS_FILE" ]]; then
-  echo "ERROR: missing status.json: $STATUS_FILE" >&2
-  exit 1
-fi
-
-python3 -m json.tool "$STATUS_FILE" >/dev/null
-
-OWNER=$(python3 - "$STATUS_FILE" "$TASK_ID" <<'PY'
-import json, sys
-status_file, task_id = sys.argv[1], sys.argv[2]
-data = json.load(open(status_file))
-for task in data["tasks"]:
-    if task["id"] == task_id:
-        print(task["owner"])
-        sys.exit(0)
-print(f"ERROR: task {task_id} not found", file=sys.stderr)
-sys.exit(1)
-PY
-)
-
-TASK_STATUS=$(python3 - "$STATUS_FILE" "$TASK_ID" <<'PY'
-import json, sys
-status_file, task_id = sys.argv[1], sys.argv[2]
-data = json.load(open(status_file))
-for task in data["tasks"]:
-    if task["id"] == task_id:
-        print(task["status"])
-        sys.exit(0)
-sys.exit(1)
-PY
-)
-
-if [[ "$TASK_STATUS" != "pending" && "$TASK_STATUS" != "in_progress" ]]; then
-  echo "ERROR: task $TASK_ID status is '$TASK_STATUS', refusing to rerun." >&2
-  exit 1
-fi
+cd "$(dirname "$0")/.."
 
 echo "=== Run Task ==="
 echo "Feature: $FEATURE_DIR"
 echo "Task:    $TASK_ID"
-echo "Owner:   $OWNER"
-echo "Status:  $TASK_STATUS"
-echo ""
 
-case "$OWNER" in
-  codex)
-    CMD=(bash tools/run_codex.sh "$FEATURE_DIR" "$TASK_ID")
+python3 tools/status_guard.py preflight "$FEATURE_DIR" "$TASK_ID"
+read OWNER TASK_TYPE TASK_STATUS EXPECTED_ARTIFACT < <(python3 tools/status_guard.py task-info "$FEATURE_DIR" "$TASK_ID")
+
+echo "Owner:   $OWNER"
+echo "Type:    $TASK_TYPE"
+echo "Status:  $TASK_STATUS"
+echo "Artifact target: $EXPECTED_ARTIFACT"
+
+TASK_STARTED=false
+TASK_DONE=false
+SCOPE_BASELINE=""
+
+on_error() {
+  local exit_code=$?
+  if [[ -n "$SCOPE_BASELINE" && -f "$SCOPE_BASELINE" ]]; then
+    rm -f "$SCOPE_BASELINE"
+  fi
+  if [[ "$TASK_STARTED" == "true" && "$TASK_DONE" != "true" ]]; then
+    python3 tools/status_guard.py fail "$FEATURE_DIR" "$TASK_ID" "run_task failed with exit code $exit_code" || true
+  fi
+  exit "$exit_code"
+}
+trap on_error ERR
+
+python3 tools/status_guard.py start "$FEATURE_DIR" "$TASK_ID"
+TASK_STARTED=true
+SCOPE_BASELINE=$(mktemp)
+{
+  git diff --name-only
+  git diff --name-only --cached
+  git ls-files --others --exclude-standard
+} | sort -u > "$SCOPE_BASELINE"
+
+case "$OWNER:$TASK_TYPE" in
+  codex:review)
+    bash tools/run_codex_review.sh "$FEATURE_DIR" "$TASK_ID"
     ;;
-  gemini)
-    CMD=(bash tools/run_gemini.sh "$FEATURE_DIR" "$TASK_ID")
+  codex:*)
+    bash tools/run_codex.sh "$FEATURE_DIR" "$TASK_ID"
     ;;
-  claude)
-    echo "ERROR: Claude-owned tasks are not executable via worker wrapper." >&2
-    exit 1
+  gemini:*)
+    bash tools/run_gemini.sh "$FEATURE_DIR" "$TASK_ID"
     ;;
   *)
-    echo "ERROR: unknown owner: $OWNER" >&2
+    echo "ERROR: unsupported executable task owner/type: $OWNER/$TASK_TYPE" >&2
     exit 1
     ;;
 esac
 
-echo "Command:"
-printf ' %q' "${CMD[@]}"
-echo ""
-echo ""
+python3 tools/status_guard.py check-scope "$FEATURE_DIR" "$TASK_ID" "$SCOPE_BASELINE"
+rm -f "$SCOPE_BASELINE"
+SCOPE_BASELINE=""
 
-read -p "Proceed? (y/n): " CONFIRM
-if [[ "$CONFIRM" != "y" ]]; then
-  echo "Aborted."
-  exit 0
+python3 tools/status_guard.py done "$FEATURE_DIR" "$TASK_ID"
+TASK_DONE=true
+
+if ! bash tools/git_checkpoint.sh true false "$FEATURE_DIR"; then
+  echo "WARNING: checkpoint failed after task completion; status.json remains done." >&2
 fi
 
-"${CMD[@]}"
-
-echo ""
-echo "=== Done ==="
-echo "Artifact should be under: $FEATURE_DIR"
-echo "Now verify scope and update status.json via Claude/orchestrator."
+echo "✅ Task $TASK_ID complete"
