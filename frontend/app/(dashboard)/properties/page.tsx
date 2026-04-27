@@ -1,95 +1,140 @@
+"use client";
+
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { propertiesApi } from "@/lib/api/properties";
+import type { PropertyListResponse } from "@/types/property";
 import { PropertyCard } from "@/components/features/properties/PropertyCard";
 import { PropertyListSkeleton } from "@/components/features/properties/PropertyListSkeleton";
-import Link from "next/link";
-import { Suspense } from "react";
 
-interface PropertiesPageProps {
-  searchParams: {
-    page?: string;
+function PropertyListContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const page = Number(searchParams.get("page")) || 1;
+  const pageSize = 12;
+
+  const [data, setData] = useState<PropertyListResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+    setError(null);
+
+    propertiesApi.list(page, pageSize)
+      .then((res) => {
+        if (isMounted) {
+          setData(res);
+          setIsLoading(false);
+        }
+      })
+      .catch((err: any) => {
+        if (isMounted) {
+          setError(err.message || "Failed to load properties");
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page]);
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(newPage));
+    router.push(`/properties?${params.toString()}`);
   };
-}
 
-const PAGE_SIZE = 12;
-
-async function PropertyList({ page }: { page: number }) {
-  try {
-    const data = await propertiesApi.list(page, PAGE_SIZE);
-
-    if (data.items.length === 0) {
-      return (
-        <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 p-12 text-center">
-          <h3 className="text-lg font-semibold text-slate-900">No properties found</h3>
-          <p className="mt-2 text-sm text-slate-500">
-            We couldn't find any properties at the moment. Please check back later.
-          </p>
-        </div>
-      );
-    }
-
-    const totalPages = Math.ceil(data.total / PAGE_SIZE);
-
+  if (isLoading) {
     return (
-      <div className="space-y-8">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {data.items.map((property) => (
-            <PropertyCard key={property.id} property={property} />
-          ))}
-        </div>
-
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4">
-            <Link
-              href={`/properties?page=${page - 1}`}
-              className={`rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 ${
-                page <= 1 ? "pointer-events-none opacity-50" : ""
-              }`}
-            >
-              Previous
-            </Link>
-            <span className="text-sm text-slate-600">
-              Page {page} of {totalPages}
-            </span>
-            <Link
-              href={`/properties?page=${page + 1}`}
-              className={`rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 ${
-                page >= totalPages ? "pointer-events-none opacity-50" : ""
-              }`}
-            >
-              Next
-            </Link>
-          </div>
-        )}
-      </div>
-    );
-  } catch (error: any) {
-    return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-        <h3 className="text-lg font-semibold text-red-900">Unable to load properties</h3>
-        <p className="mt-2 text-sm text-red-700">
-          {error.message || "An unexpected error occurred. Please try again later."}
-        </p>
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold text-slate-900 mb-8">Properties</h1>
+        <PropertyListSkeleton />
       </div>
     );
   }
-}
 
-export default function PropertiesPage({ searchParams }: PropertiesPageProps) {
-  const page = Number(searchParams.page) || 1;
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-center">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 inline-block max-w-lg">
+          <h3 className="text-red-800 font-bold mb-2">Error Loading Properties</h3>
+          <p className="text-red-700 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || data.items.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-center">
+        <h1 className="text-3xl font-bold text-slate-900 mb-8 text-left">Properties</h1>
+        <div className="bg-white border border-slate-200 rounded-lg py-16 px-4">
+          <p className="text-slate-500 text-lg">No properties found.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const totalPages = Math.ceil(data.total / data.page_size);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8">
+    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-slate-900">Properties</h1>
-        <p className="mt-2 text-slate-600">
-          Browse our collection of available properties.
+        <p className="text-slate-500">
+          Showing {data.items.length} of {data.total} properties
         </p>
       </div>
 
-      <Suspense fallback={<PropertyListSkeleton />}>
-        <PropertyList page={page} />
-      </Suspense>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {data.items.map((property) => (
+          <PropertyCard key={property.id} property={property} />
+        ))}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 py-4">
+          <button
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page <= 1}
+            className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
+          >
+            Previous
+          </button>
+          <span className="text-slate-600">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page >= totalPages}
+            className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function PropertiesPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold text-slate-900 mb-8">Properties</h1>
+        <PropertyListSkeleton />
+      </div>
+    }>
+      <PropertyListContent />
+    </Suspense>
   );
 }

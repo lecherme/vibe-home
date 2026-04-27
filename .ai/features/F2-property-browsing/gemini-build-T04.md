@@ -7,7 +7,6 @@
 - `frontend/components/features/properties/PropertyCard.tsx`
 - `frontend/components/features/properties/PropertyDetail.tsx`
 - `frontend/components/features/properties/PropertyListSkeleton.tsx`
-- `frontend/components/features/properties/NavBar.tsx`
 
 ## Pages Scaffolded
 - `frontend/app/(dashboard)/layout.tsx`
@@ -15,4 +14,4 @@
 - `frontend/app/(dashboard)/properties/[id]/page.tsx`
 
 ## Open Issues
-- None
+- None. All requirements for T04 have been met. Implementation uses Client Components for pages to ensure session handling via `createBrowserClient` works as intended. Navigation and pagination are handled via Next.js `useSearchParams` and `useRouter`.
