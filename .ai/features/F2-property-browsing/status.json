@@ -1,9 +1,9 @@
 {
   "feature": "F2-property-browsing",
   "status": "in_progress",
-  "current_stage": "T02_done",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Start T03 \u2014 Implement lib/api/properties.ts typed fetch wrappers",
+  "next_step": "Start T04 \u2014 Implement property list page, detail page, and dashboard layout",
   "tasks": [
     {
       "id": "T01",
@@ -33,8 +33,8 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
-      "artifact": null
+      "status": "done",
+      "artifact": "codex-build-T03.md"
     },
     {
       "id": "T04",
@@ -258,6 +258,16 @@
     {
       "timestamp": "2026-04-27T17:23:24Z",
       "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:24:48Z",
+      "event": "T03 started \u2014 Implement lib/api/properties.ts typed fetch wrappers",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:25:33Z",
+      "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
       "by": "claude"
     }
   ]

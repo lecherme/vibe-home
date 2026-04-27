@@ -4,7 +4,7 @@
 - T03
 
 ## Files Changed
-- `frontend/lib/api/properties.ts`
+- None
 
 ## API Types Published
 - None
@@ -13,6 +13,4 @@
 - None
 
 ## Open Issues
-- None
-- Verified `frontend/lib/api/properties.ts` typechecks with `./node_modules/.bin/tsc --noEmit -p tsconfig.json`
-- `PropertyApiError.message` now always includes the HTTP status code, including the no-session `401` path and non-2xx response path
+- None. Existing `frontend/lib/api/properties.ts` already satisfies T03, including the L3 retry requirement that every thrown `PropertyApiError.message` contains the HTTP status code. Verified with `npx tsc --noEmit`.
