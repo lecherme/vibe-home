@@ -6,56 +6,59 @@ FAIL
 ## Criteria Results
 | Criterion | Result | Notes |
 |-----------|--------|-------|
-| D1 | PASS | [`backend/app/schemas/property.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/app/schemas/property.py:1) defines `PropertyStatus`, `Property`, and `PropertyListResponse`. |
-| D2 | PASS | `Property` includes all required fields with the expected types in [`backend/app/schemas/property.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/app/schemas/property.py:12). |
-| D3 | PASS | `PropertyStatus` has `available`, `sold`, and `rented` values in [`backend/app/schemas/property.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/app/schemas/property.py:7). |
-| D4 | PASS | [`backend/app/data/properties.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/app/data/properties.py:7) contains 16 seed fixtures. |
-| D5 | PASS | `get_all()` and `get_by_id(id)` are exported in [`backend/app/data/properties.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/app/data/properties.py:315). |
-| D6 | PASS | [`frontend/types/property.ts`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/types/property.ts:1) mirrors the backend schema with `Property`, `PropertyStatus`, and `PropertyListResponse`. |
+| D1 | PASS | `backend/app/schemas/property.py` defines `PropertyStatus`, `Property`, and `PropertyListResponse`. |
+| D2 | PASS | All required `Property` fields and expected types are present. |
+| D3 | PASS | `PropertyStatus` enum values are `available`, `sold`, and `rented`. |
+| D4 | PASS | `backend/app/data/properties.py` contains 16 seed fixtures. |
+| D5 | PASS | `get_all()` and `get_by_id(id)` are exported from `backend/app/data/properties.py`. |
+| D6 | PASS | `frontend/types/property.ts` defines `PropertyStatus`, `Property`, and `PropertyListResponse` matching the backend schema. |
 | E1 | PASS | `backend/app/api/v1/properties/__init__.py` and `router.py` exist. |
-| E2 | PASS | List endpoint returns `total`, `page`, and `page_size`; covered by [`backend/tests/test_properties.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/tests/test_properties.py:52). |
-| E3 | FAIL | The endpoint slices correctly in [`router.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/app/api/v1/properties/router.py:31), but [`test_list_properties_returns_paginated_results`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/tests/test_properties.py:52) only checks count/metadata, not that page 2 with size 5 returns items 6–10. |
-| E4 | PASS | `page_size` is clamped with `min(page_size, MAX_PAGE_SIZE)` and asserted in [`backend/tests/test_properties.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/tests/test_properties.py:80). |
-| E5 | PASS | Descending sort is implemented in [`router.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/app/api/v1/properties/router.py:24) and tested in [`backend/tests/test_properties.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/tests/test_properties.py:68). |
-| E6 | PASS | Out-of-range page returns empty `items` with valid metadata; asserted in [`backend/tests/test_properties.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/tests/test_properties.py:93). |
-| E7 | PASS | Known-property fetch is covered in [`backend/tests/test_properties.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/tests/test_properties.py:109). |
-| E8 | PASS | Unknown-property 404 is covered in [`backend/tests/test_properties.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/tests/test_properties.py:122). |
-| E9 | PASS | 401 without JWT is covered for both endpoints in [`backend/tests/test_properties.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/tests/test_properties.py:132). |
-| E10 | PASS | Properties router is registered under `/api/v1/properties` in [`backend/app/main.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/app/main.py:21). |
-| E11 | PASS | `backend/.venv/bin/python -m pytest tests/test_properties.py` passed: `8 passed`. |
-| L1 | PASS | [`frontend/lib/api/properties.ts`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/lib/api/properties.ts:69) exports `propertiesApi.list` and `propertiesApi.get`. |
-| L2 | PASS | Both requests source the token from `getAccessToken()` and attach `Authorization: Bearer ...` in [`frontend/lib/api/properties.ts`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/lib/api/properties.ts:26). |
-| L3 | PASS | Both non-2xx paths produce `PropertyApiError.message` strings containing the HTTP status code in [`frontend/lib/api/properties.ts`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/lib/api/properties.ts:6). |
-| L4 | PASS | `rg` found `fetch(` only under `frontend/lib/api/`; none in `frontend/app/` or `frontend/components/`. |
-| L5 | PASS | `frontend/./node_modules/.bin/tsc --noEmit -p tsconfig.json` completed successfully. |
-| U1 | PASS | [`frontend/app/(dashboard)/layout.tsx`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/app/(dashboard)/layout.tsx:1) exists and renders a nav bar via `NavBar`. |
-| U2 | PASS | [`frontend/app/(dashboard)/properties/page.tsx`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/app/(dashboard)/properties/page.tsx:32) renders a `PropertyCard` grid. |
-| U3 | PASS | Loading state renders `PropertyListSkeleton` via [`properties/loading.tsx`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/app/(dashboard)/properties/loading.tsx:1) and the page `Suspense` fallback. |
-| U4 | PASS | Empty state is rendered when `data.items.length === 0` in [`properties/page.tsx`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/app/(dashboard)/properties/page.tsx:19). |
-| U5 | PASS | User-friendly error state is rendered in [`properties/page.tsx`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/app/(dashboard)/properties/page.tsx:66). |
-| U6 | PASS | Previous/next controls are visually disabled at boundaries in [`properties/page.tsx`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/app/(dashboard)/properties/page.tsx:43). |
-| U7 | PASS | [`frontend/app/(dashboard)/properties/[id]/page.tsx`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/app/(dashboard)/properties/[id]/page.tsx:12) renders `PropertyDetail`. |
-| U8 | PASS | 404 handling calls `notFound()` for `PropertyApiError` 404 in [`properties/[id]/page.tsx`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/app/(dashboard)/properties/[id]/page.tsx:29). |
-| U9 | PASS | [`PropertyCard.tsx`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/components/features/properties/PropertyCard.tsx:9) renders image, title, price, location, bedroom/bathroom info, and links the full card to `/properties/{id}`. |
-| U10 | PASS | [`PropertyDetail.tsx`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/components/features/properties/PropertyDetail.tsx:8) renders gallery, title, price, location, description, bedrooms, bathrooms, area, and status. |
-| U11 | PASS | [`PropertyListSkeleton.tsx`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/components/features/properties/PropertyListSkeleton.tsx:1) is presentational and takes no props. |
-| U12 | PASS | `rg` found no `propertiesApi` usage under `frontend/components/`. |
-| U13 | PASS | `rg` found no direct `fetch(` calls under `frontend/app/` or `frontend/components/`. |
-| B1 | PASS | `rg` found no `@supabase/ssr` or `@supabase/supabase-js` imports in `frontend/app/` or `frontend/components/`. |
-| B2 | PASS | No hardcoded secrets, API keys, or production API URLs were found in source; only fixture image URLs and localhost/example test URLs are present. |
-| B3 | PASS | `.ai/features/F2-property-browsing/status.json` is modified, but the diff is orchestration state for T05 and the logged actor is `claude`; no evidence of Codex or Gemini writing it. |
-| B4 | PASS | `git diff HEAD` shows no protected F1-file changes beyond the additive properties router registration in [`backend/app/main.py`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/app/main.py:21). |
-| B5 | PASS | No worker-authored report content was found; `review.md` is currently a zero-byte wrapper artifact placeholder. |
-| B6 | PASS | Pages render data but do not normalize API response shape; request/error normalization remains in [`frontend/lib/api/properties.ts`](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/lib/api/properties.ts:42). |
+| E2 | PASS | List endpoint returns `items`, `total`, `page`, and `page_size`; covered by unit test. |
+| E3 | PASS | Pagination test asserts the exact page-2 slice IDs from the created-at-desc sorted fixtures. |
+| E4 | PASS | `page_size` is clamped with `min(page_size, 50)` and covered by unit test. |
+| E5 | PASS | Results are sorted by `created_at` descending in the router and verified by unit test. |
+| E6 | PASS | Beyond-range pages return empty `items` with valid metadata; covered by unit test. |
+| E7 | PASS | Single-property fetch returns the expected property; covered by unit test. |
+| E8 | PASS | Unknown property IDs return 404 with `{"detail":"Property not found"}`. |
+| E9 | PASS | Both endpoints return 401 without authorization headers; covered by unit test. |
+| E10 | PASS | Properties router is registered in `backend/app/main.py` under `/api/v1/properties`. |
+| E11 | PASS | `backend/.venv/bin/python -m pytest backend/tests/test_properties.py` passed: 8 passed. |
+| L1 | PASS | `frontend/lib/api/properties.ts` exports `propertiesApi.list` and `propertiesApi.get`. |
+| L2 | PASS | Both API calls use `getAccessToken()` from `frontend/lib/auth/session.ts` and attach `Authorization: Bearer <token>`. |
+| L3 | PASS | `PropertyApiError` messages include the HTTP status code for both no-session and non-2xx response paths. |
+| L4 | PASS | No direct `fetch()` calls were found in `frontend/app` or `frontend/components`. |
+| L5 | PASS | `cd frontend && npx tsc --noEmit` succeeded. |
+| U1 | PASS | `frontend/app/(dashboard)/layout.tsx` exists and renders a nav bar. |
+| U2 | PASS | `frontend/app/(dashboard)/properties/page.tsx` renders a `PropertyCard` grid. |
+| U3 | PASS | The list page renders `PropertyListSkeleton` during loading. |
+| U4 | PASS | The list page renders an empty-state message when `items` is empty. |
+| U5 | PASS | The list page renders an explicit error state with a retry button. |
+| U6 | PASS | Previous/next buttons are disabled at `page <= 1` and `page >= totalPages`. |
+| U7 | PASS | `frontend/app/(dashboard)/properties/[id]/page.tsx` renders `PropertyDetail`. |
+| U8 | PASS | The detail page maps 404 API errors to `notFound()`. |
+| U9 | PASS | `PropertyCard` renders image, title, price, location, bedrooms, bathrooms, and links to `/properties/{id}`. |
+| U10 | PASS | `PropertyDetail` renders gallery, title, price, location, description, bedrooms, bathrooms, area, and status. |
+| U11 | PASS | `PropertyListSkeleton` is presentational and takes no props. |
+| U12 | PASS | No `propertiesApi.*` calls were found in `frontend/components`. |
+| U13 | PASS | No direct `fetch()` calls were found in `frontend/app` or `frontend/components`. |
+| B1 | PASS | No `@supabase/ssr` or `@supabase/supabase-js` imports were found in `frontend/app` or `frontend/components`. |
+| B2 | FAIL | Hardcoded external production URLs exist in source: Unsplash URLs in [properties.py](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/app/data/properties.py:21) and a `via.placeholder.com` fallback in [PropertyCard.tsx](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/components/features/properties/PropertyCard.tsx:9). |
+| B3 | PASS | The current `status.json` diff is Claude-owned orchestration state; no Codex/Gemini content edit was detected. |
+| B4 | PASS | Compared with the pre-F2 runtime baseline `3a362de`, only the additive router registration changed in `backend/app/main.py` among existing F1-owned files. |
+| B5 | PASS | No worker-written report files were detected outside the wrapper-managed `.ai/features/F2-property-browsing/` paths. |
+| B6 | PASS | No page-level response-shape normalization was found; pages consume the API shapes directly. |
 
 ## Issues Found
-- BLOCKER: [`backend/tests/test_properties.py:52`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/tests/test_properties.py:52) does not verify the acceptance requirement that `page=2&page_size=5` returns items 6–10. It only asserts `len(data["items"]) == 5`, so a wrong slice would still pass.
+- BLOCKER: Criterion B2 fails because the implementation hardcodes live external production URLs in source. Seed data embeds multiple `https://images.unsplash.com/...` URLs in [properties.py](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/app/data/properties.py:21), and the card fallback hardcodes `https://via.placeholder.com/...` in [PropertyCard.tsx](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/components/features/properties/PropertyCard.tsx:9).
+- WARNING: The list page treats any empty `items` response as a global empty catalog and hides pagination, so an out-of-range URL like `/properties?page=999` becomes a dead-end even when `total > 0` in [page.tsx](/Users/xiangzhifeng/Desktop/code/vibe_home/frontend/app/(dashboard)/properties/page.tsx:76).
 
 ## Required Fixes
-- Update [`test_list_properties_returns_paginated_results`](/Users/xiangzhifeng/Desktop/code/vibe_home/backend/tests/test_properties.py:52) to assert the actual returned item IDs or full objects for the second page, based on the created-at-descending sorted fixture list.
+- Remove the hardcoded external image URLs from `backend/app/data/properties.py` and replace them with an approach that satisfies the fixture requirement without live production URLs.
+- Replace the hardcoded `via.placeholder.com` fallback in `frontend/components/features/properties/PropertyCard.tsx` with a local/static fallback or another non-production URL strategy.
 
 ## Approved Items
-- Backend schema, seed store, router registration, auth protection, 404 handling, and page-size clamping are implemented correctly.
-- Frontend API wrappers use the shared auth session token source and include status-bearing error messages.
-- Frontend pages and components respect the fetch/Supabase boundaries, render the required list/detail states, and the frontend typecheck passes.
-- Backend property tests run successfully in `backend/.venv`, with `8 passed`.
+- Backend schema, in-memory store, protected property endpoints, and router registration are implemented correctly.
+- Backend tests cover the required pagination, sorting, clamp, 404, and 401 behaviors and pass in the project virtualenv.
+- The frontend API client is typed, uses `getAccessToken()`, and includes status codes in thrown error messages.
+- Property data fetching stays in pages via `frontend/lib/api/properties.ts`; property components remain free of direct fetching and `propertiesApi` calls.
+- No forbidden Supabase imports or direct `fetch()` calls were introduced in `frontend/app` or `frontend/components`.

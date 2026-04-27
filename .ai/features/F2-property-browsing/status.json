@@ -1,9 +1,9 @@
 {
   "feature": "F2-property-browsing",
   "status": "in_progress",
-  "current_stage": "T04_done",
+  "current_stage": "T05_done",
   "current_owner": null,
-  "next_step": "Start T05 \u2014 Review F2 implementation against acceptance criteria",
+  "next_step": "Start T06 \u2014 Validate F2 and write final acceptance result",
   "tasks": [
     {
       "id": "T01",
@@ -59,8 +59,8 @@
         "T03",
         "T04"
       ],
-      "status": "pending",
-      "artifact": null
+      "status": "done",
+      "artifact": "review.md"
     },
     {
       "id": "T06",
@@ -278,6 +278,16 @@
     {
       "timestamp": "2026-04-27T17:29:40Z",
       "event": "T04 done \u2014 artifact captured as gemini-build-T04.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:31:12Z",
+      "event": "T05 started \u2014 Review F2 implementation against acceptance criteria",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:36:54Z",
+      "event": "T05 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]
