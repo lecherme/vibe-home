@@ -1,9 +1,9 @@
 {
   "feature": "F2-property-browsing",
-  "status": "in_progress",
+  "status": "done",
   "current_stage": "T05_done",
   "current_owner": null,
-  "next_step": "Start T06 \u2014 Validate F2 and write final acceptance result",
+  "next_step": "F2 complete",
   "tasks": [
     {
       "id": "T01",
