@@ -59,6 +59,11 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 
 **Done condition:** All tests pass; both endpoints registered and reachable
 
+
+Retry note:
+- Fix review blocker E3 from review.md.
+- In backend/tests/test_properties.py, the pagination test for page=2 and page_size=5 must assert the actual returned item IDs or exact expected slice, not only len(data["items"]) == 5.
+- The assertion must verify that page 2 returns items 6-10 from the created_at-desc sorted fixture list.
 ---
 
 ## T03 — Frontend property API library

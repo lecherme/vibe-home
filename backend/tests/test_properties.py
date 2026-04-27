@@ -50,6 +50,13 @@ def auth_headers() -> dict[str, str]:
 
 
 def test_list_properties_returns_paginated_results(client: TestClient) -> None:
+    sorted_properties = sorted(
+        get_all(),
+        key=lambda property_item: property_item.created_at,
+        reverse=True,
+    )
+    expected_ids = [property_item.id for property_item in sorted_properties[5:10]]
+
     response = client.get(
         "/api/v1/properties",
         params={"page": 2, "page_size": 5},
@@ -62,7 +69,7 @@ def test_list_properties_returns_paginated_results(client: TestClient) -> None:
     assert data["total"] == len(get_all())
     assert data["page"] == 2
     assert data["page_size"] == 5
-    assert len(data["items"]) == 5
+    assert [item["id"] for item in data["items"]] == expected_ids
 
 
 def test_list_properties_sorted_by_created_at_descending(client: TestClient) -> None:

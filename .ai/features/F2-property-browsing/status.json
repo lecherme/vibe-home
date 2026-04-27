@@ -1,9 +1,9 @@
 {
   "feature": "F2-property-browsing",
   "status": "in_progress",
-  "current_stage": "T05_done",
+  "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Start T06 \u2014 Validate F2 and write final acceptance result",
+  "next_step": "Start T03 \u2014 Implement lib/api/properties.ts typed fetch wrappers",
   "tasks": [
     {
       "id": "T01",
@@ -33,8 +33,8 @@
       "depends_on": [
         "T01"
       ],
-      "status": "done",
-      "artifact": "codex-build-T03.md"
+      "status": "pending",
+      "artifact": null
     },
     {
       "id": "T04",
@@ -45,8 +45,8 @@
         "T02",
         "T03"
       ],
-      "status": "done",
-      "artifact": "gemini-build-T04.md"
+      "status": "pending",
+      "artifact": null
     },
     {
       "id": "T05",
@@ -59,8 +59,8 @@
         "T03",
         "T04"
       ],
-      "status": "done",
-      "artifact": "review.md"
+      "status": "pending",
+      "artifact": null
     },
     {
       "id": "T06",
@@ -243,6 +243,21 @@
     {
       "timestamp": "2026-04-27T17:13:03Z",
       "event": "T05 done \u2014 artifact captured as review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:19:34Z",
+      "event": "T02, T03, T04, T05 reverted to pending \u2014 T05 review FAIL with BLOCKER E3: test only asserts len(data[\"items\"]) == 5, not actual returned page slice. T02 requires fix. T05 review invalidated, needs re-run.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:22:15Z",
+      "event": "T02 started \u2014 Implement GET /api/v1/properties and GET /api/v1/properties/{id}",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:23:24Z",
+      "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
       "by": "claude"
     }
   ]
