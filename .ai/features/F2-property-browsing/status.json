@@ -289,6 +289,41 @@
       "timestamp": "2026-04-27T17:36:54Z",
       "event": "T05 done \u2014 artifact captured as review.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:50:57Z",
+      "event": "T05 prepared for review_rerun \u2014 rerun review after B2 direct fixup for local property image placeholders",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:51:02Z",
+      "event": "T05 started \u2014 Review F2 implementation against acceptance criteria [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:51:02Z",
+      "event": "T05 failed \u2014 run_task failed with exit code 1",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:51:13Z",
+      "event": "T05 requeued \u2014 retry after sandbox blocked codex review stderr capture",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:51:13Z",
+      "event": "T05 prepared for review_rerun \u2014 rerun review after B2 direct fixup for local property image placeholders",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:51:38Z",
+      "event": "T05 started \u2014 Review F2 implementation against acceptance criteria [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:56:09Z",
+      "event": "T05 done \u2014 artifact captured as review.md",
+      "by": "claude"
     }
   ]
 }

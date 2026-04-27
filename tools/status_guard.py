@@ -21,6 +21,7 @@ import fnmatch
 
 VALID_TASK_STATUSES = {"pending", "in_progress", "done", "failed", "blocked"}
 VALID_FEATURE_STATUSES = {"pending", "in_progress", "done", "failed", "blocked"}
+VALID_RETRY_TYPES = {"task_retry", "direct_fixup", "review_rerun"}
 
 
 class GuardError(Exception):
@@ -59,6 +60,41 @@ def find_task(data: dict[str, Any], task_id: str) -> dict[str, Any]:
         if task.get("id") == task_id:
             return task
     raise GuardError(f"task not found in status.json: {task_id}")
+
+
+def task_retry(task: dict[str, Any]) -> dict[str, Any] | None:
+    retry = task.get("retry")
+    if isinstance(retry, dict) and retry:
+        return retry
+    return None
+
+
+def clear_task_retry(task: dict[str, Any]) -> None:
+    task.pop("retry", None)
+
+
+def render_retry_block(task: dict[str, Any]) -> str:
+    retry = task_retry(task)
+    if not retry:
+        return ""
+
+    lines = [
+        "## Runtime Retry Context",
+        f"- Retry type: {retry['type']}",
+        f"- Reason: {retry['reason']}",
+    ]
+    scope = retry.get("scope") or []
+    if scope:
+        lines.append("- Scope:")
+        lines.extend(f"  - {path}" for path in scope)
+
+    lines.extend(
+        [
+            "- Interpret this runtime state as authoritative for the current run.",
+            "- Do not treat the previous artifact as sufficient unless this retry reason is fully resolved.",
+        ]
+    )
+    return "\n".join(lines)
 
 
 def expected_artifact(task: dict[str, Any]) -> str:
@@ -133,9 +169,27 @@ def dependency_errors(data: dict[str, Any], task: dict[str, Any], require_done: 
 
 
 def first_runnable_task(data: dict[str, Any]) -> dict[str, Any] | None:
+    if data.get("status") in {"failed", "blocked"}:
+        return None
     for task in data.get("tasks", []):
         if task.get("status") == "pending" and not dependency_errors(data, task):
             return task
+    return None
+
+
+def review_verdict(path: Path) -> str | None:
+    if not path.is_file():
+        return None
+
+    lines = path.read_text(errors="replace").splitlines()
+    for index, line in enumerate(lines):
+        if line.strip() == "## Verdict":
+            for candidate in lines[index + 1 :]:
+                verdict = candidate.strip().upper()
+                if verdict:
+                    if verdict in {"PASS", "FAIL"}:
+                        return verdict
+                    return None
     return None
 
 
@@ -180,6 +234,22 @@ def validate_status(feature_dir: Path) -> tuple[list[str], list[str]]:
                 errors.append(dep_error)
 
         artifact = task.get("artifact")
+        retry = task_retry(task)
+        if retry:
+            retry_type = retry.get("type")
+            retry_reason = retry.get("reason")
+            retry_scope = retry.get("scope")
+            if retry_type not in VALID_RETRY_TYPES:
+                errors.append(f"{task_id} has invalid retry.type: {retry_type!r}")
+            if not isinstance(retry_reason, str) or not retry_reason.strip():
+                errors.append(f"{task_id} retry.reason must be a non-empty string")
+            if retry_scope is not None and (
+                not isinstance(retry_scope, list) or any(not isinstance(path, str) or not path for path in retry_scope)
+            ):
+                errors.append(f"{task_id} retry.scope must be a list[str] when present")
+            if status == "done":
+                warnings.append(f"{task_id} is done but still records retry metadata")
+
         if status == "done":
             try:
                 expected = expected_artifact(task)
@@ -190,6 +260,14 @@ def validate_status(feature_dir: Path) -> tuple[list[str], list[str]]:
                 errors.append(f"{task_id} artifact should be {expected!r}, got {artifact!r}")
             elif not (feature_dir / expected).is_file():
                 errors.append(f"{task_id} is done but artifact is missing: {expected}")
+            elif task.get("type") == "review":
+                verdict = review_verdict(feature_dir / expected)
+                if verdict == "FAIL" and data.get("status") != "failed":
+                    errors.append(
+                        f"{task_id} review verdict is FAIL in {expected}, but feature status is {data.get('status')!r}"
+                    )
+                elif verdict is None:
+                    errors.append(f"{task_id} review artifact verdict could not be parsed: {expected}")
         elif artifact:
             warnings.append(f"{task_id} is {status} but still records artifact {artifact!r}")
 
@@ -353,7 +431,11 @@ def transition_start(feature_dir: Path, task_id: str) -> None:
     data["current_stage"] = f"{task_id}_running"
     data["current_owner"] = task.get("owner")
     data["next_step"] = f"Wait for {task_id} artifact"
-    append_log(data, f"{task_id} started — {task.get('title', 'task')}") 
+    retry = task_retry(task)
+    if retry:
+        append_log(data, f"{task_id} started — {task.get('title', 'task')} [{retry['type']}]")
+    else:
+        append_log(data, f"{task_id} started — {task.get('title', 'task')}")
     write_status_atomic(feature_dir, data)
 
 
@@ -363,6 +445,7 @@ def transition_done(feature_dir: Path, task_id: str) -> None:
     artifact = expected_artifact(task)
     task["status"] = "done"
     task["artifact"] = artifact
+    clear_task_retry(task)
     data["current_stage"] = f"{task_id}_done"
     data["current_owner"] = None
 
@@ -379,6 +462,23 @@ def transition_done(feature_dir: Path, task_id: str) -> None:
         append_log(data, f"{task_id} done — final acceptance artifact captured as {artifact}")
         write_status_atomic(feature_dir, data)
         return
+
+    if task.get("type") == "review":
+        verdict = review_verdict(feature_dir / artifact)
+        if verdict == "FAIL":
+            data["status"] = "failed"
+            data["next_step"] = "Review failed — choose task_retry or direct_fixup before rerunning"
+            append_log(data, f"{task_id} done — review verdict FAIL captured in {artifact}")
+            write_status_atomic(feature_dir, data)
+            return
+        if verdict == "PASS":
+            data["status"] = "in_progress"
+        else:
+            data["status"] = "failed"
+            data["next_step"] = "Review verdict unreadable — inspect review.md before continuing"
+            append_log(data, f"{task_id} done — review artifact captured but verdict could not be parsed from {artifact}")
+            write_status_atomic(feature_dir, data)
+            return
 
     next_task = first_runnable_task(data)
     if next_task:
@@ -422,6 +522,42 @@ def transition_requeue(feature_dir: Path, task_id: str, reason: str) -> None:
     write_status_atomic(feature_dir, data)
 
 
+def transition_prepare_retry(
+    feature_dir: Path,
+    task_id: str,
+    retry_type: str,
+    reason: str,
+    scope: list[str],
+) -> None:
+    data = load_status(feature_dir)
+    task = find_task(data, task_id)
+    if retry_type not in VALID_RETRY_TYPES:
+        raise GuardError(f"unsupported retry type: {retry_type!r}")
+
+    task["status"] = "pending"
+    task["artifact"] = None
+    task["retry"] = {
+        "type": retry_type,
+        "reason": reason,
+    }
+    if scope:
+        task["retry"]["scope"] = scope
+
+    data["status"] = "in_progress"
+    data["current_stage"] = f"{task_id}_pending"
+    data["current_owner"] = None
+
+    if retry_type == "review_rerun":
+        data["next_step"] = f"Retry {task_id} — rerun review after upstream fixup"
+    elif retry_type == "direct_fixup":
+        data["next_step"] = f"Retry {task_id} — apply direct fixup"
+    else:
+        data["next_step"] = f"Retry {task_id} — {task.get('title', 'task')}"
+
+    append_log(data, f"{task_id} prepared for {retry_type} — {reason}")
+    write_status_atomic(feature_dir, data)
+
+
 def cmd_validate(args: argparse.Namespace) -> int:
     errors, warnings = validate_status(Path(args.feature_dir))
     for warning in warnings:
@@ -452,6 +588,13 @@ def cmd_task_info(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_task_retry_block(args: argparse.Namespace) -> int:
+    data = load_status(Path(args.feature_dir))
+    task = find_task(data, args.task_id)
+    print(render_retry_block(task))
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate and transition feature status.json")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -461,6 +604,10 @@ def main() -> int:
         p.add_argument("feature_dir")
 
     p = sub.add_parser("task-info")
+    p.add_argument("feature_dir")
+    p.add_argument("task_id")
+
+    p = sub.add_parser("task-retry-block")
     p.add_argument("feature_dir")
     p.add_argument("task_id")
 
@@ -495,6 +642,13 @@ def main() -> int:
     p.add_argument("task_id")
     p.add_argument("reason", nargs="?", default="retry approved by Claude")
 
+    p = sub.add_parser("prepare-retry")
+    p.add_argument("feature_dir")
+    p.add_argument("task_id")
+    p.add_argument("retry_type")
+    p.add_argument("reason")
+    p.add_argument("--scope", action="append", default=[])
+
     args = parser.parse_args()
     feature_dir = Path(getattr(args, "feature_dir", ".")).resolve()
 
@@ -505,6 +659,8 @@ def main() -> int:
             return cmd_next(args)
         if args.command == "task-info":
             return cmd_task_info(args)
+        if args.command == "task-retry-block":
+            return cmd_task_retry_block(args)
         if args.command == "preflight":
             require_preflight(feature_dir, args.task_id)
             print("preflight passed")
@@ -526,6 +682,9 @@ def main() -> int:
         elif args.command == "requeue":
             transition_requeue(feature_dir, args.task_id, args.reason)
             print(f"{args.task_id} requeued")
+        elif args.command == "prepare-retry":
+            transition_prepare_retry(feature_dir, args.task_id, args.retry_type, args.reason, args.scope)
+            print(f"{args.task_id} prepared for {args.retry_type}")
         return 0
     except GuardError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)

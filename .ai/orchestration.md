@@ -92,6 +92,28 @@ Claude reads `review.md` and makes the acceptance decision:
 
 There is no self-acceptance. Claude's `final-report.md` is required for every feature.
 
+### Review failure routing
+
+If `review.md` has verdict `FAIL`, Claude must NOT proceed to T06 acceptance.
+
+Claude first classifies the fix path:
+
+- `task_retry`
+  - The failed criterion means a worker-owned task was not actually completed.
+  - Claude returns the responsible task to `pending`, records retry metadata in
+    `status.json`, and reruns the worker task.
+- `direct_fixup`
+  - The issue is a narrow post-review fix that does not require redoing the
+    original worker task.
+  - Claude applies the minimum code fix directly, leaves implementation tasks
+    `done`, and reruns only the affected review task.
+- `review_rerun`
+  - Upstream code changed after a direct fixup or manual correction.
+  - Claude reruns the review task without replaying the implementation chain.
+
+Only when an upstream change materially invalidates downstream implementation
+should Claude return downstream implementation tasks to `pending`.
+
 ---
 
 ## Task Execution Rules
@@ -129,6 +151,27 @@ If a dependency is in a different feature, that feature must be fully `done` bef
 - Task-level `status` transitions: `pending` → `in_progress` → `done` | `failed` | `blocked`
 - A feature is `done` only when `final-report.md` exists with disposition `accepted`.
 - `final-report.md` is written only for final acceptance outcomes (accepted or failed after review), never for intermediate blocked states.
+
+### Runtime retry metadata
+
+`status.json` may store runtime-only retry intent on a task:
+
+```json
+{
+  "retry": {
+    "type": "task_retry | direct_fixup | review_rerun",
+    "reason": "short human-readable explanation",
+    "scope": ["optional/path/glob"]
+  }
+}
+```
+
+Rules:
+- Retry metadata belongs in `status.json`, not `tasks.md`
+- Workers must treat retry metadata as authoritative for the current run
+- Retry metadata is cleared automatically when the retried task reaches `done`
+- A review task with verdict `FAIL` must block `next` until Claude explicitly
+  chooses `task_retry` or `direct_fixup`
 
 ### status.json edit discipline
 - Only modify the exact fields required — never rewrite adjacent objects

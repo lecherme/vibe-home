@@ -3,6 +3,11 @@ from typing import Optional
 
 from app.schemas.property import Property, PropertyStatus
 
+PROPERTY_PLACEHOLDER_IMAGES = [
+    "/images/properties/property-placeholder-exterior.svg",
+    "/images/properties/property-placeholder-interior.svg",
+]
+
 
 PROPERTIES: list[Property] = [
     Property(
@@ -17,10 +22,7 @@ PROPERTIES: list[Property] = [
         bedrooms=3,
         bathrooms=2,
         area_sqm=182.5,
-        images=[
-            "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
-            "https://images.unsplash.com/photo-1494526585095-c41746248156",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.AVAILABLE,
         created_at=datetime(2026, 4, 23, 16, 30, tzinfo=timezone.utc),
     ),
@@ -36,10 +38,7 @@ PROPERTIES: list[Property] = [
         bedrooms=4,
         bathrooms=3,
         area_sqm=210.2,
-        images=[
-            "https://images.unsplash.com/photo-1564013799919-ab600027ffc6",
-            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.AVAILABLE,
         created_at=datetime(2026, 4, 21, 9, 15, tzinfo=timezone.utc),
     ),
@@ -55,10 +54,7 @@ PROPERTIES: list[Property] = [
         bedrooms=4,
         bathrooms=3,
         area_sqm=196.8,
-        images=[
-            "https://images.unsplash.com/photo-1600585154526-990dced4db0d",
-            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.SOLD,
         created_at=datetime(2026, 4, 19, 18, 5, tzinfo=timezone.utc),
     ),
@@ -74,10 +70,7 @@ PROPERTIES: list[Property] = [
         bedrooms=5,
         bathrooms=4,
         area_sqm=328.4,
-        images=[
-            "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde",
-            "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.AVAILABLE,
         created_at=datetime(2026, 4, 18, 12, 45, tzinfo=timezone.utc),
     ),
@@ -93,10 +86,7 @@ PROPERTIES: list[Property] = [
         bedrooms=2,
         bathrooms=2,
         area_sqm=134.1,
-        images=[
-            "https://images.unsplash.com/photo-1484154218962-a197022b5858",
-            "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.RENTED,
         created_at=datetime(2026, 4, 17, 14, 20, tzinfo=timezone.utc),
     ),
@@ -112,10 +102,7 @@ PROPERTIES: list[Property] = [
         bedrooms=5,
         bathrooms=5,
         area_sqm=410.7,
-        images=[
-            "https://images.unsplash.com/photo-1600607687644-c7171b42498f",
-            "https://images.unsplash.com/photo-1600573472592-401b489a3cdc",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.AVAILABLE,
         created_at=datetime(2026, 4, 15, 8, 10, tzinfo=timezone.utc),
     ),
@@ -131,10 +118,7 @@ PROPERTIES: list[Property] = [
         bedrooms=3,
         bathrooms=3,
         area_sqm=158.0,
-        images=[
-            "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d",
-            "https://images.unsplash.com/photo-1600047509358-9dc75507daeb",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.AVAILABLE,
         created_at=datetime(2026, 4, 14, 11, 55, tzinfo=timezone.utc),
     ),
@@ -150,10 +134,7 @@ PROPERTIES: list[Property] = [
         bedrooms=6,
         bathrooms=5,
         area_sqm=455.6,
-        images=[
-            "https://images.unsplash.com/photo-1570129477492-45c003edd2be",
-            "https://images.unsplash.com/photo-1448630360428-65456885c650",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.SOLD,
         created_at=datetime(2026, 4, 12, 10, 0, tzinfo=timezone.utc),
     ),
@@ -169,10 +150,7 @@ PROPERTIES: list[Property] = [
         bedrooms=2,
         bathrooms=2,
         area_sqm=121.4,
-        images=[
-            "https://images.unsplash.com/photo-1600607688969-a5bfcd646154",
-            "https://images.unsplash.com/photo-1460317442991-0ec209397118",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.AVAILABLE,
         created_at=datetime(2026, 4, 11, 19, 40, tzinfo=timezone.utc),
     ),
@@ -188,10 +166,7 @@ PROPERTIES: list[Property] = [
         bedrooms=4,
         bathrooms=3,
         area_sqm=187.9,
-        images=[
-            "https://images.unsplash.com/photo-1518780664697-55e3ad937233",
-            "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.RENTED,
         created_at=datetime(2026, 4, 9, 7, 25, tzinfo=timezone.utc),
     ),
@@ -207,10 +182,7 @@ PROPERTIES: list[Property] = [
         bedrooms=3,
         bathrooms=2,
         area_sqm=116.3,
-        images=[
-            "https://images.unsplash.com/photo-1605146769289-440113cc3d00",
-            "https://images.unsplash.com/photo-1512915922686-57c11dde9b6b",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.AVAILABLE,
         created_at=datetime(2026, 4, 7, 13, 5, tzinfo=timezone.utc),
     ),
@@ -226,10 +198,7 @@ PROPERTIES: list[Property] = [
         bedrooms=4,
         bathrooms=2,
         area_sqm=149.7,
-        images=[
-            "https://images.unsplash.com/photo-1494526585095-c41746248156",
-            "https://images.unsplash.com/photo-1449844908441-8829872d2607",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.SOLD,
         created_at=datetime(2026, 4, 5, 15, 30, tzinfo=timezone.utc),
     ),
@@ -245,10 +214,7 @@ PROPERTIES: list[Property] = [
         bedrooms=3,
         bathrooms=3,
         area_sqm=172.6,
-        images=[
-            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c",
-            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.AVAILABLE,
         created_at=datetime(2026, 4, 3, 17, 50, tzinfo=timezone.utc),
     ),
@@ -264,10 +230,7 @@ PROPERTIES: list[Property] = [
         bedrooms=1,
         bathrooms=1,
         area_sqm=78.2,
-        images=[
-            "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6",
-            "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.RENTED,
         created_at=datetime(2026, 4, 2, 9, 45, tzinfo=timezone.utc),
     ),
@@ -283,10 +246,7 @@ PROPERTIES: list[Property] = [
         bedrooms=2,
         bathrooms=1,
         area_sqm=89.5,
-        images=[
-            "https://images.unsplash.com/photo-1518780664697-55e3ad937233",
-            "https://images.unsplash.com/photo-1472224371017-08207f84aaae",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.AVAILABLE,
         created_at=datetime(2026, 3, 31, 20, 15, tzinfo=timezone.utc),
     ),
@@ -302,10 +262,7 @@ PROPERTIES: list[Property] = [
         bedrooms=4,
         bathrooms=3,
         area_sqm=201.0,
-        images=[
-            "https://images.unsplash.com/photo-1600047509782-20d39509f26d",
-            "https://images.unsplash.com/photo-1600566752355-35792bedcfea",
-        ],
+        images=list(PROPERTY_PLACEHOLDER_IMAGES),
         status=PropertyStatus.AVAILABLE,
         created_at=datetime(2026, 3, 29, 12, 0, tzinfo=timezone.utc),
     ),

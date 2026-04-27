@@ -27,6 +27,7 @@ done
 SPEC=$(cat "$FEATURE_DIR/spec.md")
 TASKS=$(cat "$FEATURE_DIR/tasks.md")
 OWNER=$(cat "$FEATURE_DIR/owner.md")
+RETRY_BLOCK=$(python3 tools/status_guard.py task-retry-block "$FEATURE_DIR" "$TASK_ID")
 
 TASK_BLOCK=$(awk -v tid="## $TASK_ID" '
   substr($0, 1, length(tid)) == tid { found=1; print; next }
@@ -72,6 +73,8 @@ $TASKS
 
 ## Task to Execute Now: $TASK_ID
 $TASK_BLOCK
+
+$RETRY_BLOCK
 
 ## Owner Context
 $OWNER

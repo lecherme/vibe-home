@@ -6,7 +6,7 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
-  const firstImage = property.images[0] || "https://via.placeholder.com/400x300?text=No+Image";
+  const firstImage = property.images[0] || "/images/properties/property-placeholder-exterior.svg";
 
   return (
     <Link 

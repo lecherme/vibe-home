@@ -29,6 +29,7 @@ SPEC=$(cat "$FEATURE_DIR/spec.md")
 TASKS=$(cat "$FEATURE_DIR/tasks.md")
 OWNER=$(cat "$FEATURE_DIR/owner.md")
 ACCEPTANCE=$(cat "$FEATURE_DIR/acceptance.md")
+RETRY_BLOCK=$(python3 tools/status_guard.py task-retry-block "$FEATURE_DIR" "$TASK_ID")
 
 CODEX_REPORT=""
 if compgen -G "$FEATURE_DIR/codex-build-*.md" > /dev/null; then
@@ -73,6 +74,9 @@ $OWNER
 
 ## Task to Execute Now: $TASK_ID
 Review all implementation artifacts against every acceptance criterion listed above.
+
+$RETRY_BLOCK
+
 Output a review report in this format:
 
 # Review

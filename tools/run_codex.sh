@@ -28,6 +28,7 @@ done
 SPEC=$(cat "$FEATURE_DIR/spec.md")
 TASKS=$(cat "$FEATURE_DIR/tasks.md")
 OWNER=$(cat "$FEATURE_DIR/owner.md")
+RETRY_BLOCK=$(python3 tools/status_guard.py task-retry-block "$FEATURE_DIR" "$TASK_ID")
 
 # Extract only the requested task block from tasks.md
 # A task block starts at "## T<id>" and ends before the next "## T" or EOF
@@ -65,6 +66,8 @@ $TASKS
 
 ## Task to Execute Now: $TASK_ID
 $TASK_BLOCK
+
+$RETRY_BLOCK
 
 ## Owner Context
 $OWNER
