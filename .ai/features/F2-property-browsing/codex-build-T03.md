@@ -4,14 +4,15 @@
 - T03
 
 ## Files Changed
-- none
+- `frontend/lib/api/properties.ts`
 
 ## API Types Published
-- none
+- None
 
 ## Tests Written
-- none
+- None
 
 ## Open Issues
-- none
-- Verified `frontend/lib/api/properties.ts` already satisfies T03 and `npx tsc --noEmit` passes in `frontend/`
+- None
+- Verified `frontend/lib/api/properties.ts` typechecks with `./node_modules/.bin/tsc --noEmit -p tsconfig.json`
+- `PropertyApiError.message` now always includes the HTTP status code, including the no-session `401` path and non-2xx response path

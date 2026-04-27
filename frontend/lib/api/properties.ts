@@ -3,11 +3,21 @@ import type { Property, PropertyListResponse } from "@/types/property";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+function formatErrorMessage(status: number, message: string): string {
+  const normalizedMessage = message.trim();
+
+  if (normalizedMessage.startsWith(`HTTP ${status}`)) {
+    return normalizedMessage;
+  }
+
+  return `HTTP ${status}: ${normalizedMessage}`;
+}
+
 export class PropertyApiError extends Error {
   readonly status: number;
 
   constructor(status: number, message: string) {
-    super(message);
+    super(formatErrorMessage(status, message));
     this.name = "PropertyApiError";
     this.status = status;
   }

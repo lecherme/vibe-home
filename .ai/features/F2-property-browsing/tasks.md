@@ -79,6 +79,17 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
   - Both functions throw on non-2xx responses; error must include HTTP status code and
     message so the UI can handle them appropriately
 
+Retry note:
+- Fix review blocker L3 from review.md.
+- In frontend/lib/api/properties.ts, every thrown PropertyApiError.message must include the HTTP status code.
+- This must include:
+  - the no-session 401 path
+  - the res.status error path
+- Storing the code only on PropertyApiError.status is NOT sufficient; the message text itself must contain the code.
+- Acceptable examples:
+  - "HTTP 401: No active session"
+  - "HTTP 404: Not found"
+
 **Done condition:** TypeScript compiles without errors; no direct `fetch()` outside
 `lib/api/`; access token sourced only from `lib/auth/session.ts`
 

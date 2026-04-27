@@ -209,6 +209,21 @@
       "timestamp": "2026-04-27T16:43:26Z",
       "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T16:59:47Z",
+      "event": "T03 reverted to pending \u2014 requires retry to fix L3 blocker (PropertyApiError message missing HTTP status code)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:01:15Z",
+      "event": "T03 started \u2014 Implement lib/api/properties.ts typed fetch wrappers",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-27T17:02:20Z",
+      "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
+      "by": "claude"
     }
   ]
 }
