@@ -1,55 +1,68 @@
-import React from "react";
 import Link from "next/link";
 import type { Property } from "@/types/property";
+import { cn } from "@/lib/utils";
 
 interface PropertyCardProps {
   property: Property;
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
-  const firstImage = property.images[0] || "https://via.placeholder.com/400x300?text=No+Image";
+  const firstImage = property.images[0] || "/placeholder-property.jpg";
 
   return (
-    <Link
+    <Link 
       href={`/properties/${property.id}`}
-      className="group flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md"
+      className="group flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition-all hover:shadow-md"
     >
-      <div className="relative aspect-video w-full overflow-hidden bg-gray-100">
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={firstImage}
           alt={property.title}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        <div className="absolute right-2 top-2">
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-            property.status === 'available' ? 'bg-green-100 text-green-800' :
-            property.status === 'sold' ? 'bg-red-100 text-red-800' :
-            'bg-yellow-100 text-yellow-800'
-          }`}>
+        <div className="absolute left-2 top-2">
+          <span className={cn(
+            "rounded-full px-2 py-0.5 text-xs font-medium uppercase tracking-wider",
+            property.status === "available" ? "bg-green-100 text-green-700" :
+            property.status === "sold" ? "bg-red-100 text-red-700" :
+            "bg-blue-100 text-blue-700"
+          )}>
             {property.status}
           </span>
         </div>
       </div>
+      
       <div className="flex flex-1 flex-col p-4">
-        <div className="mb-2 flex items-center justify-between">
-          <p className="text-lg font-bold text-gray-900">
+        <div className="mb-2">
+          <h3 className="line-clamp-1 text-lg font-semibold text-slate-900">
+            {property.title}
+          </h3>
+          <p className="line-clamp-1 text-sm text-slate-500">
+            {property.location}
+          </p>
+        </div>
+
+        <div className="mt-auto">
+          <p className="text-xl font-bold text-slate-900">
             ${property.price.toLocaleString()}
           </p>
-          <div className="flex gap-3 text-sm text-gray-500">
-            <span className="flex items-center gap-1">
-              <span>🛏️</span> {property.bedrooms}
-            </span>
-            <span className="flex items-center gap-1">
-              <span>🚿</span> {property.bathrooms}
-            </span>
+          
+          <div className="mt-3 flex items-center gap-3 border-t border-slate-100 pt-3 text-sm text-slate-600">
+            <div className="flex items-center gap-1">
+              <span className="font-medium">{property.bedrooms}</span>
+              <span>bed</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="font-medium">{property.bathrooms}</span>
+              <span>bath</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="font-medium">{property.area_sqm}</span>
+              <span>m²</span>
+            </div>
           </div>
         </div>
-        <h3 className="mb-1 text-base font-semibold text-gray-900 group-hover:text-blue-600">
-          {property.title}
-        </h3>
-        <p className="text-sm text-gray-500 line-clamp-1">
-          📍 {property.location}
-        </p>
       </div>
     </Link>
   );
