@@ -114,6 +114,88 @@ Claude first classifies the fix path:
 Only when an upstream change materially invalidates downstream implementation
 should Claude return downstream implementation tasks to `pending`.
 
+### Failure classification — how Claude chooses the fix path
+
+Before choosing a fix path, Claude classifies every failed criterion:
+
+| failure_type | examples | fix_path |
+|---|---|---|
+| `wrong_value` | wrong status code, wrong sort order | `direct_fixup` |
+| `missing_tests` | edge case not covered | `direct_fixup` |
+| `boundary_violation` | fetch() in component, Supabase import outside lib | `task_retry` (violating task only) |
+| `type_error` | returns `any` instead of typed interface | `task_retry` (owning task only) |
+| `wrong_abstraction` | business logic in page instead of lib/api/ | `task_retry` (owning task only) |
+| `logic_error` | pagination wrong, token not attached | `task_retry` (owning task only) |
+| `missing_feature` | entire loading state not implemented | `task_retry` |
+| `spec_conflict` | implementation incompatible with spec interface | escalate → `blocked` |
+| `architecture_error` | wrong pattern used entirely | escalate → `blocked` |
+| `env_missing` | pytest not installed, node_modules missing, runtime service unavailable | CI only |
+
+**Selection rule:** use the highest-severity fix path among all failed criteria.
+Severity order: `blocked` > `task_retry` > `direct_fixup` > CI only.
+
+**env_missing rule:** if ALL failures are `env_missing`, Claude must not reset any task. Claude writes a CI trigger note in `activity_log` and stops.
+No `retry` metadata is written. No `retry_count` is incremented.
+
+### Required status.json writes on failure
+
+Before resetting any task, Claude MUST write:
+
+```json
+"last_review_failure": {
+  "review_task": "T05",
+  "timestamp": "<ISO8601>",
+  "fix_path": "task_retry",
+  "failed_criteria": ["J8"],
+  "failure_types": { "J8": "type_error" },
+  "reset_scope": ["T03"],
+  "do_not_touch": ["T01", "T02", "T04"],
+  "fix_instructions": "exact actionable text per file and line"
+}
+```
+
+`last_review_failure` is cleared (set to null) when the retried task reaches `done`.
+
+---
+
+## Downstream Impact Assessment
+
+Runs after any `task_retry` completes. Does NOT run after `direct_fixup`
+or `review_rerun`.
+
+### Contract change detection
+
+For each downstream task with `status=done`, Claude checks whether the
+retried task changed any interface that the downstream task imports:
+- Types in `frontend/types/`
+- Function signatures in `lib/api/`
+- API response shapes
+- Error object shape (only if downstream parses error fields)
+
+### Invalidation rules
+
+| Change | Downstream action |
+|---|---|
+| Interface unchanged | Nothing — proceed to review directly |
+| Error message format only | Nothing — proceed to review directly |
+| Error object fields changed, downstream parses them | `direct_fixup` on downstream only |
+| Function signature changed | `task_retry` on downstream only |
+| Return type changed | `task_retry` on downstream only |
+| Interface removed or renamed | `task_retry` on downstream + escalate |
+
+Claude writes the assessment result into `last_review_failure`:
+
+```json
+"downstream_impact": {
+  "assessed": true,
+  "affected_tasks": [],
+  "reason": "T03 fix changed only internal fetch logic. propertiesApi signatures unchanged. T04 is safe."
+}
+```
+
+If `affected_tasks` is empty → proceed directly to review.
+If `affected_tasks` is non-empty → resolve downstream first, then review.
+
 ---
 
 ## Task Execution Rules
@@ -173,6 +255,18 @@ Rules:
 - A review task with verdict `FAIL` must block `next` until Claude explicitly
   chooses `task_retry` or `direct_fixup`
 
+### Retry count and circuit breaker
+
+Each task in `status.json` carries a `retry_count` field (default 0).
+Claude increments `retry_count` on the task when fix path is `task_retry`.
+`direct_fixup` and `review_rerun` do NOT increment `retry_count`.
+
+Circuit breaker: if `retry_count >= 3` on any task → feature status → `blocked`
+- Write blocker entry in `activity_log` with full history
+- Do NOT reset the task to `pending`
+- Do NOT invoke any worker
+- Stop and wait for human resolution
+
 ### status.json edit discipline
 - Only modify the exact fields required — never rewrite adjacent objects
 - Never remove or reflow array structure
@@ -225,6 +319,7 @@ CI (or human local environment) is responsible for runtime validation.
 - Runtime validation is NOT required inside Codex/Gemini sandbox
 - Sandbox reviews may mark runtime criteria as DEFERRED
 - CI is the source of truth for runtime correctness
+- `env_missing` failures from review are CI-only events. Claude must not reset any task or increment `retry_count` for `env_missing` failures.
 
 ### Trigger Conditions
 CI should be triggered:
@@ -233,6 +328,40 @@ CI should be triggered:
 - When integration-heavy features are introduced
 
 ---
+
+## Autonomous Execution Protocol
+
+When Claude is running as the orchestrator in an agentic session,
+it executes the following loop without waiting for human input between steps:
+
+1. Read `status.json` → find next `pending` task with all dependencies `done`
+2. Invoke `tools/run_task.sh`
+3. Read output artifact, update `status.json`
+4. Append to `activity_log`
+5. If review task just completed → execute failure classification and write `last_review_failure`
+6. If `task_retry` just completed → run Downstream Impact Assessment
+7. Return to step 1
+
+### Automatic proceed (no human input needed)
+- `env_missing` only: write CI note in `activity_log`, stop loop cleanly
+- `direct_fixup`: apply fix, rerun review, continue
+- `review_rerun`: rerun review, continue
+- `task_retry` with `retry_count < 3`: invoke worker with retry context, continue
+
+### Stop and confirm (show plan, wait for human "proceed")
+- `task_retry` with `retry_count >= 3`: explain circuit breaker trigger, wait for human override
+- `blocked` (spec_conflict or architecture_error): explain what decision is needed
+- `final-report.md` written: show disposition, stop
+
+### Retry context injection
+
+Workers receive `last_review_failure` as part of their prompt on retry.
+The wrapper script (`run_codex.sh`, `run_gemini.sh`) reads this field from
+`status.json` and injects it at the top of the prompt before all other context.
+If `last_review_failure` is null, no retry block is injected.
+
+---
+
 ## Git Responsibilities
 
 Claude may perform git operations under controlled conditions.

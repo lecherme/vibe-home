@@ -73,7 +73,7 @@ def clear_task_retry(task: dict[str, Any]) -> None:
     task.pop("retry", None)
 
 
-def render_retry_block(task: dict[str, Any]) -> str:
+def render_retry_block(task: dict[str, Any], data: dict[str, Any] | None = None) -> str:
     retry = task_retry(task)
     if not retry:
         return ""
@@ -94,6 +94,32 @@ def render_retry_block(task: dict[str, Any]) -> str:
             "- Do not treat the previous artifact as sufficient unless this retry reason is fully resolved.",
         ]
     )
+
+    if data:
+        last_failure = data.get("last_review_failure")
+        if last_failure and isinstance(last_failure, dict):
+            lines.append("")
+            lines.append("## Review Failure Context")
+            fix_path = last_failure.get("fix_path")
+            if fix_path:
+                lines.append(f"- Fix path: {fix_path}")
+            fix_instructions = last_failure.get("fix_instructions")
+            if fix_instructions:
+                lines.append(f"- Fix instructions: {fix_instructions}")
+            reset_scope = last_failure.get("reset_scope")
+            if reset_scope and isinstance(reset_scope, list):
+                lines.append("- Reset scope:")
+                lines.extend(f"  - {t}" for t in reset_scope)
+            do_not_touch = last_failure.get("do_not_touch")
+            if do_not_touch and isinstance(do_not_touch, list):
+                lines.append("- Do not touch:")
+                lines.extend(f"  - {t}" for t in do_not_touch)
+            downstream_impact = last_failure.get("downstream_impact")
+            if downstream_impact and isinstance(downstream_impact, dict):
+                reason = downstream_impact.get("reason")
+                if reason:
+                    lines.append(f"- Downstream impact: {reason}")
+
     return "\n".join(lines)
 
 
@@ -591,7 +617,7 @@ def cmd_task_info(args: argparse.Namespace) -> int:
 def cmd_task_retry_block(args: argparse.Namespace) -> int:
     data = load_status(Path(args.feature_dir))
     task = find_task(data, args.task_id)
-    print(render_retry_block(task))
+    print(render_retry_block(task, data))
     return 0
 
 

@@ -1,9 +1,9 @@
 {
   "feature": "F2-property-browsing",
-  "status": "done",
+  "status": "in_progress",
   "current_stage": "T05_done",
   "current_owner": null,
-  "next_step": "F2 complete",
+  "next_step": "Start T06 \u2014 Validate F2 and write final acceptance result",
   "tasks": [
     {
       "id": "T01",
@@ -322,6 +322,21 @@
     },
     {
       "timestamp": "2026-04-27T17:56:09Z",
+      "event": "T05 done \u2014 artifact captured as review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-28T15:42:29Z",
+      "event": "T05 prepared for review_rerun \u2014 rerun review to verify new retry structure",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-28T15:43:39Z",
+      "event": "T05 started \u2014 Review F2 implementation against acceptance criteria [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-28T15:48:10Z",
       "event": "T05 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
