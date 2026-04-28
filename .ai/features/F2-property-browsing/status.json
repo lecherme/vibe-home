@@ -1,9 +1,9 @@
 {
   "feature": "F2-property-browsing",
-  "status": "in_progress",
-  "current_stage": "T05_done",
+  "status": "done",
+  "current_stage": "T06_done",
   "current_owner": null,
-  "next_step": "Start T06 \u2014 Validate F2 and write final acceptance result",
+  "next_step": "F2-property-browsing complete",
   "tasks": [
     {
       "id": "T01",
@@ -70,8 +70,8 @@
       "depends_on": [
         "T05"
       ],
-      "status": "pending",
-      "artifact": null
+      "status": "done",
+      "artifact": "final-report.md"
     }
   ],
   "activity_log": [
@@ -338,6 +338,16 @@
     {
       "timestamp": "2026-04-28T15:48:10Z",
       "event": "T05 done \u2014 artifact captured as review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-28T16:00:06Z",
+      "event": "T06 started \u2014 Validate F2 and write final acceptance result",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-28T16:00:48Z",
+      "event": "T06 done \u2014 final acceptance artifact captured as final-report.md",
       "by": "claude"
     }
   ]

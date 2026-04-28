@@ -1,0 +1,27 @@
+{
+  "feature": "F3-search-filtering",
+  "tasks": {
+    "T01": {
+      "allowed_files": [
+        "TODO/path/or/glob"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T01.md",
+      "verify_commands": []
+    },
+    "T02": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json"
+      ],
+      "expected_artifact": "review.md",
+      "verify_commands": []
+    }
+  }
+}

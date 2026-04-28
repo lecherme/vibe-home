@@ -103,13 +103,14 @@ Authenticated users can browse a paginated list of property listings and view a 
 **Owner:** Codex (search module + FastAPI integration) · Gemini (search UI) · Claude (acceptance)
 
 **Goal:**
-Users can filter properties by location, price range, property type, and bedroom count. Search logic lives in an internal backend module. The module may be extracted to `search-service/` if complexity warrants it, but that is a deployment decision, not a requirement.
+Users can filter properties by location, price range, and bedroom count. Search logic lives in an internal backend module. The module may be extracted to `search-service/` if complexity warrants it, but that is a deployment decision, not a requirement. F3 implements search/filter only on existing Property schema fields.
 
 **Non-Goals:**
 - Natural language / AI search (F7)
 - Saved searches
 - Sort order customization beyond default relevance
 - Extracting search-service as a separate process (optional, not required)
+- Property type filtering — deferred: requires Property schema property_type field extension, seed data updates, and frontend type sync; will be scoped in a separate feature
 
 **Deliverables:**
 - `backend/app/services/search/` — internal search module accepting structured filters, returning ranked property IDs

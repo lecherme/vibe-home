@@ -88,7 +88,7 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 - Check ownership boundaries and task artifacts.
 - Write \`review.md\`.
 
-**Done condition:** \`review.md\` written with a verdict and per-criterion results.
+**Done condition:** \`review.md\` written with a verdict, per-criterion results, and enough failure detail for Claude to choose task_retry, direct_fixup, or review_rerun.
 
 ---
 
@@ -147,8 +147,11 @@ T03 (Claude acceptance) reads \`review.md\` and writes \`final-report.md\`.
 
 ## Review and Acceptance
 
-If review verdict is FAIL, Claude must return the failed task(s) to \`pending\` in
-\`status.json\` before retry.
+If review verdict is FAIL, Claude does NOT proceed directly to T03 acceptance.
+Claude must:
+1. Write \`last_review_failure\` to \`status.json\` with fix_path, failed_criteria, and fix_instructions.
+2. Choose fix_path: task_retry, direct_fixup, or review_rerun.
+3. Apply the fix and re-run review before acceptance.
 
 ## Rejection Conditions
 
@@ -164,6 +167,7 @@ cat > "$FEATURE_DIR/status.json" <<EOF
   "current_stage": "initialized",
   "current_owner": null,
   "next_step": "Fill spec.md, tasks.md, owner.md, acceptance.md, and task_manifest.json before starting T01",
+  "last_review_failure": null,
   "tasks": [
     {
       "id": "T01",
@@ -172,6 +176,7 @@ cat > "$FEATURE_DIR/status.json" <<EOF
       "type": "scaffold",
       "depends_on": [],
       "status": "pending",
+      "retry_count": 0,
       "artifact": null
     },
     {
@@ -181,6 +186,7 @@ cat > "$FEATURE_DIR/status.json" <<EOF
       "type": "review",
       "depends_on": ["T01"],
       "status": "pending",
+      "retry_count": 0,
       "artifact": null
     },
     {
@@ -190,6 +196,7 @@ cat > "$FEATURE_DIR/status.json" <<EOF
       "type": "acceptance",
       "depends_on": ["T02"],
       "status": "pending",
+      "retry_count": 0,
       "artifact": null
     }
   ],
