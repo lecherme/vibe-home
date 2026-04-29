@@ -1,9 +1,9 @@
 {
   "feature": "F3-search-filtering",
   "status": "in_progress",
-  "current_stage": "T02_done",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Start T03 \u2014 Publish frontend types and typed search API wrapper",
+  "next_step": "Start T04 \u2014 Implement search bar, filter panel, and search results page",
   "last_review_failure": null,
   "tasks": [
     {
@@ -36,9 +36,9 @@
       "depends_on": [
         "T02"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "codex-build-T03.md"
     },
     {
       "id": "T04",
@@ -115,6 +115,16 @@
     {
       "timestamp": "2026-04-29T13:12:24Z",
       "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T13:13:56Z",
+      "event": "T03 started \u2014 Publish frontend types and typed search API wrapper",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T13:16:10Z",
+      "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
       "by": "claude"
     }
   ]
