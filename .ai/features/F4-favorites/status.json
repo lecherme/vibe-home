@@ -1,9 +1,9 @@
 {
   "feature": "F4-favorites",
-  "status": "pending",
-  "current_stage": "initialized",
+  "status": "in_progress",
+  "current_stage": "T01_done",
   "current_owner": null,
-  "next_step": "Ready to start T01",
+  "next_step": "Start T02 \u2014 Implement POST/DELETE/GET favorites endpoints with auth and tests",
   "last_review_failure": null,
   "tasks": [
     {
@@ -12,16 +12,18 @@
       "owner": "codex",
       "type": "scaffold",
       "depends_on": [],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "codex-build-T01.md"
     },
     {
       "id": "T02",
       "title": "Implement POST/DELETE/GET favorites endpoints with auth and tests",
       "owner": "codex",
       "type": "backend",
-      "depends_on": ["T01"],
+      "depends_on": [
+        "T01"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -31,7 +33,9 @@
       "title": "Publish frontend types and typed favorites API wrapper",
       "owner": "codex",
       "type": "infra",
-      "depends_on": ["T02"],
+      "depends_on": [
+        "T02"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -41,7 +45,10 @@
       "title": "Implement FavoriteButton component, favorites page, and integrate into property card and detail",
       "owner": "gemini",
       "type": "ui",
-      "depends_on": ["T02", "T03"],
+      "depends_on": [
+        "T02",
+        "T03"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -51,7 +58,12 @@
       "title": "Review F4-favorites implementation against acceptance criteria",
       "owner": "codex",
       "type": "review",
-      "depends_on": ["T01", "T02", "T03", "T04"],
+      "depends_on": [
+        "T01",
+        "T02",
+        "T03",
+        "T04"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -61,7 +73,9 @@
       "title": "Validate F4-favorites and write final acceptance result",
       "owner": "claude",
       "type": "acceptance",
-      "depends_on": ["T05"],
+      "depends_on": [
+        "T05"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -76,6 +90,16 @@
     {
       "timestamp": "2026-04-29T14:45:00Z",
       "event": "spec.md, tasks.md, owner.md, acceptance.md, task_manifest.json initialized for T01-T06",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T14:50:34Z",
+      "event": "T01 started \u2014 Scaffold favorites Pydantic schemas and service skeleton",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T14:51:39Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
       "by": "claude"
     }
   ]
