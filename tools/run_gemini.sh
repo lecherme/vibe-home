@@ -118,6 +118,23 @@ Re-run safety:
 - All thinking, exploration notes, and execution logs must go to stderr only.
 - The artifact validation will FAIL and the task will be marked failed if stdout
   contains anything before '# Gemini Build Report'.
+- EXCEPTION: verification results (tsc exit code, error summary) are evidence,
+  not execution logs — they belong in the report (stdout), not in stderr.
+
+## Verification Requirements (MANDATORY)
+Before writing the build report you MUST run the TypeScript compiler check:
+
+  cd frontend && npx tsc --noEmit 2>&1
+
+Record in ## Verification:
+- The exact command you ran
+- The exit code
+- If exit 0: write: exit 0 — no errors
+- If exit non-zero: write a short summary of the key errors (file, line, message);
+  do NOT paste the full raw output verbatim
+
+If tsc reports errors, still complete the ## Verification section and also list
+the errors in ## Open Issues. Do not skip verification or suppress results.
 
 ## Instructions
 Implement ONLY the task above ($TASK_ID). Do not implement any other tasks.
@@ -134,8 +151,13 @@ When done, output a build report in this format:
 ## Pages Scaffolded
 - list each page file
 
+## Verification
+- Command: \`cd frontend && npx tsc --noEmit\`
+- Result: [exit 0 — no errors] or [exit 1 — summary of key errors]
+- Smoke: [optional: brief description of any quick runtime check performed]
+
 ## Open Issues
-- list any blockers or incomplete items
+- list any blockers, tsc errors, or incomplete items; or 'None'
 "
 
 REPORT_FILE="$FEATURE_DIR/gemini-build-${TASK_ID}.md"

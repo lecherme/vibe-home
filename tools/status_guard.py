@@ -378,7 +378,7 @@ def validate_artifact(feature_dir: Path, task_id: str) -> None:
         if f"- {task_id}" not in text:
             raise GuardError(f"{artifact} must list the completed task as '- {task_id}'")
     elif task.get("owner") == "gemini":
-        required = ["# Gemini Build Report", "## Task Completed", "## Open Issues"]
+        required = ["# Gemini Build Report", "## Task Completed", "## Verification", "## Open Issues"]
         if first != "# Gemini Build Report":
             raise GuardError(f"{artifact} must start with '# Gemini Build Report'")
         if f"- {task_id}" not in text:
