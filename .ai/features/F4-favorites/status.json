@@ -1,0 +1,82 @@
+{
+  "feature": "F4-favorites",
+  "status": "pending",
+  "current_stage": "initialized",
+  "current_owner": null,
+  "next_step": "Ready to start T01",
+  "last_review_failure": null,
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Scaffold favorites Pydantic schemas and service skeleton",
+      "owner": "codex",
+      "type": "scaffold",
+      "depends_on": [],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T02",
+      "title": "Implement POST/DELETE/GET favorites endpoints with auth and tests",
+      "owner": "codex",
+      "type": "backend",
+      "depends_on": ["T01"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T03",
+      "title": "Publish frontend types and typed favorites API wrapper",
+      "owner": "codex",
+      "type": "infra",
+      "depends_on": ["T02"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T04",
+      "title": "Implement FavoriteButton component, favorites page, and integrate into property card and detail",
+      "owner": "gemini",
+      "type": "ui",
+      "depends_on": ["T02", "T03"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T05",
+      "title": "Review F4-favorites implementation against acceptance criteria",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": ["T01", "T02", "T03", "T04"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T06",
+      "title": "Validate F4-favorites and write final acceptance result",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": ["T05"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-04-29T14:32:26Z",
+      "event": "feature workspace initialized from template",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T14:45:00Z",
+      "event": "spec.md, tasks.md, owner.md, acceptance.md, task_manifest.json initialized for T01-T06",
+      "by": "claude"
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "feature": "F4-favorites",
+  "tasks": {
+    "T01": {
+      "allowed_files": [
+        "backend/app/schemas/favorite.py",
+        "backend/app/services/favorites/__init__.py",
+        "backend/app/services/favorites/service.py"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T01.md",
+      "verify_commands": []
+    },
+    "T02": {
+      "allowed_files": [
+        "backend/app/services/favorites/service.py",
+        "backend/app/api/v1/favorites/__init__.py",
+        "backend/app/api/v1/favorites/router.py",
+        "backend/app/main.py",
+        "backend/tests/test_favorites.py"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T02.md",
+      "verify_commands": []
+    },
+    "T03": {
+      "allowed_files": [
+        "frontend/types/favorites.ts",
+        "frontend/lib/api/favorites.ts"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T03.md",
+      "verify_commands": []
+    },
+    "T04": {
+      "allowed_files": [
+        "frontend/app/(dashboard)/favorites/page.tsx",
+        "frontend/components/features/favorites/favorite-button.tsx",
+        "frontend/components/features/properties/property-card.tsx",
+        "frontend/app/(dashboard)/properties/[id]/page.tsx"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "gemini-build-T04.md",
+      "verify_commands": []
+    },
+    "T05": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json"
+      ],
+      "expected_artifact": "review.md",
+      "verify_commands": []
+    },
+    "T06": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json"
+      ],
+      "expected_artifact": "final-report.md",
+      "verify_commands": []
+    }
+  }
+}
