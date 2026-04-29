@@ -62,6 +62,47 @@ The worker outputs its report to stdout only. The wrapper script captures stdout
 
 `codex-build-<TASK_ID>.log` and `gemini-build-<TASK_ID>.log` are diagnostic logs from stderr. They are for debugging only and are not read as part of the orchestration flow.
 
+### Step 3b — False failure handling (needs_verification)
+
+If `run_task.sh` exits non-zero and the task status is `needs_verification`
+(not `failed`), the wrapper detected a possible false failure: the worker exited
+non-zero but the artifact exists and passed `validate-artifact`. This is NOT a
+confirmation that implementation succeeded — it means the artifact structure is
+intact, not that the code is correct. Claude must make the final disposition.
+
+**When this applies:** non-`review` tasks only. Review tasks that exit non-zero
+always go directly to `failed` and never enter `needs_verification`.
+
+**Claude's verification steps:**
+
+1. Read the artifact (`codex-build-<TASK_ID>.md` or `gemini-build-<TASK_ID>.md`)
+2. Read every file listed in the artifact's `## Files Changed` section
+3. Run `python3 tools/status_guard.py validate-artifact <feature> <task_id>` to
+   confirm the artifact still passes structural checks
+
+**Disposition:**
+
+- Files exist, look correct, and no blocking open issues →
+  ```
+  python3 tools/status_guard.py verify-pass <feature> <task_id>
+  ```
+- Any file is missing, wrong, or open issues indicate incomplete work →
+  ```
+  python3 tools/status_guard.py verify-fail <feature> <task_id> "<reason>"
+  ```
+
+Both commands write an explicit `activity_log` entry. `verify-pass` records that
+this was a wrapper false failure corrected by Claude. `verify-fail` records that
+Claude inspection confirmed a real failure.
+
+`pending_verification` in `status.json` is a helper index (task_id, artifact,
+worker exit code, timestamp). It is cleared automatically by both commands.
+The canonical state is `task.status = needs_verification` — never rely on
+`pending_verification` as a second source of truth.
+
+Claude must not proceed to the next task until a `verify-pass` or `verify-fail`
+disposition has been written.
+
 ### Step 4 — Claude validates the artifact and updates status.json
 
 Claude, either directly or through the Claude-owned `run_task.sh` helper, reads

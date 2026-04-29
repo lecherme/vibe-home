@@ -19,7 +19,7 @@ from typing import Any
 import fnmatch
 
 
-VALID_TASK_STATUSES = {"pending", "in_progress", "done", "failed", "blocked"}
+VALID_TASK_STATUSES = {"pending", "in_progress", "done", "failed", "blocked", "needs_verification"}
 VALID_FEATURE_STATUSES = {"pending", "in_progress", "done", "failed", "blocked"}
 VALID_RETRY_TYPES = {"task_retry", "direct_fixup", "review_rerun"}
 
@@ -197,6 +197,9 @@ def dependency_errors(data: dict[str, Any], task: dict[str, Any], require_done: 
 def first_runnable_task(data: dict[str, Any]) -> dict[str, Any] | None:
     if data.get("status") in {"failed", "blocked"}:
         return None
+    # Pause auto-advance if any task is awaiting Claude verification.
+    if any(t.get("status") == "needs_verification" for t in data.get("tasks", [])):
+        return None
     for task in data.get("tasks", []):
         if task.get("status") == "pending" and not dependency_errors(data, task):
             return task
@@ -294,16 +297,33 @@ def validate_status(feature_dir: Path) -> tuple[list[str], list[str]]:
                     )
                 elif verdict is None:
                     errors.append(f"{task_id} review artifact verdict could not be parsed: {expected}")
+        elif status == "needs_verification":
+            try:
+                expected = expected_artifact(task)
+            except GuardError as exc:
+                errors.append(str(exc))
+                continue
+            if not (feature_dir / expected).is_file():
+                errors.append(f"{task_id} is needs_verification but artifact is missing: {expected}")
         elif artifact:
             warnings.append(f"{task_id} is {status} but still records artifact {artifact!r}")
 
     if len(in_progress) > 1:
         errors.append(f"multiple tasks are in_progress: {', '.join(in_progress)}")
 
+    needs_verification = [t["id"] for t in data.get("tasks", []) if t.get("status") == "needs_verification"]
+    if len(needs_verification) > 1:
+        errors.append(f"multiple tasks in needs_verification: {', '.join(needs_verification)}")
+
     current_owner = data.get("current_owner")
     current_stage = data.get("current_stage")
     if current_owner is not None and current_owner not in {"codex", "gemini", "claude"}:
         errors.append(f"current_owner is invalid: {current_owner!r}")
+    if needs_verification and current_owner != "claude":
+        errors.append(
+            f"task(s) in needs_verification but current_owner is {current_owner!r}; expected 'claude'"
+        )
+
     if current_stage and current_stage.endswith("_running"):
         running_id = current_stage.removesuffix("_running")
         try:
@@ -315,6 +335,14 @@ def validate_status(feature_dir: Path) -> tuple[list[str], list[str]]:
                 errors.append(f"current_stage is {current_stage}, but {running_id} is {running_task.get('status')}")
             if current_owner != running_task.get("owner"):
                 errors.append(f"current_owner should be {running_task.get('owner')!r}, got {current_owner!r}")
+
+    if data.get("pending_verification") is not None:
+        pv = data["pending_verification"]
+        pv_task_id = pv.get("task_id") if isinstance(pv, dict) else None
+        if pv_task_id not in {t["id"] for t in data.get("tasks", []) if t.get("status") == "needs_verification"}:
+            errors.append(
+                f"pending_verification references {pv_task_id!r} but no task with that id is in needs_verification"
+            )
 
     if data.get("status") == "done":
         final_report = feature_dir / "final-report.md"
@@ -533,6 +561,92 @@ def transition_fail(feature_dir: Path, task_id: str, reason: str) -> None:
     write_status_atomic(feature_dir, data)
 
 
+def transition_needs_verification(
+    feature_dir: Path, task_id: str, reason: str, worker_exit_code: int
+) -> None:
+    data = load_status(feature_dir)
+    task = find_task(data, task_id)
+    artifact = expected_artifact(task)
+    task["status"] = "needs_verification"
+    # Failure is unconfirmed — reset feature to in_progress until Claude decides.
+    data["status"] = "in_progress"
+    data["current_stage"] = f"{task_id}_needs_verification"
+    data["current_owner"] = "claude"
+    data["next_step"] = (
+        f"Claude must verify {task_id}: read artifact + changed files, "
+        f"then run verify-pass or verify-fail"
+    )
+    # pending_verification is a top-level helper index only.
+    # Canonical state is task.status = needs_verification.
+    data["pending_verification"] = {
+        "task_id": task_id,
+        "reason": reason,
+        "artifact": artifact,
+        "worker_exit_code": worker_exit_code,
+        "timestamp": utc_now(),
+    }
+    append_log(data, f"{task_id} needs-verification — {reason} (exit {worker_exit_code})")
+    write_status_atomic(feature_dir, data)
+
+
+def transition_verify_pass(feature_dir: Path, task_id: str) -> None:
+    validate_artifact(feature_dir, task_id)
+    data = load_status(feature_dir)
+    task = find_task(data, task_id)
+    if task.get("status") != "needs_verification":
+        raise GuardError(
+            f"{task_id} is {task.get('status')!r}; verify-pass requires needs_verification"
+        )
+    pv = data.pop("pending_verification", {}) or {}
+    original_reason = pv.get("reason", "unknown")
+    original_exit_code = pv.get("worker_exit_code", "?")
+
+    artifact = expected_artifact(task)
+    task["status"] = "done"
+    task["artifact"] = artifact
+    clear_task_retry(task)
+    data["current_stage"] = f"{task_id}_done"
+    data["current_owner"] = None
+
+    next_task = first_runnable_task(data)
+    if next_task:
+        data["next_step"] = f"Start {next_task['id']} — {next_task.get('title', 'next task')}"
+    else:
+        pending = [t for t in data.get("tasks", []) if t.get("status") == "pending"]
+        if pending:
+            data["next_step"] = "Resolve blocked task dependencies"
+            data["status"] = "blocked"
+        else:
+            data["next_step"] = "All worker tasks complete; Claude acceptance may be required"
+
+    append_log(
+        data,
+        f"{task_id} verify-pass — wrapper false failure (exit {original_exit_code}) "
+        f"corrected by Claude after artifact inspection; original: {original_reason}",
+    )
+    write_status_atomic(feature_dir, data)
+
+
+def transition_verify_fail(feature_dir: Path, task_id: str, reason: str) -> None:
+    data = load_status(feature_dir)
+    task = find_task(data, task_id)
+    if task.get("status") != "needs_verification":
+        raise GuardError(
+            f"{task_id} is {task.get('status')!r}; verify-fail requires needs_verification"
+        )
+    data.pop("pending_verification", None)
+    task["status"] = "failed"
+    data["status"] = "failed"
+    data["current_stage"] = f"{task_id}_failed"
+    data["current_owner"] = None
+    data["next_step"] = f"Inspect {task_id} failure, then requeue to pending if retrying"
+    append_log(
+        data,
+        f"{task_id} verify-fail — Claude inspection confirmed real failure after needs_verification: {reason}",
+    )
+    write_status_atomic(feature_dir, data)
+
+
 def transition_requeue(feature_dir: Path, task_id: str, reason: str) -> None:
     data = load_status(feature_dir)
     task = find_task(data, task_id)
@@ -663,6 +777,21 @@ def main() -> int:
     p.add_argument("task_id")
     p.add_argument("reason", nargs="?", default="worker command failed")
 
+    p = sub.add_parser("needs-verification")
+    p.add_argument("feature_dir")
+    p.add_argument("task_id")
+    p.add_argument("reason", nargs="?", default="worker exited non-zero but artifact passed validate-artifact")
+    p.add_argument("exit_code", nargs="?", type=int, default=1)
+
+    p = sub.add_parser("verify-pass")
+    p.add_argument("feature_dir")
+    p.add_argument("task_id")
+
+    p = sub.add_parser("verify-fail")
+    p.add_argument("feature_dir")
+    p.add_argument("task_id")
+    p.add_argument("reason", nargs="?", default="Claude inspection confirmed real failure")
+
     p = sub.add_parser("requeue")
     p.add_argument("feature_dir")
     p.add_argument("task_id")
@@ -705,6 +834,15 @@ def main() -> int:
         elif args.command == "fail":
             transition_fail(feature_dir, args.task_id, args.reason)
             print(f"{args.task_id} marked failed")
+        elif args.command == "needs-verification":
+            transition_needs_verification(feature_dir, args.task_id, args.reason, args.exit_code)
+            print(f"{args.task_id} marked needs_verification")
+        elif args.command == "verify-pass":
+            transition_verify_pass(feature_dir, args.task_id)
+            print(f"{args.task_id} marked done via verify-pass")
+        elif args.command == "verify-fail":
+            transition_verify_fail(feature_dir, args.task_id, args.reason)
+            print(f"{args.task_id} marked failed via verify-fail")
         elif args.command == "requeue":
             transition_requeue(feature_dir, args.task_id, args.reason)
             print(f"{args.task_id} requeued")

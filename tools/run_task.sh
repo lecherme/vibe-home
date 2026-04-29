@@ -42,7 +42,16 @@ on_error() {
     rm -f "$SCOPE_BASELINE"
   fi
   if [[ "$TASK_STARTED" == "true" && "$TASK_DONE" != "true" ]]; then
-    python3 tools/status_guard.py fail "$FEATURE_DIR" "$TASK_ID" "run_task failed with exit code $exit_code" || true
+    # False-failure detection: non-review task whose artifact exists and passes validate-artifact
+    # enters needs_verification so Claude can decide; all other failures mark failed directly.
+    if [[ -n "$TASK_TYPE" && "$TASK_TYPE" != "review" ]] && \
+       python3 tools/status_guard.py validate-artifact "$FEATURE_DIR" "$TASK_ID" 2>/dev/null; then
+      python3 tools/status_guard.py needs-verification "$FEATURE_DIR" "$TASK_ID" \
+        "worker exited $exit_code but artifact passed validate-artifact" "$exit_code" || true
+      echo "⚠️  Task $TASK_ID needs Claude verification — worker exited $exit_code but artifact exists and passed validate-artifact" >&2
+    else
+      python3 tools/status_guard.py fail "$FEATURE_DIR" "$TASK_ID" "run_task failed with exit code $exit_code" || true
+    fi
   fi
   exit "$exit_code"
 }

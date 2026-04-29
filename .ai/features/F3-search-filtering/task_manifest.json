@@ -3,7 +3,9 @@
   "tasks": {
     "T01": {
       "allowed_files": [
-        "TODO/path/or/glob"
+        "backend/app/services/search/__init__.py",
+        "backend/app/services/search/service.py",
+        "backend/app/schemas/search.py"
       ],
       "forbidden_files": [
         ".ai/**/status.json",
@@ -16,11 +18,74 @@
       "verify_commands": []
     },
     "T02": {
+      "allowed_files": [
+        "backend/app/services/search/service.py",
+        "backend/app/api/v1/properties/router.py",
+        "backend/tests/test_search.py"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T02.md",
+      "verify_commands": []
+    },
+    "T03": {
+      "allowed_files": [
+        "frontend/types/search.ts",
+        "frontend/lib/api/properties.ts"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T03.md",
+      "verify_commands": []
+    },
+    "T04": {
+      "allowed_files": [
+        "frontend/app/(dashboard)/search/page.tsx",
+        "frontend/components/features/search/search-bar.tsx",
+        "frontend/components/features/search/filter-panel.tsx"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "gemini-build-T04.md",
+      "verify_commands": []
+    },
+    "T05": {
       "allowed_files": [],
       "forbidden_files": [
-        ".ai/**/status.json"
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
       ],
       "expected_artifact": "review.md",
+      "verify_commands": []
+    },
+    "T06": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "final-report.md",
       "verify_commands": []
     }
   }

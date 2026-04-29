@@ -1,9 +1,9 @@
 {
   "feature": "F3-search-filtering",
-  "status": "pending",
-  "current_stage": "initialized",
+  "status": "in_progress",
+  "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "T01 pending — ready to start",
+  "next_step": "Start T03 \u2014 Publish frontend types and typed search API wrapper",
   "last_review_failure": null,
   "tasks": [
     {
@@ -12,26 +12,30 @@
       "owner": "codex",
       "type": "scaffold",
       "depends_on": [],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "codex-build-T01.md"
     },
     {
       "id": "T02",
       "title": "Implement search service and GET /api/v1/properties/search",
       "owner": "codex",
       "type": "backend",
-      "depends_on": ["T01"],
-      "status": "pending",
+      "depends_on": [
+        "T01"
+      ],
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "codex-build-T02.md"
     },
     {
       "id": "T03",
       "title": "Publish frontend types and typed search API wrapper",
       "owner": "codex",
       "type": "infra",
-      "depends_on": ["T02"],
+      "depends_on": [
+        "T02"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -41,7 +45,10 @@
       "title": "Implement search bar, filter panel, and search results page",
       "owner": "gemini",
       "type": "ui",
-      "depends_on": ["T02", "T03"],
+      "depends_on": [
+        "T02",
+        "T03"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -51,7 +58,12 @@
       "title": "Review F3-search-filtering implementation against acceptance criteria",
       "owner": "codex",
       "type": "review",
-      "depends_on": ["T01", "T02", "T03", "T04"],
+      "depends_on": [
+        "T01",
+        "T02",
+        "T03",
+        "T04"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -61,7 +73,9 @@
       "title": "Validate F3-search-filtering and write final acceptance result",
       "owner": "claude",
       "type": "acceptance",
-      "depends_on": ["T05"],
+      "depends_on": [
+        "T05"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -71,6 +85,36 @@
     {
       "timestamp": "2026-04-28T17:14:03Z",
       "event": "feature workspace initialized from template",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T12:33:30Z",
+      "event": "T01 started \u2014 Scaffold search module structure and Pydantic schemas",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T12:34:32Z",
+      "event": "T01 failed \u2014 run_task failed with exit code 1",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T13:01:12Z",
+      "event": "T01 needs-verification \u2014 T01 was incorrectly marked failed due to Codex telemetry error (rollout logging); artifact and all files verified intact (exit 1)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T13:01:15Z",
+      "event": "T01 verify-pass \u2014 wrapper false failure (exit 1) corrected by Claude after artifact inspection; original: T01 was incorrectly marked failed due to Codex telemetry error (rollout logging); artifact and all files verified intact",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T13:08:12Z",
+      "event": "T02 started \u2014 Implement search service and GET /api/v1/properties/search",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T13:12:24Z",
+      "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
       "by": "claude"
     }
   ]
