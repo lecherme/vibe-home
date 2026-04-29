@@ -1,9 +1,9 @@
 {
   "feature": "F3-search-filtering",
   "status": "in_progress",
-  "current_stage": "T04_done",
+  "current_stage": "T05_done",
   "current_owner": null,
-  "next_step": "Start T05 \u2014 Review F3-search-filtering implementation against acceptance criteria",
+  "next_step": "Start T06 \u2014 Validate F3-search-filtering and write final acceptance result",
   "last_review_failure": null,
   "tasks": [
     {
@@ -64,9 +64,9 @@
         "T03",
         "T04"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "review.md"
     },
     {
       "id": "T06",
@@ -165,6 +165,16 @@
     {
       "timestamp": "2026-04-29T13:59:12Z",
       "event": "T04 done \u2014 artifact captured as gemini-build-T04.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T14:09:32Z",
+      "event": "T05 started \u2014 Review F3-search-filtering implementation against acceptance criteria",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T14:14:18Z",
+      "event": "T05 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]
