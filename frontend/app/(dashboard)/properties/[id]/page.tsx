@@ -5,6 +5,7 @@ import { useParams, notFound } from "next/navigation";
 import { propertiesApi, PropertyApiError } from "@/lib/api/properties";
 import type { Property } from "@/types/property";
 import { PropertyDetail } from "@/components/features/properties/PropertyDetail";
+import { FavoriteButton } from "@/components/features/favorites/favorite-button";
 
 export default function PropertyDetailPage() {
   const params = useParams();
@@ -79,5 +80,12 @@ export default function PropertyDetailPage() {
     return null;
   }
 
-  return <PropertyDetail property={property} />;
+  return (
+    <div className="relative max-w-5xl mx-auto">
+      <div className="absolute top-12 right-8 z-10 md:top-14 md:right-12">
+        <FavoriteButton propertyId={property.id} />
+      </div>
+      <PropertyDetail property={property} />
+    </div>
+  );
 }

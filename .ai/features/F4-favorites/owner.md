@@ -25,7 +25,7 @@ This is a static ownership map. Runtime state comes from `status.json`.
 **Owns:**
 - `frontend/app/(dashboard)/favorites/page.tsx` — favorites listing page
 - `frontend/components/features/favorites/favorite-button.tsx` — optimistic toggle button
-- `frontend/components/features/properties/property-card.tsx` — modify to add FavoriteButton
+- `frontend/components/features/properties/PropertyCard.tsx` — modify to add FavoriteButton
 - `frontend/app/(dashboard)/properties/[id]/page.tsx` — modify to add FavoriteButton
 
 **Must NOT:**

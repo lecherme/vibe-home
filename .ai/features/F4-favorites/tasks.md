@@ -117,7 +117,7 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
   - Loading skeleton while fetching
   - Empty state when no favorites
   - Error state if API call fails
-- Modify `frontend/components/features/properties/property-card.tsx`:
+- Modify `frontend/components/features/properties/PropertyCard.tsx`:
   - Import and render <FavoriteButton propertyId={property.id} /> on the card
 - Modify `frontend/app/(dashboard)/properties/[id]/page.tsx`:
   - Import and render <FavoriteButton propertyId={property.id} /> on the detail page
@@ -126,7 +126,7 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 **Allowed file changes:**
 - Create: `frontend/components/features/favorites/favorite-button.tsx`
 - Create: `frontend/app/(dashboard)/favorites/page.tsx`
-- Modify: `frontend/components/features/properties/property-card.tsx`
+- Modify: `frontend/components/features/properties/PropertyCard.tsx`
 - Modify: `frontend/app/(dashboard)/properties/[id]/page.tsx`
 
 **Done condition:** Favorites page renders; toggle button appears on card and detail; optimistic update works; loading, empty, and error states present; TypeScript compiles clean.

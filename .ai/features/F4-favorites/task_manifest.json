@@ -54,8 +54,8 @@
       "allowed_files": [
         "frontend/app/(dashboard)/favorites/page.tsx",
         "frontend/components/features/favorites/favorite-button.tsx",
-        "frontend/components/features/properties/property-card.tsx",
-        "frontend/app/(dashboard)/properties/[id]/page.tsx"
+        "frontend/components/features/properties/PropertyCard.tsx",
+        "frontend/app/(dashboard)/properties/*/page.tsx"
       ],
       "forbidden_files": [
         ".ai/**/status.json",
