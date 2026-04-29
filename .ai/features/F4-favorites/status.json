@@ -1,9 +1,9 @@
 {
   "feature": "F4-favorites",
   "status": "in_progress",
-  "current_stage": "T02_done",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Start T03 \u2014 Publish frontend types and typed favorites API wrapper",
+  "next_step": "Start T04 \u2014 Implement FavoriteButton component, favorites page, and integrate into property card and detail",
   "last_review_failure": null,
   "tasks": [
     {
@@ -36,9 +36,9 @@
       "depends_on": [
         "T02"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "codex-build-T03.md"
     },
     {
       "id": "T04",
@@ -110,6 +110,16 @@
     {
       "timestamp": "2026-04-29T14:57:57Z",
       "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T14:58:52Z",
+      "event": "T03 started \u2014 Publish frontend types and typed favorites API wrapper",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-29T15:00:14Z",
+      "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
       "by": "claude"
     }
   ]
