@@ -4,9 +4,11 @@ import { FavoriteButton } from "@/components/features/favorites/favorite-button"
 
 interface PropertyCardProps {
   property: Property;
+  isFavorited?: boolean;
+  onFavoriteToggle?: (isFavorited: boolean) => void;
 }
 
-export function PropertyCard({ property }: PropertyCardProps) {
+export function PropertyCard({ property, isFavorited, onFavoriteToggle }: PropertyCardProps) {
   const firstImage = property.images[0] || "/images/properties/property-placeholder-exterior.svg";
 
   return (
@@ -25,7 +27,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
       </Link>
       
       <div className="absolute top-3 right-3 z-10">
-        <FavoriteButton propertyId={property.id} />
+        <FavoriteButton propertyId={property.id} initialIsFavorited={isFavorited} onToggle={onFavoriteToggle} />
       </div>
 
       <Link 

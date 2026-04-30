@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, notFound } from "next/navigation";
 import { propertiesApi, PropertyApiError } from "@/lib/api/properties";
+import { favoritesApi } from "@/lib/api/favorites";
 import type { Property } from "@/types/property";
 import { PropertyDetail } from "@/components/features/properties/PropertyDetail";
 import { FavoriteButton } from "@/components/features/favorites/favorite-button";
@@ -14,6 +15,7 @@ export default function PropertyDetailPage() {
   const [property, setProperty] = useState<Property | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -39,6 +41,14 @@ export default function PropertyDetailPage() {
           setIsLoading(false);
         }
       });
+
+    favoritesApi.getFavorites()
+      .then((data) => {
+        if (isMounted) {
+          setIsFavorited(data.items.some((p) => p.id === id));
+        }
+      })
+      .catch(() => {});
 
     return () => {
       isMounted = false;
@@ -83,7 +93,7 @@ export default function PropertyDetailPage() {
   return (
     <div className="relative max-w-5xl mx-auto">
       <div className="absolute top-12 right-8 z-10 md:top-14 md:right-12">
-        <FavoriteButton propertyId={property.id} />
+        <FavoriteButton propertyId={property.id} initialIsFavorited={isFavorited} />
       </div>
       <PropertyDetail property={property} />
     </div>

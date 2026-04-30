@@ -6,11 +6,13 @@ import { favoritesApi } from "@/lib/api/favorites";
 interface FavoriteButtonProps {
   propertyId: string;
   initialIsFavorited?: boolean;
+  onToggle?: (isFavorited: boolean) => void;
 }
 
 export function FavoriteButton({
   propertyId,
   initialIsFavorited = false,
+  onToggle,
 }: FavoriteButtonProps) {
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,6 +36,7 @@ export function FavoriteButton({
       } else {
         await favoritesApi.addFavorite(propertyId);
       }
+      onToggle?.(!previousState);
     } catch (error) {
       // Revert state on error
       console.error("Failed to update favorite status:", error);

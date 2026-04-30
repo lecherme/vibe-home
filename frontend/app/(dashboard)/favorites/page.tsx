@@ -102,7 +102,16 @@ export default function FavoritesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {favorites.map((property) => (
-            <PropertyCard key={property.id} property={property} />
+            <PropertyCard
+              key={property.id}
+              property={property}
+              isFavorited={true}
+              onFavoriteToggle={(newState) => {
+                if (!newState) {
+                  setFavorites((prev) => prev.filter((p) => p.id !== property.id));
+                }
+              }}
+            />
           ))}
         </div>
       )}

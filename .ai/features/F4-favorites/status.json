@@ -146,6 +146,21 @@
       "timestamp": "2026-04-30T06:02:55Z",
       "event": "T05 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T06:19:19Z",
+      "event": "T05 prepared for review_rerun \u2014 direct_fixup applied for A15 \u2014 initialIsFavorited now passed correctly from server state; favorites page removes unfavorited cards",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T06:21:38Z",
+      "event": "T05 started \u2014 Review F4-favorites implementation against acceptance criteria [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T06:24:58Z",
+      "event": "T05 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
     }
   ]
 }
