@@ -201,6 +201,7 @@ def test_get_favorite_status_returns_false_when_not_favorited(
     ("method", "path"),
     [
         ("get", "/api/v1/favorites"),
+        ("get", f"/api/v1/favorites/{favorite_property_ids(1)[0]}"),
         ("post", f"/api/v1/favorites/{favorite_property_ids(1)[0]}"),
         ("delete", f"/api/v1/favorites/{favorite_property_ids(1)[0]}"),
     ],
@@ -220,6 +221,7 @@ def test_favorites_endpoints_require_authorization(
     ("method", "path"),
     [
         ("get", "/api/v1/favorites"),
+        ("get", f"/api/v1/favorites/{favorite_property_ids(1)[0]}"),
         ("post", f"/api/v1/favorites/{favorite_property_ids(1)[0]}"),
         ("delete", f"/api/v1/favorites/{favorite_property_ids(1)[0]}"),
     ],
