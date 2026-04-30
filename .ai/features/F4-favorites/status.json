@@ -1,9 +1,9 @@
 {
   "feature": "F4-favorites",
-  "status": "in_progress",
-  "current_stage": "T04_done",
+  "status": "failed",
+  "current_stage": "T05_done",
   "current_owner": null,
-  "next_step": "Start T05 \u2014 Review F4-favorites implementation against acceptance criteria",
+  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
   "last_review_failure": null,
   "tasks": [
     {
@@ -64,9 +64,9 @@
         "T03",
         "T04"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "review.md"
     },
     {
       "id": "T06",
@@ -135,6 +135,16 @@
     {
       "timestamp": "2026-04-29T15:13:52Z",
       "event": "T04 verify-pass \u2014 wrapper false failure (exit 1) corrected by Claude after artifact inspection; original: worker exited 1 but artifact passed validate-artifact",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T05:59:09Z",
+      "event": "T05 started \u2014 Review F4-favorites implementation against acceptance criteria",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T06:02:55Z",
+      "event": "T05 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
     }
   ]
