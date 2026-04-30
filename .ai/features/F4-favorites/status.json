@@ -161,6 +161,21 @@
       "timestamp": "2026-04-30T06:24:58Z",
       "event": "T05 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T06:36:07Z",
+      "event": "T05 prepared for review_rerun \u2014 second direct_fixup: FavoriteButton syncs async initialIsFavorited via useEffect+ref; getFavorites uses pageSize=1000",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T06:36:37Z",
+      "event": "T05 started \u2014 Review F4-favorites implementation against acceptance criteria [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T06:40:13Z",
+      "event": "T05 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
     }
   ]
 }

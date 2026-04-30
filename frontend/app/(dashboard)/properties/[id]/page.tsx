@@ -42,7 +42,7 @@ export default function PropertyDetailPage() {
         }
       });
 
-    favoritesApi.getFavorites()
+    favoritesApi.getFavorites(1, 1000)
       .then((data) => {
         if (isMounted) {
           setIsFavorited(data.items.some((p) => p.id === id));

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { favoritesApi } from "@/lib/api/favorites";
 
 interface FavoriteButtonProps {
@@ -16,14 +16,21 @@ export function FavoriteButton({
 }: FavoriteButtonProps) {
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
   const [isLoading, setIsLoading] = useState(false);
+  const hasInteracted = useRef(false);
+
+  useEffect(() => {
+    if (!hasInteracted.current) {
+      setIsFavorited(initialIsFavorited ?? false);
+    }
+  }, [initialIsFavorited]);
 
   const toggleFavorite = async (e: React.MouseEvent) => {
-    // Prevent navigation if the button is inside a Link (like in PropertyCard)
     e.preventDefault();
     e.stopPropagation();
 
     if (isLoading) return;
 
+    hasInteracted.current = true;
     const previousState = isFavorited;
     
     // Optimistic update
