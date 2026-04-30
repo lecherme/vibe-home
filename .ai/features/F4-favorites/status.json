@@ -1,9 +1,9 @@
 {
   "feature": "F4-favorites",
-  "status": "in_progress",
-  "current_stage": "T04_done",
+  "status": "failed",
+  "current_stage": "T05_done",
   "current_owner": null,
-  "next_step": "Start T05 \u2014 Review F4-favorites implementation against acceptance criteria",
+  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
   "last_review_failure": {
     "fix_path": "task_retry",
     "fix_instructions": "Incremental patch only for T02. Do not rewrite existing implementation.",
@@ -76,13 +76,9 @@
         "T03",
         "T04"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null,
-      "retry": {
-        "type": "task_retry",
-        "reason": "spec correction: rerun review after T02-T04 re-implement with new contract"
-      }
+      "artifact": "review.md"
     },
     {
       "id": "T06",
@@ -261,6 +257,16 @@
     {
       "timestamp": "2026-04-30T08:01:12Z",
       "event": "T04 done \u2014 artifact captured as gemini-build-T04.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T08:02:32Z",
+      "event": "T05 started \u2014 Review F4-favorites implementation against acceptance criteria [task_retry]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T08:06:17Z",
+      "event": "T05 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
     }
   ]
