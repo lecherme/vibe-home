@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 
 from app.core.security import get_current_user
 from app.schemas.auth import AppRole, UserRead
-from app.schemas.favorite import FavoriteList, FavoriteRead
+from app.schemas.favorite import FavoriteList, FavoriteRead, FavoriteStatus
 from app.services.favorites import add_favorite, get_user_favorites, remove_favorite
+from app.services.favorites.service import is_favorite
 
 
 router = APIRouter()
@@ -57,4 +58,14 @@ async def list_favorites(
         current_user.id,
         page=page,
         page_size=resolved_page_size,
+    )
+
+
+@router.get("/{property_id}", response_model=FavoriteStatus)
+async def get_favorite_status(
+    property_id: str,
+    current_user: UserRead = Depends(require_non_admin_user),
+) -> FavoriteStatus:
+    return FavoriteStatus(
+        is_favorite=is_favorite(current_user.id, property_id),
     )

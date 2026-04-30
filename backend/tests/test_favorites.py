@@ -170,6 +170,33 @@ def test_get_returns_only_current_users_favorites(client: TestClient) -> None:
     }
 
 
+def test_get_favorite_status_returns_true_when_favorited(client: TestClient) -> None:
+    property_id = favorite_property_ids(1)[0]
+    add_favorite("user-123", property_id)
+
+    response = client.get(
+        f"/api/v1/favorites/{property_id}",
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"is_favorite": True}
+
+
+def test_get_favorite_status_returns_false_when_not_favorited(
+    client: TestClient,
+) -> None:
+    property_id = favorite_property_ids(1)[0]
+
+    response = client.get(
+        f"/api/v1/favorites/{property_id}",
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"is_favorite": False}
+
+
 @pytest.mark.parametrize(
     ("method", "path"),
     [

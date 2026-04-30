@@ -1,5 +1,5 @@
 import { getAccessToken } from "@/lib/auth/session";
-import type { FavoriteList } from "@/types/favorites";
+import type { FavoriteList, FavoriteStatus } from "@/types/favorites";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -68,8 +68,30 @@ export async function getFavorites(
   return res.json() as Promise<FavoriteList>;
 }
 
+export async function isFavorite(propertyId: string): Promise<boolean> {
+  const accessToken = await getAccessToken();
+
+  if (!accessToken) {
+    throw new Error("No active session");
+  }
+
+  const res = await fetch(`${apiUrl}/api/v1/favorites/${encodeURIComponent(propertyId)}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} ${res.statusText}`);
+  }
+
+  const data = await (res.json() as Promise<FavoriteStatus>);
+  return data.is_favorite;
+}
+
 export const favoritesApi = {
   addFavorite,
   removeFavorite,
   getFavorites,
+  isFavorite,
 };

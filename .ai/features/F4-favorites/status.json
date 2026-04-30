@@ -1,10 +1,22 @@
 {
   "feature": "F4-favorites",
-  "status": "failed",
-  "current_stage": "T05_done",
+  "status": "in_progress",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
-  "last_review_failure": null,
+  "next_step": "Start T04 \u2014 Implement FavoriteButton component, favorites page, and integrate into property card and detail",
+  "last_review_failure": {
+    "fix_path": "task_retry",
+    "fix_instructions": "Incremental patch only for T02. Do not rewrite existing implementation.",
+    "do_not_touch": [
+      "backend/app/services/favorites/service.py",
+      "backend/app/api/v1/favorites/__init__.py",
+      "backend/app/main.py",
+      "existing POST /{property_id} endpoint",
+      "existing DELETE /{property_id} endpoint",
+      "existing GET (list) endpoint",
+      "existing test fixtures and auth helpers"
+    ]
+  },
   "tasks": [
     {
       "id": "T01",
@@ -49,9 +61,13 @@
         "T02",
         "T03"
       ],
-      "status": "done",
+      "status": "pending",
       "retry_count": 0,
-      "artifact": "gemini-build-T04.md"
+      "artifact": null,
+      "retry": {
+        "type": "task_retry",
+        "reason": "spec correction: detail page must call isFavorite(); FavoriteButton must sync async prop; favorites page must remove unfavorited cards"
+      }
     },
     {
       "id": "T05",
@@ -64,9 +80,13 @@
         "T03",
         "T04"
       ],
-      "status": "done",
+      "status": "pending",
       "retry_count": 0,
-      "artifact": "review.md"
+      "artifact": null,
+      "retry": {
+        "type": "task_retry",
+        "reason": "spec correction: rerun review after T02-T04 re-implement with new contract"
+      }
     },
     {
       "id": "T06",
@@ -175,6 +195,61 @@
     {
       "timestamp": "2026-04-30T06:40:13Z",
       "event": "T05 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T06:58:05Z",
+      "event": "T02 prepared for task_retry \u2014 spec correction: add GET /{property_id} endpoint + FavoriteStatus schema + tests",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T06:58:05Z",
+      "event": "T03 prepared for task_retry \u2014 spec correction: add FavoriteStatus interface + isFavorite() API wrapper",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T06:58:05Z",
+      "event": "T04 prepared for task_retry \u2014 spec correction: detail page must call isFavorite(); FavoriteButton must sync async prop; favorites page must remove unfavorited cards",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T06:58:05Z",
+      "event": "T05 prepared for task_retry \u2014 spec correction: rerun review after T02-T04 re-implement with new contract",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T07:01:21Z",
+      "event": "T02 prepared for task_retry \u2014 INCREMENTAL PATCH ONLY \u2014 do NOT rewrite existing T02 implementation. Existing POST/DELETE/GET-list endpoints, service logic, auth wiring, and test fixtures are correct and must not change. Add only: (1) FavoriteStatus schema in schemas/favorite.py, (2) GET /{property_id} endpoint in router.py wired to existing is_favorite(), (3) two new tests in test_favorites.py for the new endpoint.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T07:04:09Z",
+      "event": "T02 started \u2014 Implement POST/DELETE/GET favorites endpoints with auth and tests [task_retry]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T07:05:40Z",
+      "event": "T02 needs-verification \u2014 worker exited 1 but artifact passed validate-artifact (exit 1)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T07:08:32Z",
+      "event": "T02 verify-pass \u2014 wrapper false failure (exit 1) corrected by Claude after artifact inspection; original: worker exited 1 but artifact passed validate-artifact",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T07:50:23Z",
+      "event": "T03 prepared for task_retry \u2014 INCREMENTAL PATCH ONLY \u2014 do NOT rewrite existing T03 implementation. Existing addFavorite(), removeFavorite(), getFavorites(), Favorite interface, and FavoriteList interface are correct and must not change. Add only: (1) FavoriteStatus interface to frontend/types/favorites.ts, (2) isFavorite(propertyId) wrapper to frontend/lib/api/favorites.ts calling GET /api/v1/favorites/{property_id}.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T07:51:14Z",
+      "event": "T03 started \u2014 Publish frontend types and typed favorites API wrapper [task_retry]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-04-30T07:52:11Z",
+      "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
       "by": "claude"
     }
   ]

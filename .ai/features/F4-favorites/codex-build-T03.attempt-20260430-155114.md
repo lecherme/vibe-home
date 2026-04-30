@@ -8,12 +8,12 @@
 - `frontend/lib/api/favorites.ts`
 
 ## API Types Published
-- `FavoriteStatus`
-- existing exports preserved: `Favorite`, `FavoriteList`
+- `Favorite`
+- `FavoriteList`
 
 ## Tests Written
 - None
 
 ## Open Issues
 - None
-- Validation run: `npx tsc --noEmit` in `frontend/` passed
+

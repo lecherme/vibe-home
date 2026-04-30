@@ -10,3 +10,7 @@ export interface FavoriteList {
   items: PropertyRead[];
   total: number;
 }
+
+export interface FavoriteStatus {
+  is_favorite: boolean;
+}

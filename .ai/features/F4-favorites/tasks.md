@@ -38,33 +38,39 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 - **title:** Implement POST/DELETE/GET favorites endpoints with auth and tests
 
 **Scope:**
+- Add `FavoriteStatus` schema to `backend/app/schemas/favorite.py` (is_favorite: bool)
 - Implement full logic in `backend/app/services/favorites/service.py`:
   - add_favorite(user_id, property_id): add to store; raise HTTPException 409 if already present
   - remove_favorite(user_id, property_id): remove from store; raise HTTPException 404 if not found
   - get_user_favorites(user_id, page, page_size): return FavoriteList with paginated PropertyRead items
+  - is_favorite(user_id, property_id): return bool
 - Create `backend/app/api/v1/favorites/__init__.py`
 - Create `backend/app/api/v1/favorites/router.py` with:
   - POST /api/v1/favorites/{property_id} → 201, requires user auth, 403 for admin
   - DELETE /api/v1/favorites/{property_id} → 204, requires user auth, 403 for admin
   - GET /api/v1/favorites → 200 FavoriteList, requires user auth, 403 for admin
+  - GET /api/v1/favorites/{property_id} → 200 FavoriteStatus `{"is_favorite": bool}`, requires user auth, 403 for admin
   - All endpoints: 401 if not authenticated
 - Modify `backend/app/main.py` to include the favorites router at /api/v1/favorites
 - Create `backend/tests/test_favorites.py` covering:
   - POST adds favorite and returns 201
   - POST duplicate returns 409
   - DELETE removes favorite and returns 204
-  - GET returns only the current user's favorites (not another user's)
+  - GET /favorites returns only the current user's favorites (not another user's)
+  - GET /favorites/{property_id} returns `{"is_favorite": true}` when favorited
+  - GET /favorites/{property_id} returns `{"is_favorite": false}` when not favorited
   - All endpoints return 401 unauthenticated
   - All endpoints return 403 for admin role
 
 **Allowed file changes:**
+- Modify: `backend/app/schemas/favorite.py`
 - Modify: `backend/app/services/favorites/service.py`
 - Create: `backend/app/api/v1/favorites/__init__.py`
 - Create: `backend/app/api/v1/favorites/router.py`
 - Modify: `backend/app/main.py`
 - Create: `backend/tests/test_favorites.py`
 
-**Done condition:** All tests pass; endpoints correctly handle auth, role, duplicate, 404, and user-scope cases.
+**Done condition:** All tests pass; endpoints correctly handle auth, role, duplicate, 404, and user-scope cases; GET /{property_id} returns correct is_favorite bool.
 
 ---
 
@@ -79,19 +85,19 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 - Create `frontend/types/favorites.ts` with:
   - Favorite interface (propertyId: string, userId: string, createdAt: string)
   - FavoriteList interface (items: PropertyRead[], total: number)
-- Create `frontend/lib/api/favorites.ts` with exactly three functions:
+  - FavoriteStatus interface (is_favorite: boolean)
+- Create `frontend/lib/api/favorites.ts` with four functions:
   - addFavorite(propertyId: string): Promise<void>
   - removeFavorite(propertyId: string): Promise<void>
   - getFavorites(page?: number, pageSize?: number): Promise<FavoriteList>
-- Do NOT add an isFavorite() or status-check function — whether a property is currently favorited
-  is UI-local state managed by T04, not a backend call.
+  - isFavorite(propertyId: string): Promise<boolean> — calls GET /api/v1/favorites/{propertyId}
 - Ensure all types are exported and usable by the UI layer
 
 **Allowed file changes:**
 - Create: `frontend/types/favorites.ts`
 - Create: `frontend/lib/api/favorites.ts`
 
-**Done condition:** TypeScript compiles without errors; three API functions exist with correct signatures; types match backend schemas; no isFavorite backend call introduced.
+**Done condition:** TypeScript compiles without errors; four API functions exist with correct signatures; types match backend schemas; isFavorite() calls GET /api/v1/favorites/{property_id} and returns boolean.
 
 ---
 
@@ -105,22 +111,26 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 **Scope:**
 - Create `frontend/components/features/favorites/favorite-button.tsx`:
   - Renders a heart/bookmark icon button
-  - Accepts props: propertyId: string, initialIsFavorited?: boolean (default false)
-  - Manages isFavorited boolean state locally — this is purely local UI state, no separate
-    backend status-check call required
+  - Accepts props: propertyId: string, initialIsFavorited?: boolean (default false), onToggle?: (isFavorited: boolean) => void
+  - Manages isFavorited boolean state locally with optimistic update
+  - Must re-sync isFavorited from initialIsFavorited prop when it changes asynchronously (use useEffect; guard against overwriting a toggle the user has already made)
   - Optimistic update: toggle local state immediately, then call API; on error revert state
+  - After a successful API call, invoke onToggle(newState) if provided
   - On toggle to favorited: call favoritesApi.addFavorite(propertyId)
   - On toggle to unfavorited: call favoritesApi.removeFavorite(propertyId)
 - Create `frontend/app/(dashboard)/favorites/page.tsx`:
   - Fetch user's favorites on mount via favoritesApi.getFavorites()
-  - Display results using PropertyCard components
+  - Display results using PropertyCard components with isFavorited={true} and onFavoriteToggle to remove unfavorited cards from the list
   - Loading skeleton while fetching
   - Empty state when no favorites
   - Error state if API call fails
 - Modify `frontend/components/features/properties/PropertyCard.tsx`:
-  - Import and render <FavoriteButton propertyId={property.id} /> on the card
+  - Accept optional props: isFavorited?: boolean, onFavoriteToggle?: (isFavorited: boolean) => void
+  - Pass both as initialIsFavorited and onToggle to FavoriteButton
 - Modify `frontend/app/(dashboard)/properties/[id]/page.tsx`:
-  - Import and render <FavoriteButton propertyId={property.id} /> on the detail page
+  - On mount, call favoritesApi.isFavorite(property.id) to load the initial favorite state
+  - Pass the result as initialIsFavorited to FavoriteButton
+  - Handle loading/error for the isFavorite call gracefully (default to false if it fails)
 - Use lib/api/favorites only — no direct fetch() or Supabase calls
 
 **Allowed file changes:**
@@ -129,7 +139,7 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 - Modify: `frontend/components/features/properties/PropertyCard.tsx`
 - Modify: `frontend/app/(dashboard)/properties/[id]/page.tsx`
 
-**Done condition:** Favorites page renders; toggle button appears on card and detail; optimistic update works; loading, empty, and error states present; TypeScript compiles clean.
+**Done condition:** Favorites page renders; toggle button appears on card and detail; optimistic update works; detail page loads correct initial favorite state via isFavorite(); favorites page removes unfavorited cards; loading, empty, and error states present; TypeScript compiles clean.
 
 ---
 
@@ -145,7 +155,8 @@ Every task has exactly one owner. Collaboration happens through sequential tasks
 - Check ownership boundaries and task artifacts.
 - Verify user-scoping (A6) and admin exclusion (A8).
 - Verify optimistic update pattern (A15).
-- Verify no extra backend status-check endpoint was added.
+- Verify GET /favorites/{property_id} exists and returns correct FavoriteStatus (A19).
+- Verify isFavorite() API wrapper exists in frontend (A10).
 - Write `review.md`.
 
 **Done condition:** `review.md` written with a verdict, per-criterion results, and enough failure detail for Claude to choose task_retry, direct_fixup, or review_rerun.

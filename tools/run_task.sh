@@ -32,6 +32,22 @@ echo "Type:    $TASK_TYPE"
 echo "Status:  $TASK_STATUS"
 echo "Artifact target: $EXPECTED_ARTIFACT"
 
+# Archive previous artifact + log before an intentional retry overwrite
+if [[ "${ALLOW_ARTIFACT_OVERWRITE:-}" == "true" && -f "$FEATURE_DIR/$EXPECTED_ARTIFACT" ]]; then
+  STAMP=$(date +%Y%m%d-%H%M%S)
+  ARTIFACT_BASE="${EXPECTED_ARTIFACT%.md}"
+  mv "$FEATURE_DIR/$EXPECTED_ARTIFACT" "$FEATURE_DIR/${ARTIFACT_BASE}.attempt-${STAMP}.md"
+  if [[ "$EXPECTED_ARTIFACT" == "review.md" ]]; then
+    LOG_CANDIDATE="$FEATURE_DIR/codex-review.log"
+  else
+    LOG_CANDIDATE="$FEATURE_DIR/${ARTIFACT_BASE}.log"
+  fi
+  if [[ -f "$LOG_CANDIDATE" ]]; then
+    mv "$LOG_CANDIDATE" "${LOG_CANDIDATE%.log}.attempt-${STAMP}.log"
+  fi
+  echo "Archived previous artifact → ${ARTIFACT_BASE}.attempt-${STAMP}.md"
+fi
+
 TASK_STARTED=false
 TASK_DONE=false
 SCOPE_BASELINE=""

@@ -11,11 +11,12 @@ Authenticated users can save and unsave property listings and view their saved l
 - `POST /api/v1/favorites/{property_id}` — add favorite (201 on success, 409 on duplicate)
 - `DELETE /api/v1/favorites/{property_id}` — remove favorite (204 on success)
 - `GET /api/v1/favorites` — list user's favorited properties (returns paginated PropertyRead list)
+- `GET /api/v1/favorites/{property_id}` — check if a single property is favorited; returns `{"is_favorite": bool}` (200); requires user auth (401/403)
 - All endpoints require user authentication (401 if not authenticated, 403 if admin role)
 
 **Frontend — Codex:**
-- `frontend/types/favorites.ts` — Favorite and FavoriteList TypeScript interfaces
-- `frontend/lib/api/favorites.ts` — addFavorite(), removeFavorite(), getFavorites() typed wrappers
+- `frontend/types/favorites.ts` — Favorite, FavoriteList, and FavoriteStatus TypeScript interfaces
+- `frontend/lib/api/favorites.ts` — addFavorite(), removeFavorite(), getFavorites(), isFavorite() typed wrappers
 
 **Frontend — Gemini:**
 - `frontend/app/(dashboard)/favorites/page.tsx` — favorites listing page

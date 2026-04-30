@@ -12,8 +12,8 @@ This is a static ownership map. Runtime state comes from `status.json`.
 - `backend/app/api/v1/favorites/router.py` — POST, DELETE, GET endpoints
 - `backend/app/main.py` — router registration only (minimal change)
 - `backend/tests/test_favorites.py` — favorites endpoint tests
-- `frontend/types/favorites.ts` — Favorite and FavoriteList TypeScript interfaces
-- `frontend/lib/api/favorites.ts` — addFavorite(), removeFavorite(), getFavorites() wrappers
+- `frontend/types/favorites.ts` — Favorite, FavoriteList, and FavoriteStatus TypeScript interfaces
+- `frontend/lib/api/favorites.ts` — addFavorite(), removeFavorite(), getFavorites(), isFavorite() wrappers
 
 **Must NOT:**
 - Create or modify UI components or pages
