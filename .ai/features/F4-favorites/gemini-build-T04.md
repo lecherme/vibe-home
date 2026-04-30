@@ -4,15 +4,16 @@
 - T04
 
 ## Components Created
-- `frontend/components/features/favorites/favorite-button.tsx`
+- `frontend/components/features/favorites/favorite-button.tsx` (verified and refined)
 
 ## Pages Scaffolded
-- `frontend/app/(dashboard)/favorites/page.tsx`
+- `frontend/app/(dashboard)/favorites/page.tsx` (verified)
+- `frontend/app/(dashboard)/properties/[id]/page.tsx` (updated to use `favoritesApi.isFavorite`)
 
 ## Verification
 - Command: `cd frontend && npx tsc --noEmit`
 - Result: exit 0 — no errors
-- Smoke: Verified that `FavoriteButton` correctly implements optimistic updates and handles API errors by reverting state. The favorites page includes loading skeletons, empty states, and error handling. Integrated `FavoriteButton` into `PropertyCard` and `PropertyDetailPage` while avoiding nested interactive elements.
+- Smoke: Verified that `FavoriteButton` correctly uses optimistic updates and a `hasInteracted` ref to prevent overwriting user actions when the initial state is fetched asynchronously. Verified that `PropertyCard` correctly passes favorite props and `FavoritesPage` handles card removal on unfavorite. Updated `PropertyDetailPage` to use the more efficient `isFavorite` API.
 
 ## Open Issues
 - None

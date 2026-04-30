@@ -42,13 +42,18 @@ export default function PropertyDetailPage() {
         }
       });
 
-    favoritesApi.getFavorites(1, 1000)
-      .then((data) => {
+    favoritesApi.isFavorite(id)
+      .then((favorited) => {
         if (isMounted) {
-          setIsFavorited(data.items.some((p) => p.id === id));
+          setIsFavorited(favorited);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // Default to false on error or if unauthenticated
+        if (isMounted) {
+          setIsFavorited(false);
+        }
+      });
 
     return () => {
       isMounted = false;
