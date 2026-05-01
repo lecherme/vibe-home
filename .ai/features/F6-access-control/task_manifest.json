@@ -1,0 +1,54 @@
+{
+  "feature": "F6-access-control",
+  "tasks": {
+    "T01": {
+      "allowed_files": [
+        ".ai/permissions.md"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T01.md",
+      "verify_commands": []
+    },
+    "T02": {
+      "allowed_files": [
+        "backend/tests/test_rbac_matrix.py",
+        "backend/app/api/v1/auth/router.py",
+        "backend/app/api/v1/properties/router.py",
+        "backend/app/api/v1/favorites/router.py",
+        "backend/app/api/v1/admin/router.py",
+        "backend/app/core/security.py"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T02.md",
+      "verify_commands": []
+    },
+    "T03": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json"
+      ],
+      "expected_artifact": "review.md",
+      "verify_commands": []
+    },
+    "T04": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json"
+      ],
+      "expected_artifact": "final-report.md",
+      "verify_commands": []
+    }
+  }
+}

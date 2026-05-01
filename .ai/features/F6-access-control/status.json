@@ -1,0 +1,64 @@
+{
+  "feature": "F6-access-control",
+  "status": "pending",
+  "current_stage": "T00_init",
+  "current_owner": null,
+  "next_step": "Start T01 — Audit all endpoints and produce permission matrix",
+  "last_review_failure": null,
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Audit all endpoints and produce permission matrix",
+      "owner": "codex",
+      "type": "infra",
+      "depends_on": [],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T02",
+      "title": "Write comprehensive role x endpoint integration tests and fix any RBAC gaps",
+      "owner": "codex",
+      "type": "backend",
+      "depends_on": [
+        "T01"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T03",
+      "title": "Review F6-access-control implementation against acceptance criteria",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": [
+        "T01",
+        "T02"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T04",
+      "title": "Validate F6-access-control and write final acceptance result",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": [
+        "T03"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-05-02T00:00:00Z",
+      "event": "feature workspace initialized",
+      "by": "claude"
+    }
+  ]
+}
