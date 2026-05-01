@@ -1,9 +1,9 @@
 {
   "feature": "F5-admin-property-management",
-  "status": "in_progress",
-  "current_stage": "T05_done",
+  "status": "done",
+  "current_stage": "T06_done",
   "current_owner": null,
-  "next_step": "Start T06 \u2014 Validate F5-admin-property-management and write final acceptance result",
+  "next_step": "F5-admin-property-management complete",
   "last_review_failure": null,
   "tasks": [
     {
@@ -76,9 +76,9 @@
       "depends_on": [
         "T05"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "final-report.md"
     }
   ],
   "activity_log": [
@@ -140,6 +140,16 @@
     {
       "timestamp": "2026-05-01T16:13:52Z",
       "event": "T05 done \u2014 artifact captured as review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-01T16:16:37Z",
+      "event": "T06 started \u2014 Validate F5-admin-property-management and write final acceptance result",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-01T16:17:19Z",
+      "event": "T06 done \u2014 final acceptance artifact captured as final-report.md",
       "by": "claude"
     }
   ]
