@@ -1,0 +1,101 @@
+{
+  "feature": "F5-admin-property-management",
+  "status": "in_progress",
+  "current_stage": "T01_done",
+  "current_owner": null,
+  "next_step": "Start T02 \u2014 Implement admin property endpoints with role enforcement and tests",
+  "last_review_failure": null,
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Scaffold admin Pydantic schemas and service skeleton",
+      "owner": "codex",
+      "type": "scaffold",
+      "depends_on": [],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T01.md"
+    },
+    {
+      "id": "T02",
+      "title": "Implement admin property endpoints with role enforcement and tests",
+      "owner": "codex",
+      "type": "backend",
+      "depends_on": [
+        "T01"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T03",
+      "title": "Publish frontend types and typed admin API wrapper",
+      "owner": "codex",
+      "type": "infra",
+      "depends_on": [
+        "T02"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T04",
+      "title": "Implement admin property list, create/edit form, and wire to admin API",
+      "owner": "gemini",
+      "type": "ui",
+      "depends_on": [
+        "T02",
+        "T03"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T05",
+      "title": "Review F5-admin-property-management implementation against acceptance criteria",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": [
+        "T01",
+        "T02",
+        "T03",
+        "T04"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T06",
+      "title": "Validate F5-admin-property-management and write final acceptance result",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": [
+        "T05"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-05-01T00:00:00Z",
+      "event": "feature workspace initialized",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-01T15:23:28Z",
+      "event": "T01 started \u2014 Scaffold admin Pydantic schemas and service skeleton",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-01T15:24:42Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    }
+  ]
+}
