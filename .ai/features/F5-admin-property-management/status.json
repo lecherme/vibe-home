@@ -1,9 +1,9 @@
 {
   "feature": "F5-admin-property-management",
   "status": "in_progress",
-  "current_stage": "T01_done",
+  "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Start T02 \u2014 Implement admin property endpoints with role enforcement and tests",
+  "next_step": "Start T03 \u2014 Publish frontend types and typed admin API wrapper",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,9 +24,9 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "codex-build-T02.md"
     },
     {
       "id": "T03",
@@ -95,6 +95,16 @@
     {
       "timestamp": "2026-05-01T15:24:42Z",
       "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-01T15:28:47Z",
+      "event": "T02 started \u2014 Implement admin property endpoints with role enforcement and tests",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-01T15:32:21Z",
+      "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
       "by": "claude"
     }
   ]
