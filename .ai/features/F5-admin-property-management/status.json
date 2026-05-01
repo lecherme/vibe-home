@@ -1,9 +1,9 @@
 {
   "feature": "F5-admin-property-management",
   "status": "in_progress",
-  "current_stage": "T03_done",
+  "current_stage": "T05_done",
   "current_owner": null,
-  "next_step": "Start T04 \u2014 Implement admin property list, create/edit form, and wire to admin API",
+  "next_step": "Start T06 \u2014 Validate F5-admin-property-management and write final acceptance result",
   "last_review_failure": null,
   "tasks": [
     {
@@ -49,9 +49,9 @@
         "T02",
         "T03"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "gemini-build-T04.md"
     },
     {
       "id": "T05",
@@ -64,9 +64,9 @@
         "T03",
         "T04"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "review.md"
     },
     {
       "id": "T06",
@@ -115,6 +115,31 @@
     {
       "timestamp": "2026-05-01T16:02:10Z",
       "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-01T16:03:21Z",
+      "event": "T04 started \u2014 Implement admin property list, create/edit form, and wire to admin API",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-01T16:06:09Z",
+      "event": "T04 needs-verification \u2014 worker exited 1 but artifact passed validate-artifact (exit 1)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-01T16:07:20Z",
+      "event": "T04 verify-pass \u2014 wrapper false failure (exit 1) corrected by Claude after artifact inspection; original: worker exited 1 but artifact passed validate-artifact",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-01T16:10:14Z",
+      "event": "T05 started \u2014 Review F5-admin-property-management implementation against acceptance criteria",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-01T16:13:52Z",
+      "event": "T05 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]
