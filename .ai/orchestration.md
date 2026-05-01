@@ -79,6 +79,10 @@ always go directly to `failed` and never enter `needs_verification`.
 2. Read every file listed in the artifact's `## Files Changed` section
 3. Run `python3 tools/status_guard.py validate-artifact <feature> <task_id>` to
    confirm the artifact still passes structural checks
+4. For Gemini tasks, inspect the `.log` to characterise the exit cause: retry
+   attempts, provider connection errors, and telemetry failures are noise and do
+   not indicate implementation failure; errors in file writes, TypeScript
+   compilation failures, or missing output files indicate real failure.
 
 **Disposition:**
 
@@ -110,6 +114,18 @@ the output artifact and:
 - Updates the completed task's status to `done` in `status.json`
 - Appends an entry to `activity_log` with timestamp, event, and owner
 - Determines the next task (back to Step 1)
+
+For backend, scaffold, and infra tasks (owner=`codex`), Claude must also inspect
+the diagnostic log (`codex-build-<TASK_ID>.log`) to confirm that tests were
+actually executed and passed. Artifact structural validity does not confirm test
+execution — if the log shows no test run or shows a net failure count, Claude
+must investigate before treating the task as complete.
+
+For Gemini UI tasks (owner=`gemini`), Claude must confirm that
+`gemini-build-<TASK_ID>.md` contains a `## Verification` section, and inspect
+the corresponding `.log` to determine whether reported errors represent real
+failures or retry/provider noise. Only errors in file creation, TypeScript
+compilation, or missing output indicate real failure.
 
 Claude is the only owner of `status.json`. Codex and Gemini workers must never
 modify it.
