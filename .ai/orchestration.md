@@ -149,6 +149,32 @@ Claude reads `review.md` and makes the acceptance decision:
 
 There is no self-acceptance. Claude's `final-report.md` is required for every feature.
 
+**`final-report.md` disposition format (mandatory):**
+
+The disposition line must appear as the first `##`-level heading in the file, on a single line:
+
+```
+## Disposition: ACCEPTED
+```
+or
+
+```
+## Disposition: FAILED
+```
+
+Multi-line formats are forbidden. The following examples are invalid:
+
+```
+## Disposition
+ACCEPTED
+```
+```
+## Disposition
+accepted
+```
+
+Only `ACCEPTED` and `FAILED` are valid values (uppercase). Any other casing or layout is a contract violation.
+
 ### Review failure routing
 
 If `review.md` has verdict `FAIL`, Claude must NOT proceed to T06 acceptance.
