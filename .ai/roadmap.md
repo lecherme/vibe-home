@@ -220,7 +220,71 @@ Audit and harden all endpoints to ensure RBAC is consistently enforced. Define a
 
 ---
 
-## F7 — AI Search / RAG
+## F7 — Production Persistence & Deployment
+
+**Status:** `[ ]`
+**Owner:** Codex (backend persistence) · Claude (acceptance)
+
+**Goal:**
+Replace all in-memory data stores with Supabase-backed persistence, upgrade Next.js to a secure version, and provide a complete deployment configuration so the system can be deployed to a real environment.
+
+**Non-Goals:**
+- Seed / mock data population (deferred to a separate task post-launch)
+- Image upload (placeholder URLs continue)
+- Multi-region or CDN configuration
+
+**Deliverables:**
+- Supabase `properties` table with schema and migrations
+- Supabase `favorites` table with schema and migrations
+- Backend services rewritten to use Supabase client instead of in-memory stores
+- Admin create/update/delete persisted to Supabase
+- Next.js upgraded from 13.x to a version with no open CVEs (currently 16.x)
+- Dockerfile for backend and frontend
+- `docker-compose.yml` for local end-to-end stack
+- Production environment variable documentation updated
+
+**Dependencies:** F6
+
+**Acceptance Criteria:**
+- Restarting the backend process does not lose any property or favorites data
+- Admin can create a property; it survives a server restart and appears in browse
+- `GET /health` still returns 200 after migration
+- `npm audit` reports 0 high/critical vulnerabilities
+- `docker compose up` starts a working local stack without manual steps
+- All existing backend tests pass against the new persistence layer
+
+---
+
+## F8 — Production Hardening
+
+**Status:** `[ ]`
+**Owner:** Codex (backend) · Claude (acceptance)
+
+**Goal:**
+Harden the running system for production traffic: restrict CORS to explicit origins, add rate limiting on auth endpoints, introduce structured logging, and fix the orphaned-favorites bug on property deletion.
+
+**Non-Goals:**
+- Observability infrastructure (dashboards, alerting)
+- Database-level audit log
+- Frontend error tracking / Sentry integration
+
+**Deliverables:**
+- CORS `allow_methods` and `allow_headers` restricted to explicit allowlists
+- Rate limiting on `POST /api/v1/auth/*` endpoints (e.g. slowapi or equivalent)
+- Structured JSON logging via Python `logging` configured at app startup
+- `DELETE /api/v1/admin/properties/{id}` cascades to remove matching favorites rows
+
+**Dependencies:** F7
+
+**Acceptance Criteria:**
+- CORS preflight for disallowed method returns 400/403
+- More than N login attempts in a time window returns 429
+- Backend logs are valid JSON lines (level, timestamp, message, request_id)
+- Deleting a property removes all associated favorites; affected users' favorites list no longer includes the deleted property
+
+---
+
+## F9 — AI Search / RAG
 
 **Status:** `[ ]`
 **Owner:** Codex (search service upgrade + embedding pipeline) · Claude (acceptance)
@@ -242,7 +306,7 @@ Users can submit natural language queries and receive semantically ranked result
 - RAG layer: top-k listings passed to LLM for optional summary response
 - Feature flag `SEARCH_AI_ENABLED` to toggle between FTS and AI search
 
-**Dependencies:** F3, F6
+**Dependencies:** F3, F8
 
 **Acceptance Criteria:**
 - Natural language query returns relevant results
