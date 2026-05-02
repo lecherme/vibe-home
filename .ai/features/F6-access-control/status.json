@@ -1,9 +1,9 @@
 {
   "feature": "F6-access-control",
-  "status": "pending",
-  "current_stage": "T00_init",
+  "status": "in_progress",
+  "current_stage": "T01_done",
   "current_owner": null,
-  "next_step": "Start T01 — Audit all endpoints and produce permission matrix",
+  "next_step": "Start T02 \u2014 Write comprehensive role x endpoint integration tests and fix any RBAC gaps",
   "last_review_failure": null,
   "tasks": [
     {
@@ -12,9 +12,9 @@
       "owner": "codex",
       "type": "infra",
       "depends_on": [],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "codex-build-T01.md"
     },
     {
       "id": "T02",
@@ -58,6 +58,16 @@
     {
       "timestamp": "2026-05-02T00:00:00Z",
       "event": "feature workspace initialized",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-02T13:26:32Z",
+      "event": "T01 started \u2014 Audit all endpoints and produce permission matrix",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-02T13:27:48Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
       "by": "claude"
     }
   ]
