@@ -1,9 +1,9 @@
 {
   "feature": "F6-access-control",
   "status": "in_progress",
-  "current_stage": "T02_done",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Start T03 \u2014 Review F6-access-control implementation against acceptance criteria",
+  "next_step": "Start T04 \u2014 Validate F6-access-control and write final acceptance result",
   "last_review_failure": null,
   "tasks": [
     {
@@ -37,9 +37,9 @@
         "T01",
         "T02"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "review.md"
     },
     {
       "id": "T04",
@@ -78,6 +78,16 @@
     {
       "timestamp": "2026-05-02T13:46:21Z",
       "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-02T13:47:52Z",
+      "event": "T03 started \u2014 Review F6-access-control implementation against acceptance criteria",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-02T13:49:58Z",
+      "event": "T03 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]
