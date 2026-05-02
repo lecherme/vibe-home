@@ -1,9 +1,9 @@
 {
   "feature": "F6-access-control",
   "status": "in_progress",
-  "current_stage": "T01_done",
+  "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Start T02 \u2014 Write comprehensive role x endpoint integration tests and fix any RBAC gaps",
+  "next_step": "Start T03 \u2014 Review F6-access-control implementation against acceptance criteria",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,9 +24,9 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "codex-build-T02.md"
     },
     {
       "id": "T03",
@@ -68,6 +68,16 @@
     {
       "timestamp": "2026-05-02T13:27:48Z",
       "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-02T13:44:11Z",
+      "event": "T02 started \u2014 Write comprehensive role x endpoint integration tests and fix any RBAC gaps",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-02T13:46:21Z",
+      "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
       "by": "claude"
     }
   ]
