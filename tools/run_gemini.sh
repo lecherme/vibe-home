@@ -46,11 +46,21 @@ You must directly create or update the required files in the repository.
 Do not only output code blocks.
 Only modify files explicitly allowed by the current task block ($TASK_ID).
 
-ABSOLUTE FILE WRITE RULES:
-- You may ONLY create or update files explicitly listed in the current task block.
+ABSOLUTE FILE WRITE RULES (Scope Gate — highest priority):
+- You may ONLY create, update, or delete files explicitly listed in the current task's Scope block.
 - You must NOT modify .ai/, backend/, tools/, package files, config files, or status.json unless the current task explicitly allows it.
-- You must NOT modify any other file.
-- If you cannot comply, stop and report failure.
+- If a required change touches ANY file not in the Scope block:
+  - Do NOT modify the file.
+  - Write the blocker in ## Open Issues with the exact filename and reason.
+  - Stop immediately. Do not continue past this blocker.
+  - Do not expand scope unilaterally.
+
+Exception — Registration-only additions:
+If the out-of-scope file is a barrel/index export file, a route registry file, or an i18n translation file,
+AND the entire change is (a) purely additive — no deletions, no logic changes — and (b) ≤ 3 lines total,
+you MAY apply the change without stopping.
+You MUST log it in ## Files Changed with tag "(registration-only exemption)".
+All other out-of-scope modifications still require immediate stop + blocker.
 
 ## Your Role Constraints
 - Implement page scaffolding, layout composition, feature components
@@ -80,35 +90,44 @@ $RETRY_BLOCK
 $OWNER
 
 
-## Idempotent Implementation Discipline
-Before writing code:
-- Inspect existing files first
+## Scope-Gated Minimal-Diff Discipline
 
-File handling rules:
-- If file does not exist → create it
-- If file exists and is clean but incomplete → patch minimally
-- If file exists but is broken, duplicated, or inconsistent → rewrite the file cleanly
+This discipline takes precedence over any judgment call to improve, refactor, or extend code beyond task scope.
 
-Strict anti-duplication rules:
-- Do NOT create duplicate components (e.g., PropertyList2, PropertyListNew)
-- Do NOT duplicate pages or routes
-- Do NOT duplicate imports
-- Do NOT duplicate hooks or state logic
-- Do NOT create alternative filenames
+### 1. Scope Gate
+See ABSOLUTE FILE WRITE RULES above (including the registration-only exemption). If the file is not in scope and does not qualify for the exemption, do NOT touch it — write the blocker in ## Open Issues and stop.
 
-Next.js structure safety:
-- Respect existing app/ or pages/ routing structure
-- Do NOT break layout.tsx hierarchy
-- When modifying layout/page, preserve existing structure unless task explicitly requires change
+### 2. Minimal Diff
+- Patch existing files in-place. Do not rewrite whole files.
+- A full-file rewrite is permitted ONLY when a targeted patch is structurally impossible
+  (file corrupted, or contains irreconcilable duplication from a previous failed attempt).
+  If you rewrite a file, justify it explicitly in ## Open Issues.
+- Do not rename identifiers, reorder imports, adjust formatting, or reorganize code
+  outside the lines required to complete the task.
+- Do not add new directories, rename files, or change structure unless the task requires it.
+- Do not refactor, clean up, or improve code that is outside the task's Done condition.
 
-Component discipline:
-- Keep components small and composable
-- Reuse existing components if present
-- Do NOT inline large logic blocks into pages
+### 3. Idempotent Implementation
+- Inspect existing files before writing.
+- If file does not exist → create it.
+- If file exists and is incomplete → patch it minimally (§2 above).
+- Do NOT create duplicate components (e.g., PropertyList2, PropertyListNew).
+- Do NOT duplicate pages or routes.
+- Do NOT duplicate imports, hooks, or state logic.
+- Do NOT create alternative filenames.
+- Re-running this task must NOT introduce duplicated UI, routes, or components.
+- Changes must be deterministic and stable.
 
-Re-run safety:
-- Re-running this task must NOT introduce duplicated UI, routes, or components
-- Changes must be deterministic and stable
+### 4. Next.js Structure Safety
+- Respect existing app/ or pages/ routing structure.
+- Do NOT break layout.tsx hierarchy.
+- When modifying layout/page, preserve existing structure unless task explicitly requires change.
+- Keep components small and composable; reuse existing components if present.
+- Do NOT inline large logic blocks into pages.
+
+### 5. Reporting
+- Every file modified, created, or deleted must appear in ## Components Created or ## Pages Scaffolded (or a ## Files Changed section if neither category applies).
+- Files inspected but not changed must NOT be listed.
 
 ## stdout / stderr discipline — CRITICAL
 - Your stdout is captured DIRECTLY as the artifact file by the wrapper script.

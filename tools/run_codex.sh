@@ -72,18 +72,50 @@ $RETRY_BLOCK
 ## Owner Context
 $OWNER
 
-## Idempotent Implementation Discipline
-Before writing code:
-- Inspect existing target files first.
-- If a target file is missing, create it.
-- If a target file exists and is clean but incomplete, patch it minimally.
-- If a target file exists but contains duplicated blocks, conflicting logic, broken structure, or failed previous partial attempts, rewrite the affected file fully.
+## Scope-Gated Minimal-Diff Discipline
+
+This discipline takes precedence over any judgment call to improve, refactor, or extend code beyond task scope.
+
+### 1. Scope Gate (highest priority)
+- You may ONLY modify, create, or delete files explicitly listed in this task's **Scope** block above.
+- If a required change touches ANY file not on that list:
+  - Do NOT modify the file.
+  - Write the blocker in ## Open Issues with the exact filename and reason.
+  - Stop. Do not continue past this blocker.
+  - Do not expand scope unilaterally.
+
+Exception — Registration-only additions:
+If the out-of-scope file is a barrel/index export file, a route registry file, or an i18n translation file,
+AND the entire change is (a) purely additive — no deletions, no logic changes — and (b) ≤ 3 lines total,
+you MAY apply the change without stopping.
+You MUST log it in ## Files Changed with tag \"(registration-only exemption)\".
+All other out-of-scope modifications still require immediate stop + blocker.
+
+### 2. Minimal Diff
+- Patch existing files in-place. Do not rewrite whole files.
+- A full-file rewrite is permitted ONLY when a targeted patch is structurally impossible
+  (file corrupted, or contains irreconcilable duplication from a previous failed attempt).
+  If you rewrite a file, state the justification explicitly in ## Open Issues.
+- Do not rename identifiers, reorder imports, adjust formatting, or reorganize code
+  outside the lines required to complete the task.
+- Do not refactor, clean up, or improve code that is outside the task's Done condition.
+- Do not add new directories, rename files, or change module organization unless
+  the task explicitly requires it.
+
+### 3. Idempotent Implementation
+- Inspect existing target files before writing.
+- If a file is missing, create it.
+- If a file exists and is incomplete, patch it minimally (§2 above).
 - Do not append duplicate functions, exports, routes, schemas, tests, or imports.
 - Do not create alternative filenames such as *_v2, *_new, *_fixed, or duplicate test files.
 - Keep file paths stable and task-scoped.
-- Re-running this task should not introduce duplicate code or duplicate artifacts.
+- Re-running this task must not introduce duplicate code or duplicate artifacts.
 - When modifying existing code, preserve unrelated behavior.
 - When adding to an existing registry/router/index file, check whether the entry already exists before adding it.
+
+### 4. Reporting
+- Every file modified, created, or deleted must appear in ## Files Changed.
+- Files inspected but not changed must NOT appear in ## Files Changed.
 
 ## Instructions
 Implement ONLY the task above ($TASK_ID). Do not implement any other tasks.

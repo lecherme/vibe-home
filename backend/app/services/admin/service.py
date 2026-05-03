@@ -3,21 +3,11 @@ from uuid import uuid4
 
 from fastapi import HTTPException, status
 
-from app.data.properties import PROPERTIES
+from app.core.supabase import get_supabase_client
+from app.data.properties import get_by_id
 from app.schemas.admin import PropertyCreate, PropertyUpdate
 from app.schemas.property import Property as PropertyRead
 from app.schemas.property import PropertyStatus
-
-
-def _property_index(property_id: str) -> int:
-    for index, property_item in enumerate(PROPERTIES):
-        if property_item.id == property_id:
-            return index
-
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Property not found",
-    )
 
 
 def _build_images(image_url: str) -> list[str]:
@@ -26,7 +16,7 @@ def _build_images(image_url: str) -> list[str]:
 
 def create_property(data: PropertyCreate) -> PropertyRead:
     property_id = f"prop_{uuid4().hex}"
-    while any(property_item.id == property_id for property_item in PROPERTIES):
+    while get_by_id(property_id) is not None:
         property_id = f"prop_{uuid4().hex}"
 
     property_item = PropertyRead(
@@ -42,13 +32,17 @@ def create_property(data: PropertyCreate) -> PropertyRead:
         status=PropertyStatus.AVAILABLE,
         created_at=datetime.now(timezone.utc),
     )
-    PROPERTIES.append(property_item)
+    get_supabase_client().table("properties").insert(property_item.model_dump(mode="json")).execute()
     return property_item.model_copy(deep=True)
 
 
 def update_property(property_id: str, data: PropertyUpdate) -> PropertyRead:
-    property_index = _property_index(property_id)
-    current_property = PROPERTIES[property_index]
+    current_property = get_by_id(property_id)
+    if current_property is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Property not found",
+        )
 
     updates = data.model_dump(exclude_unset=True)
     updated_values = current_property.model_dump()
@@ -71,10 +65,21 @@ def update_property(property_id: str, data: PropertyUpdate) -> PropertyRead:
         updated_values["images"] = _build_images(updates["image_url"])
 
     updated_property = PropertyRead(**updated_values)
-    PROPERTIES[property_index] = updated_property
+    (
+        get_supabase_client()
+        .table("properties")
+        .update(updated_property.model_dump(mode="json"))
+        .eq("id", property_id)
+        .execute()
+    )
     return updated_property.model_copy(deep=True)
 
 
 def delete_property(property_id: str) -> None:
-    property_index = _property_index(property_id)
-    del PROPERTIES[property_index]
+    if get_by_id(property_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Property not found",
+        )
+
+    get_supabase_client().table("properties").delete().eq("id", property_id).execute()

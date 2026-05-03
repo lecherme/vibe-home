@@ -154,6 +154,53 @@ Every feature follows this sequence of sequential tasks:
 No task begins until its declared dependency task has a complete output artifact.
 No feature is done until Claude writes `final-report.md` with a passing disposition.
 
+---
+
+## Worker Modification Discipline
+
+Workers apply only the minimum change needed to satisfy the task's **Done condition**. This discipline takes precedence over any judgment call to improve, clean up, or extend code beyond task scope.
+
+### 1. Scope Gate (highest priority)
+
+- A worker may only modify, create, or delete files explicitly listed in the current task's **`Scope:`** block in `tasks.md`.
+- If a required change touches a file not on that list, the worker must:
+  1. Write the blocker in `## Open Issues` (exact filename + reason)
+  2. Stop the task immediately
+  3. Do NOT modify the out-of-scope file
+  4. Wait for Claude to update the `tasks.md` Scope before retrying
+
+Do not expand scope unilaterally under any circumstances.
+
+**Exception — Registration-only additions:** If the out-of-scope file is a barrel/index export file, a route registry file, or an i18n translation file, AND the entire change is (a) purely additive — no deletions, no logic changes — and (b) ≤ 3 lines total, you MAY apply the change without stopping. You MUST record it in `## Files Changed` with the tag `(registration-only exemption)`. All other out-of-scope modifications still require immediate stop + blocker.
+
+### 2. Minimal Diff
+
+- Patch existing files in-place. Do not rewrite whole files.
+- A full-file rewrite is permitted **only** when a targeted patch is structurally impossible — e.g. the file is corrupted or contains irreconcilable duplication from a previous failed attempt.
+- Any full-file rewrite requires an explicit justification written in `## Open Issues`.
+- Do not rename identifiers, reorder imports, adjust formatting, or reorganize code outside the lines required to complete the task.
+- Do not add new directories, rename files, or change module organization unless the task explicitly requires it.
+- Do not refactor, clean up, or improve code that is outside the task's Done condition.
+
+### 3. Idempotent Implementation
+
+- Inspect existing target files before writing.
+- If a file is missing, create it.
+- If a file exists and is incomplete, patch it minimally (§2 above).
+- Do not append duplicate functions, exports, routes, schemas, tests, or imports.
+- Do not create alternative filenames such as `*_v2`, `*_new`, `*_fixed`.
+- Keep file paths stable and task-scoped.
+- Re-running this task must not introduce duplicate code or artifacts.
+- When adding to a registry/router/index file, check whether the entry already exists before adding.
+- When modifying existing code, preserve unrelated behavior.
+
+### 4. Reporting
+
+- Every file modified, created, or deleted must appear in the build report's `## Files Changed` section.
+- Files inspected but not changed must NOT appear in `## Files Changed`.
+
+---
+
 ## Dev Requirements
 
 - jq (for git checkpoint script)

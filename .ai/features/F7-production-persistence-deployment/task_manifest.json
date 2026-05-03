@@ -1,0 +1,97 @@
+{
+  "feature": "F7-production-persistence-deployment",
+  "tasks": {
+    "T01": {
+      "allowed_files": [
+        "backend/migrations/001_create_properties.sql",
+        "backend/migrations/002_create_favorites.sql",
+        "backend/.env.example",
+        "frontend/.env.example"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T01.md",
+      "verify_commands": []
+    },
+    "T02": {
+      "allowed_files": [
+        "backend/app/core/supabase.py",
+        "backend/app/data/properties.py",
+        "backend/app/services/admin/service.py",
+        "backend/app/services/favorites/service.py",
+        "backend/app/services/health_service.py",
+        "backend/app/api/v1/health.py",
+        "backend/requirements.txt",
+        "backend/tests/test_health_service.py",
+        "backend/tests/test_properties.py",
+        "backend/tests/test_admin_properties.py",
+        "backend/tests/test_favorites.py"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T02.md",
+      "verify_commands": []
+    },
+    "T03": {
+      "allowed_files": [
+        "frontend/package.json",
+        "frontend/package-lock.json",
+        "frontend/next.config.mjs",
+        "frontend/tsconfig.json"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T03.md",
+      "verify_commands": []
+    },
+    "T04": {
+      "allowed_files": [
+        "backend/Dockerfile",
+        "frontend/Dockerfile",
+        "docker-compose.yml",
+        "backend/README.md",
+        "frontend/README.md"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T04.md",
+      "verify_commands": []
+    },
+    "T05": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json"
+      ],
+      "expected_artifact": "review.md",
+      "verify_commands": []
+    },
+    "T06": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json"
+      ],
+      "expected_artifact": "final-report.md",
+      "verify_commands": []
+    }
+  }
+}

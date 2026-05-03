@@ -1,0 +1,197 @@
+{
+  "feature": "F7-production-persistence-deployment",
+  "status": "failed",
+  "current_stage": "T05_done",
+  "current_owner": null,
+  "next_step": "Requeue T02 for retry, then rerun T04, then rerun T05 review. Boundary issue (next-env.d.ts) to be evaluated separately before T05 rerun.",
+  "last_review_failure": {
+    "review_task": "T05",
+    "review_artifact": "review.md",
+    "verdict": "FAIL",
+    "fix_path": "task_retry",
+    "primary_retry_task": "T02",
+    "retry_sequence": ["T02", "T04", "T05"],
+    "failed_criteria": ["A2", "A4", "A5", "A7"],
+    "fix_instructions": [
+      "A2/A4: Remove FakeSupabaseClient fallback from backend/app/core/supabase.py (lines 170-203). Runtime code must not silently fall back to in-memory storage when SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing or supabase library unavailable \u2014 it must raise or return an error instead.",
+      "A2: Remove in-memory seed (_PROPERTY_SEED / PROPERTIES list) from backend/app/data/properties.py. All property reads/writes must go through the Supabase client with no local fallback.",
+      "A2: Remove favorites_store in-memory proxy from backend/app/services/favorites/service.py. All favorites reads/writes must go through the Supabase client.",
+      "A4: Fix backend/app/services/health_service.py so that get_health_status() returns status='error' (not 'ok') when Supabase is misconfigured (missing key, client init failure) \u2014 not only when a query throws. GET /health must return non-200 for any broken Supabase configuration.",
+      "A5: Update backend/tests/test_properties.py, test_admin_properties.py, test_favorites.py so they mock or stub the Supabase client contract (using SUPABASE_SERVICE_ROLE_KEY path), not the old PROPERTIES / favorites_store in-memory variables. Tests must validate the real persistence layer interface.",
+      "A7 (deferred to T04 rerun): After T02 fixes are merged, rerun docker compose up --build in a real Docker environment and capture successful health endpoint response."
+    ],
+    "boundary_issue": {
+      "file": "frontend/next-env.d.ts",
+      "description": "Modified during T03 but not in T03 declared scope. Evaluate separately: either revert or formally add to T03 scope via tasks.md amendment before T05 rerun.",
+      "blocking": false
+    },
+    "open_warnings": [
+      "T02: pytest backend/tests/ not run in real environment \u2014 only py_compile static check done in sandbox.",
+      "T04: docker compose up --build not end-to-end verified \u2014 only docker compose config passed.",
+      "T03: middleware file convention deprecated warning (non-blocking).",
+      "MINOR: frontend/types/favorites.ts uses camelCase fields; backend schema uses snake_case \u2014 type contract mismatch not blocking this retry."
+    ]
+  },
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "DB migrations & env vars",
+      "owner": "codex",
+      "type": "scaffold",
+      "depends_on": [],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T01.md"
+    },
+    {
+      "id": "T02",
+      "title": "Backend persistence rewrite",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [
+        "T01"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T02.md"
+    },
+    {
+      "id": "T03",
+      "title": "Next.js upgrade",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [
+        "T01"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T03.md"
+    },
+    {
+      "id": "T04",
+      "title": "Docker & compose",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [
+        "T02",
+        "T03"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T04.md"
+    },
+    {
+      "id": "T05",
+      "title": "Codex review",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": [
+        "T02",
+        "T03",
+        "T04"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "review.md"
+    },
+    {
+      "id": "T06",
+      "title": "Claude acceptance",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": [
+        "T05"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-05-02T14:54:05Z",
+      "event": "feature workspace initialized from template",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T00:00:00Z",
+      "event": "planning docs completed: tasks.md, owner.md, acceptance.md, status.json, task_manifest.json",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T13:25:41Z",
+      "event": "T01 started \u2014 DB migrations & env vars",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T13:25:41Z",
+      "event": "T01 failed \u2014 run_task failed with exit code 2",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T13:28:33Z",
+      "event": "T01 requeued \u2014 retry approved by Claude",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T13:28:51Z",
+      "event": "T01 started \u2014 DB migrations & env vars",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T13:30:13Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T13:32:51Z",
+      "event": "T02 started \u2014 Backend persistence rewrite",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T13:40:16Z",
+      "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T13:50:33Z",
+      "event": "T03 started \u2014 Next.js upgrade",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T13:55:00Z",
+      "event": "T03 failed \u2014 run_task failed with exit code 1",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T14:48:50Z",
+      "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T14:52:16Z",
+      "event": "T04 started \u2014 Docker & compose",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T14:58:08Z",
+      "event": "T04 done \u2014 artifact captured as codex-build-T04.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T15:04:26Z",
+      "event": "T05 started \u2014 Codex review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T15:09:55Z",
+      "event": "T05 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-03T15:20:00Z",
+      "event": "last_review_failure recorded \u2014 fix_path=task_retry, primary=T02, sequence=[T02,T04,T05], failed=[A2,A4,A5,A7]",
+      "by": "claude"
+    }
+  ]
+}
