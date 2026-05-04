@@ -2,11 +2,13 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 import pytest
+from fastapi import HTTPException
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.api.v1.favorites.router import router as favorites_router
 from app.core.config import get_settings
+from app.core.supabase import seed_fake_supabase
 from app.data.properties import get_all
 from app.services.favorites.service import (
     add_favorite,
@@ -27,9 +29,9 @@ def test_state(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("SUPABASE_JWT_SECRET", JWT_SECRET)
     monkeypatch.setenv("ALLOWED_ORIGINS", "http://localhost:3000")
     get_settings.cache_clear()
-    favorites_store.clear()
+    seed_fake_supabase()
     yield
-    favorites_store.clear()
+    seed_fake_supabase()
 
 
 @pytest.fixture
@@ -95,6 +97,22 @@ def test_remove_favorite_clears_property() -> None:
 
     assert is_favorite("user-123", property_id) is False
     assert favorites_store == {}
+
+
+def test_add_favorite_rejects_unknown_property() -> None:
+    with pytest.raises(HTTPException) as exc_info:
+        add_favorite("user-123", "does-not-exist")
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "Property not found"
+
+
+def test_remove_favorite_rejects_missing_favorite() -> None:
+    with pytest.raises(HTTPException) as exc_info:
+        remove_favorite("user-123", favorite_property_ids(1)[0])
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "Favorite not found"
 
 
 def test_get_user_favorites_returns_paginated_results() -> None:

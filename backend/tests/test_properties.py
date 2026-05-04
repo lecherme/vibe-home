@@ -7,7 +7,8 @@ from fastapi.testclient import TestClient
 
 from app.api.v1.properties.router import router as properties_router
 from app.core.config import get_settings
-from app.data.properties import get_all
+from app.core.supabase import seed_fake_supabase
+from app.data.properties import get_all, get_by_id
 
 
 JWT_SECRET = "test-supabase-jwt-secret"
@@ -20,6 +21,9 @@ def auth_settings(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("SUPABASE_JWT_SECRET", JWT_SECRET)
     monkeypatch.setenv("ALLOWED_ORIGINS", "http://localhost:3000")
     get_settings.cache_clear()
+    seed_fake_supabase()
+    yield
+    seed_fake_supabase()
 
 
 @pytest.fixture
@@ -47,6 +51,25 @@ def build_token(
 
 def auth_headers() -> dict[str, str]:
     return {"Authorization": f"Bearer {build_token()}"}
+
+
+def test_get_all_reads_seeded_properties_from_supabase() -> None:
+    properties = get_all()
+
+    assert len(properties) == 16
+    assert properties[0].id == "prop_001"
+
+
+def test_get_by_id_reads_property_from_supabase() -> None:
+    property_item = get_by_id("prop_003")
+
+    assert property_item is not None
+    assert property_item.id == "prop_003"
+    assert property_item.title == "Parkside Brownstone"
+
+
+def test_get_by_id_returns_none_for_unknown_id() -> None:
+    assert get_by_id("does-not-exist") is None
 
 
 def test_list_properties_returns_paginated_results(client: TestClient) -> None:

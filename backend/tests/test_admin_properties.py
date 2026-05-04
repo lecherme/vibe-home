@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from app.core.config import get_settings
+from app.core.supabase import seed_fake_supabase
 from app.data.properties import PROPERTIES
 from app.schemas.admin import PropertyCreate, PropertyUpdate
 from app.services.admin.service import create_property, delete_property, update_property
@@ -23,10 +24,9 @@ def test_state(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("SUPABASE_JWT_SECRET", JWT_SECRET)
     monkeypatch.setenv("ALLOWED_ORIGINS", "http://localhost:3000")
     get_settings.cache_clear()
-
-    original_properties = [property_item.model_copy(deep=True) for property_item in PROPERTIES]
+    seed_fake_supabase()
     yield
-    PROPERTIES[:] = [property_item.model_copy(deep=True) for property_item in original_properties]
+    seed_fake_supabase()
     get_settings.cache_clear()
 
 

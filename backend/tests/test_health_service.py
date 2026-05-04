@@ -2,18 +2,50 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.api.v1.health import router as health_router
+from app.core.supabase import FakeSupabaseClient
 from app.services.health_service import get_health_status
 
 
-def test_get_health_status_returns_ok() -> None:
+def test_get_health_status_returns_ok_for_configured_reachable_supabase(monkeypatch) -> None:
+    class HealthyTable:
+        def select(self, columns: str):
+            del columns
+            return self
+
+        def limit(self, count: int):
+            del count
+            return self
+
+        def execute(self):
+            return None
+
+    class HealthyClient:
+        def table(self, table_name: str):
+            del table_name
+            return HealthyTable()
+
+    monkeypatch.setattr(
+        "app.services.health_service.get_supabase_client",
+        lambda: HealthyClient(),
+    )
+
     response = get_health_status()
 
     assert response.status == "ok"
 
 
-def test_get_health_status_returns_error_when_supabase_is_unreachable(
-    monkeypatch,
-) -> None:
+def test_get_health_status_returns_error_when_supabase_is_unconfigured(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "app.services.health_service.get_supabase_client",
+        lambda: FakeSupabaseClient(),
+    )
+
+    response = get_health_status()
+
+    assert response.status == "error"
+
+
+def test_get_health_status_returns_error_when_supabase_is_unreachable(monkeypatch) -> None:
     class FailingTable:
         def select(self, columns: str):
             del columns

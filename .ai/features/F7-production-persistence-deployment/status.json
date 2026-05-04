@@ -1,17 +1,26 @@
 {
   "feature": "F7-production-persistence-deployment",
-  "status": "failed",
-  "current_stage": "T05_done",
+  "status": "in_progress",
+  "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Requeue T02 for retry, then rerun T04, then rerun T05 review. Boundary issue (next-env.d.ts) to be evaluated separately before T05 rerun.",
+  "next_step": "Start T04 \u2014 Docker & compose",
   "last_review_failure": {
     "review_task": "T05",
     "review_artifact": "review.md",
     "verdict": "FAIL",
     "fix_path": "task_retry",
     "primary_retry_task": "T02",
-    "retry_sequence": ["T02", "T04", "T05"],
-    "failed_criteria": ["A2", "A4", "A5", "A7"],
+    "retry_sequence": [
+      "T02",
+      "T04",
+      "T05"
+    ],
+    "failed_criteria": [
+      "A2",
+      "A4",
+      "A5",
+      "A7"
+    ],
     "fix_instructions": [
       "A2/A4: Remove FakeSupabaseClient fallback from backend/app/core/supabase.py (lines 170-203). Runtime code must not silently fall back to in-memory storage when SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing or supabase library unavailable \u2014 it must raise or return an error instead.",
       "A2: Remove in-memory seed (_PROPERTY_SEED / PROPERTIES list) from backend/app/data/properties.py. All property reads/writes must go through the Supabase client with no local fallback.",
@@ -52,7 +61,7 @@
         "T01"
       ],
       "status": "done",
-      "retry_count": 0,
+      "retry_count": 1,
       "artifact": "codex-build-T02.md"
     },
     {
@@ -76,9 +85,9 @@
         "T02",
         "T03"
       ],
-      "status": "done",
-      "retry_count": 0,
-      "artifact": "codex-build-T04.md"
+      "status": "pending",
+      "retry_count": 1,
+      "artifact": null
     },
     {
       "id": "T05",
@@ -90,9 +99,9 @@
         "T03",
         "T04"
       ],
-      "status": "done",
-      "retry_count": 0,
-      "artifact": "review.md"
+      "status": "pending",
+      "retry_count": 1,
+      "artifact": null
     },
     {
       "id": "T06",
@@ -191,6 +200,36 @@
     {
       "timestamp": "2026-05-03T15:20:00Z",
       "event": "last_review_failure recorded \u2014 fix_path=task_retry, primary=T02, sequence=[T02,T04,T05], failed=[A2,A4,A5,A7]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-04T00:00:00Z",
+      "event": "boundary fix: reverted frontend/next-env.d.ts to HEAD (T03 out-of-scope modification removed, user decision: revert)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-04T00:00:00Z",
+      "event": "T02 requeued for retry (retry_count=1) \u2014 incremental fix: A2/A4/A5 per last_review_failure; no full rewrite",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-04T00:00:00Z",
+      "event": "T04 reset to pending (retry_count=1) \u2014 requires real docker compose up --build with health endpoint validation",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-04T00:00:00Z",
+      "event": "T05 reset to pending (retry_count=1) \u2014 pending T02/T04 retry completion",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-04T14:19:16Z",
+      "event": "T02 started \u2014 Backend persistence rewrite",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-04T14:26:27Z",
+      "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
       "by": "claude"
     }
   ]
