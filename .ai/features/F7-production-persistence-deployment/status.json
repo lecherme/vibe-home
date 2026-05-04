@@ -61,7 +61,7 @@
         "T01"
       ],
       "status": "done",
-      "retry_count": 1,
+      "retry_count": 2,
       "artifact": "codex-build-T02.md"
     },
     {
@@ -229,6 +229,26 @@
     },
     {
       "timestamp": "2026-05-04T14:26:27Z",
+      "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-04T22:36:14Z",
+      "event": "T02 retry-1 failed verification \u2014 FakeSupabaseClient/favorites_store/_PropertyStoreProxy still present in production code; artifact archived as codex-build-T02.attempt-20260504-223614.{md,log}",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-04T22:36:14Z",
+      "event": "T02 requeued for second retry (retry_count=2) \u2014 strict deletion constraints: all Fake/fallback/seed/proxy symbols must not exist in production code after this task",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-04T14:38:37Z",
+      "event": "T02 started \u2014 Backend persistence rewrite",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-04T14:40:24Z",
       "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
       "by": "claude"
     }
