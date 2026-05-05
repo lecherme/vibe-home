@@ -1,43 +1,197 @@
+import copy
+import importlib.util
+import sys
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from types import ModuleType
+from unittest.mock import MagicMock
 
 import jwt
 import pytest
-from fastapi import HTTPException
 from fastapi import FastAPI
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from app.api.v1.favorites.router import router as favorites_router
 from app.core.config import get_settings
-from app.core.supabase import seed_fake_supabase
 from app.data.properties import get_all
-from app.services.favorites.service import (
-    add_favorite,
-    favorites_store,
-    get_user_favorites,
-    is_favorite,
-    remove_favorite,
-)
 
 
 JWT_SECRET = "test-supabase-jwt-secret"
+
+_TEST_PROPERTIES = [
+    {
+        "id": "prop_001",
+        "title": "Harbor View Penthouse",
+        "description": "Top-floor penthouse with wraparound windows.",
+        "price": 2450000.0,
+        "location": "Seattle, WA",
+        "bedrooms": 3,
+        "bathrooms": 2,
+        "area_sqm": 182.5,
+        "images": [],
+        "status": "available",
+        "created_at": "2026-04-23T16:30:00+00:00",
+    },
+    {
+        "id": "prop_002",
+        "title": "Desert Courtyard Retreat",
+        "description": "Single-level home with a shaded courtyard.",
+        "price": 1180000.0,
+        "location": "Scottsdale, AZ",
+        "bedrooms": 4,
+        "bathrooms": 3,
+        "area_sqm": 210.2,
+        "images": [],
+        "status": "available",
+        "created_at": "2026-04-21T09:15:00+00:00",
+    },
+    {
+        "id": "prop_003",
+        "title": "Parkside Brownstone",
+        "description": "Renovated brownstone with original millwork.",
+        "price": 1985000.0,
+        "location": "Brooklyn, NY",
+        "bedrooms": 4,
+        "bathrooms": 3,
+        "area_sqm": 196.8,
+        "images": [],
+        "status": "sold",
+        "created_at": "2026-04-19T18:05:00+00:00",
+    },
+]
+_PARAM_PROPERTY_ID = _TEST_PROPERTIES[0]["id"]
+
+
+def _load_favorites_test_modules() -> tuple[object, ModuleType]:
+    app_root = Path(__file__).resolve().parents[1] / "app"
+    service_path = app_root / "services" / "favorites" / "service.py"
+    router_path = app_root / "api" / "v1" / "favorites" / "router.py"
+    package_name = "app.services.favorites"
+    service_name = "app.services.favorites.service"
+
+    previous_package = sys.modules.get(package_name)
+    previous_service = sys.modules.get(service_name)
+
+    favorites_package = ModuleType(package_name)
+    favorites_package.__path__ = [str(service_path.parent)]
+    sys.modules[package_name] = favorites_package
+
+    service_spec = importlib.util.spec_from_file_location(service_name, service_path)
+    assert service_spec is not None and service_spec.loader is not None
+    service_module = importlib.util.module_from_spec(service_spec)
+    sys.modules[service_name] = service_module
+    service_spec.loader.exec_module(service_module)
+
+    favorites_package.add_favorite = service_module.add_favorite
+    favorites_package.get_user_favorites = service_module.get_user_favorites
+    favorites_package.remove_favorite = service_module.remove_favorite
+
+    router_spec = importlib.util.spec_from_file_location(
+        "backend_tests_favorites_router",
+        router_path,
+    )
+    assert router_spec is not None and router_spec.loader is not None
+    router_module = importlib.util.module_from_spec(router_spec)
+    router_spec.loader.exec_module(router_module)
+
+    if previous_package is None:
+        sys.modules.pop(package_name, None)
+    else:
+        sys.modules[package_name] = previous_package
+
+    if previous_service is None:
+        sys.modules.pop(service_name, None)
+    else:
+        sys.modules[service_name] = previous_service
+
+    return router_module.router, service_module
+
+
+def _mock_supabase(
+    properties: list[dict[str, object]],
+    favorites: list[dict[str, object]],
+) -> MagicMock:
+    client = MagicMock()
+
+    def _table(name: str) -> MagicMock:
+        table = MagicMock()
+        ctx: dict[str, object] = {"op": "select", "filters": [], "payload": None, "limit": None}
+        store = properties if name == "properties" else favorites
+
+        table.select.side_effect = lambda *a, **kw: (ctx.update({"op": "select"}) or table)
+        table.insert.side_effect = lambda payload: (
+            ctx.update({"op": "insert", "payload": payload}) or table
+        )
+        table.delete.side_effect = lambda: (ctx.update({"op": "delete"}) or table)
+        table.eq.side_effect = lambda column, value: (
+            ctx["filters"].append((column, value)) or table
+        )
+        table.limit.side_effect = lambda value: (ctx.update({"limit": value}) or table)
+
+        def _execute() -> MagicMock:
+            response = MagicMock()
+            filters = ctx["filters"]
+            assert isinstance(filters, list)
+            matched = [row for row in store if all(row.get(column) == value for column, value in filters)]
+
+            if ctx["op"] == "select":
+                rows = copy.deepcopy(matched)
+                limit = ctx["limit"]
+                if isinstance(limit, int):
+                    rows = rows[:limit]
+                response.data = rows
+            elif ctx["op"] == "insert":
+                payload = ctx["payload"]
+                assert isinstance(payload, dict)
+                new_row = copy.deepcopy(payload)
+                store.append(new_row)
+                response.data = [copy.deepcopy(new_row)]
+            else:
+                removed_ids = {id(row) for row in matched}
+                store[:] = [row for row in store if id(row) not in removed_ids]
+                response.data = copy.deepcopy(matched)
+
+            return response
+
+        table.execute.side_effect = _execute
+        return table
+
+    client.table.side_effect = _table
+    return client
+
+
+FAVORITES_ROUTER, FAVORITES_SERVICE = _load_favorites_test_modules()
+add_favorite = FAVORITES_SERVICE.add_favorite
+get_user_favorites = FAVORITES_SERVICE.get_user_favorites
+is_favorite = FAVORITES_SERVICE.is_favorite
+remove_favorite = FAVORITES_SERVICE.remove_favorite
 
 
 @pytest.fixture(autouse=True)
 def test_state(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
-    monkeypatch.setenv("SUPABASE_KEY", "test-supabase-key")
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "test-service-role-key")
+    monkeypatch.setenv("SUPABASE_KEY", "test-service-role-key")
     monkeypatch.setenv("SUPABASE_JWT_SECRET", JWT_SECRET)
     monkeypatch.setenv("ALLOWED_ORIGINS", "http://localhost:3000")
     get_settings.cache_clear()
-    seed_fake_supabase()
+
+    properties = copy.deepcopy(_TEST_PROPERTIES)
+    favorites: list[dict[str, object]] = []
+    mock_client = _mock_supabase(properties, favorites)
+
+    monkeypatch.setattr("app.data.properties.get_supabase_client", lambda: mock_client)
+    monkeypatch.setattr(FAVORITES_SERVICE, "get_supabase_client", lambda: mock_client)
+
     yield
-    seed_fake_supabase()
+
+    get_settings.cache_clear()
 
 
 @pytest.fixture
 def client() -> TestClient:
     app = FastAPI()
-    app.include_router(favorites_router, prefix="/api/v1/favorites")
+    app.include_router(FAVORITES_ROUTER, prefix="/api/v1/favorites")
     return TestClient(app)
 
 
@@ -96,7 +250,7 @@ def test_remove_favorite_clears_property() -> None:
     remove_favorite("user-123", property_id)
 
     assert is_favorite("user-123", property_id) is False
-    assert favorites_store == {}
+    assert get_user_favorites("user-123", page=1, page_size=10).total == 0
 
 
 def test_add_favorite_rejects_unknown_property() -> None:
@@ -219,9 +373,9 @@ def test_get_favorite_status_returns_false_when_not_favorited(
     ("method", "path"),
     [
         ("get", "/api/v1/favorites"),
-        ("get", f"/api/v1/favorites/{favorite_property_ids(1)[0]}"),
-        ("post", f"/api/v1/favorites/{favorite_property_ids(1)[0]}"),
-        ("delete", f"/api/v1/favorites/{favorite_property_ids(1)[0]}"),
+        ("get", f"/api/v1/favorites/{_PARAM_PROPERTY_ID}"),
+        ("post", f"/api/v1/favorites/{_PARAM_PROPERTY_ID}"),
+        ("delete", f"/api/v1/favorites/{_PARAM_PROPERTY_ID}"),
     ],
 )
 def test_favorites_endpoints_require_authorization(
@@ -239,9 +393,9 @@ def test_favorites_endpoints_require_authorization(
     ("method", "path"),
     [
         ("get", "/api/v1/favorites"),
-        ("get", f"/api/v1/favorites/{favorite_property_ids(1)[0]}"),
-        ("post", f"/api/v1/favorites/{favorite_property_ids(1)[0]}"),
-        ("delete", f"/api/v1/favorites/{favorite_property_ids(1)[0]}"),
+        ("get", f"/api/v1/favorites/{_PARAM_PROPERTY_ID}"),
+        ("post", f"/api/v1/favorites/{_PARAM_PROPERTY_ID}"),
+        ("delete", f"/api/v1/favorites/{_PARAM_PROPERTY_ID}"),
     ],
 )
 def test_favorites_endpoints_reject_admin_users(

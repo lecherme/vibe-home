@@ -14,7 +14,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN npm run build
+RUN if [ -f .env ]; then set -a && . ./.env && set +a; fi && npm run build
 
 
 FROM node:20-bookworm-slim AS runner

@@ -19,7 +19,7 @@ from typing import Any
 import fnmatch
 
 
-VALID_TASK_STATUSES = {"pending", "in_progress", "done", "failed", "blocked", "needs_verification"}
+VALID_TASK_STATUSES = {"pending", "in_progress", "done", "failed", "blocked", "needs_verification", "failed_review"}
 VALID_FEATURE_STATUSES = {"pending", "in_progress", "done", "failed", "blocked"}
 VALID_RETRY_TYPES = {"task_retry", "direct_fixup", "review_rerun"}
 
@@ -305,6 +305,8 @@ def validate_status(feature_dir: Path) -> tuple[list[str], list[str]]:
                 continue
             if not (feature_dir / expected).is_file():
                 errors.append(f"{task_id} is needs_verification but artifact is missing: {expected}")
+        elif status == "failed_review":
+            pass  # artifact from the failed review is expected to remain
         elif artifact:
             warnings.append(f"{task_id} is {status} but still records artifact {artifact!r}")
 

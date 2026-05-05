@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.api.v1.health import router as health_router
-from app.core.supabase import FakeSupabaseClient
 from app.services.health_service import get_health_status
 
 
@@ -35,9 +34,12 @@ def test_get_health_status_returns_ok_for_configured_reachable_supabase(monkeypa
 
 
 def test_get_health_status_returns_error_when_supabase_is_unconfigured(monkeypatch) -> None:
+    def _raise() -> None:
+        raise RuntimeError("Supabase not configured")
+
     monkeypatch.setattr(
         "app.services.health_service.get_supabase_client",
-        lambda: FakeSupabaseClient(),
+        _raise,
     )
 
     response = get_health_status()

@@ -8,26 +8,6 @@ from app.schemas.favorite import FavoriteList, FavoriteRead
 from app.schemas.property import Property as PropertyRead
 
 
-class _FavoritesStoreProxy:
-    def clear(self) -> None:
-        get_supabase_client().table("favorites").delete().execute()
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, dict):
-            return False
-
-        return self._as_dict() == other
-
-    def _as_dict(self) -> dict[str, set[str]]:
-        favorites: dict[str, set[str]] = {}
-        response = get_supabase_client().table("favorites").select("*").execute()
-        for row in response.data:
-            favorites.setdefault(row["user_id"], set()).add(row["property_id"])
-        return favorites
-
-
-favorites_store = _FavoritesStoreProxy()
-
 
 def _favorite_exists(user_id: str, property_id: str) -> bool:
     response = (

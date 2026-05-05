@@ -67,6 +67,8 @@ Every feature gets a workspace at `.ai/features/<feature>/`.
 | `gemini-build-<TASK_ID>.md` | Gemini stdout via wrapper | Components created, pages scaffolded, open issues |
 | `review.md` | Codex | Review findings: pass/fail per acceptance criterion, required fixes |
 | `final-report.md` | Claude | Acceptance decision, criteria met/failed, disposition |
+| `fix-reports/fix-report-<TICKET_ID>.md` | Codex stdout via `run_fix_codex.sh` | Fix patch summary, verification results, open issues per ticket |
+| `fix-reports/fix-report-<TICKET_ID>.log` | stderr via `run_fix_codex.sh` | Diagnostic log (debugging only, not read by orchestration flow) |
 
 ### `status.json` structure
 
@@ -204,3 +206,131 @@ Do not expand scope unilaterally under any circumstances.
 ## Dev Requirements
 
 - jq (for git checkpoint script)
+
+---
+
+## Fix Ticket Schema
+
+Fix tickets are the execution units of the review-fix loop. Each ticket lives under
+an affected task's `fix.tickets[]` array in `status.json` and is executed by
+`tools/run_fix_codex.sh`.
+
+### Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `id` | Yes | Unique ID within the feature. Format: `fix-<criterion>-<short-desc>` |
+| `required_by` | Yes | Review task ID that exposed this issue (e.g. `"T05"`) |
+| `affected_task` | Yes | Original build task this fix targets (e.g. `"T02"`) |
+| `affected_task_title` | Yes | Human-readable title of the affected task |
+| `criterion` | Yes | The review failure label as it appears in `review.md` (e.g. `"A2"`, `"J8"`, `"SEC-01"`). This is whatever label the review artifact assigned — not a fixed naming scheme. Do not invent new labels; copy verbatim from the review. |
+| `status` | Yes | `pending` \| `in_progress` \| `done` \| `failed` |
+| `files` | Yes | Strict list of files Codex may modify. Any modification to an unlisted file is a contract violation. |
+| `description` | Yes | One sentence: what to delete or replace, and why |
+| `verification` | Yes | Shell command string. exit 0 = fix confirmed. Must be minimal, stable, and reproducible. Do not encode multi-step logic into a single line — write a small script instead if the check requires more than one operation. |
+| `pre_condition` | No | Ticket ID that must reach `done` before this ticket may start |
+
+### Task-level fix sub-object (status.json)
+
+```json
+"fix": {
+  "status": "in_progress",
+  "tickets": [
+    {
+      "id": "fix-A2-supabase",
+      "required_by": "T05",
+      "affected_task": "T02",
+      "affected_task_title": "Backend persistence rewrite",
+      "criterion": "A2",
+      "status": "pending",
+      "files": ["backend/app/core/supabase.py"],
+      "description": "Remove FakeSupabaseClient fallback; raise on missing Supabase config instead of silently falling back to in-memory storage",
+      "verification": "python3 -c \"import sys; sys.exit(0 if 'FakeSupabaseClient' not in open('backend/app/core/supabase.py').read() else 1)\"",
+      "pre_condition": null
+    }
+  ]
+}
+```
+
+`fix.status`: `in_progress` when any ticket is pending or in_progress; `done` when all tickets are done.
+
+### Review task fields added on fix_loop entry (status.json)
+
+```json
+{
+  "id": "T05",
+  "status": "failed_review",
+  "failed_review": {
+    "verdict": "FAIL",
+    "artifact": "review.md",
+    "failed_criteria": ["A2", "A5"],
+    "timestamp": "2026-05-03T15:09:55Z"
+  },
+  "blocked_by_fixes": ["fix-A2-supabase", "fix-A5-test-admin"]
+}
+```
+
+`blocked_by_fixes` lists only code-fix ticket IDs. Deployment or environment
+verification items (e.g. Docker end-to-end) are handled by task reruns, not fix tickets.
+
+---
+
+## Patch-Only Fix Discipline
+
+Fix tickets enforce a stricter variant of the general Minimal Diff discipline.
+
+1. **Scope is the only truth.** Codex may only modify files listed in `ticket.files`. Any change to an unlisted file is a contract violation; Codex must record it as a blocker in the fix report and stop.
+2. **No net additions.** A fix ticket removes or replaces problem symbols. It does not add new features, refactor unrelated code, or extend interfaces.
+3. **Verification is mandatory.** `ticket.verification` must be run immediately after the patch. A ticket is not `done` until verification exits 0. If verification fails, ticket status is `failed`; do not mark done.
+4. **One criterion per ticket.** Each ticket targets exactly one review failure label. If two criteria require changes to the same file, create two tickets — one per criterion.
+5. **File budget.** A single ticket must not modify more than three files. If the fix requires more, split into multiple tickets using `pre_condition` chaining.
+
+---
+
+## Fix Report Format
+
+Every fix ticket execution via `tools/run_fix_codex.sh` must produce a fix report.
+Claude reads the fix report to determine whether to mark the ticket `done` or `failed`.
+
+### Path and naming
+
+```
+.ai/features/<feature>/fix-reports/fix-report-<TICKET_ID>.md   ← structured report (stdout)
+.ai/features/<feature>/fix-reports/fix-report-<TICKET_ID>.log  ← diagnostic log (stderr)
+```
+
+### Minimum content structure
+
+```markdown
+# Fix Report: <ticket-id>
+
+## Ticket Info
+- **Review Task:** <required_by>
+- **Affected Task:** <affected_task> — <affected_task_title>
+- **Criterion:** <criterion>
+- **Files Declared:** <files list>
+
+## Files Changed
+- <list of files actually modified>
+
+## Patch Summary
+<One to three sentences: what was deleted or replaced.>
+
+## Verification
+| Command | Output | Result |
+|---------|--------|--------|
+| `<verification command>` | `<actual output or exit code>` | PASS / FAIL |
+
+## Open Issues
+<None, or list remaining concerns for Claude to evaluate.>
+```
+
+### Retroactive claiming without fix report (migration special case — one-time only)
+
+Fix tickets may be marked `done` without a fix report **only** when the code
+changes were applied before the fix loop framework existed (i.e., during an
+earlier direct-fixup before this schema was defined). This exception applies
+**once, to the initial migration** of a feature into fix loop. The `activity_log`
+entry for that migration must explicitly note which tickets were retroactively
+claimed and that no fix report was generated. All subsequent ticket executions
+via `run_fix_codex.sh` must produce a fix report. No further exceptions.

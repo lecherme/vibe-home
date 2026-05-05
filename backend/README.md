@@ -17,4 +17,6 @@ Create `backend/.env` before running the service.
 
 ## Docker Compose
 
-`docker compose up --build` starts this service on `http://localhost:8000` and reads runtime configuration from `backend/.env`.
+`docker compose up --build` starts this service on `http://localhost:8000` and loads runtime configuration from `backend/.env`.
+
+Copy `backend/.env.example` to `backend/.env` and provide real Supabase credentials before starting the stack.

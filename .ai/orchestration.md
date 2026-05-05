@@ -193,6 +193,19 @@ Claude first classifies the fix path:
 - `review_rerun`
   - Upstream code changed after a direct fixup or manual correction.
   - Claude reruns the review task without replaying the implementation chain.
+- `fix_loop`
+  - The review exposed multiple well-scoped code removal or replacement issues
+    that do not require redoing the original task, but are too numerous for
+    Claude to apply inline.
+  - Claude leaves the original task(s) `done`. The review task status moves to
+    `failed_review`. Fix tickets are created under the affected task(s) in
+    `status.json` (see fix ticket schema in `conventions.md`).
+  - Codex executes each fix ticket sequentially via `tools/run_fix_codex.sh`.
+    Each execution must produce a fix report before Claude proceeds.
+  - Claude reads each fix report, updates ticket status and task `fix.status`
+    in `status.json`, and resolves `blocked_by_fixes` entries as tickets
+    complete. When `blocked_by_fixes` is empty, Claude reruns the review task.
+  - `fix_loop` does NOT increment `retry_count` on the original task.
 
 Only when an upstream change materially invalidates downstream implementation
 should Claude return downstream implementation tasks to `pending`.
@@ -220,6 +233,11 @@ Severity order: `blocked` > `task_retry` > `direct_fixup` > CI only.
 **env_missing rule:** if ALL failures are `env_missing`, Claude must not reset any task. Claude writes a CI trigger note in `activity_log` and stops.
 No `retry` metadata is written. No `retry_count` is incremented.
 
+**fix_loop vs direct_fixup:** Use `fix_loop` instead of `direct_fixup` when
+the fix spans more than two files or requires symbol-level deletion surgery
+that is better delegated to Codex via patch tickets. For single-file or
+trivial inline fixes, prefer `direct_fixup`.
+
 ### Required status.json writes on failure
 
 Before resetting any task, Claude MUST write:
@@ -238,6 +256,19 @@ Before resetting any task, Claude MUST write:
 ```
 
 `last_review_failure` is cleared (set to null) when the retried task reaches `done`.
+
+For `fix_loop`, Claude must additionally write:
+
+1. **Review task:** set `status` to `failed_review`; add `failed_review` object
+   (`verdict`, `artifact`, `failed_criteria`, `timestamp`) and `blocked_by_fixes`
+   list of pending ticket IDs.
+2. **Each affected task:** add a `fix` sub-object with `status: "in_progress"`
+   and a `tickets` array (see fix ticket schema in `conventions.md`).
+
+`last_review_failure.fix_path` must be `"fix_loop"`. All other
+`last_review_failure` fields follow the same rules as `task_retry`.
+`last_review_failure` is cleared when all fix tickets reach `done` and the
+review task is reset to `pending` for rerun.
 
 ---
 
@@ -429,6 +460,7 @@ it executes the following loop without waiting for human input between steps:
 - `env_missing` only: write CI note in `activity_log`, stop loop cleanly
 - `direct_fixup`: apply fix, rerun review, continue
 - `review_rerun`: rerun review, continue
+- `fix_loop`: execute pending fix tickets sequentially via `run_fix_codex.sh`; update ticket status after each fix report; rerun review when `blocked_by_fixes` is empty; continue
 - `task_retry` with `retry_count < 3`: invoke worker with retry context, continue
 
 ### Stop and confirm (show plan, wait for human "proceed")
@@ -483,7 +515,10 @@ Claude may perform git operations under controlled conditions.
 ├── gemini-build-<TASK_ID>.log          # Gemini — diagnostic log (stderr)
 ├── review.md                 # Codex — review findings (stdout)
 ├── codex-review.log          # Codex — diagnostic log (stderr)
-└── final-report.md           # Claude — final acceptance decision only
+├── final-report.md           # Claude — final acceptance decision only
+└── fix-reports/              # fix report artifacts (one per executed fix ticket)
+    ├── fix-report-<ID>.md    # structured fix report (stdout from run_fix_codex.sh)
+    └── fix-report-<ID>.log   # diagnostic log (stderr)
 ```
 
 There are no global report files at the repo root. All artifacts are feature-scoped.

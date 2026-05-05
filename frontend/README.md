@@ -12,8 +12,8 @@ Create `frontend/.env` before running the service.
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL exposed to the browser and server runtime. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key exposed to the browser and server runtime. |
 
-`frontend/.env` is read during the Docker image build, so these values must exist before `docker compose up --build`.
+`frontend/.env` is copied into the Docker build context and sourced during `next build`, so these values must exist before `docker compose up --build`.
 
 ## Docker Compose
 
-`docker compose up --build` starts this service on `http://localhost:3000` after the backend health check passes.
+Copy `frontend/.env.example` to `frontend/.env`, then run `docker compose up --build` from the repository root. The frontend starts on `http://localhost:3000` after the backend health check passes.

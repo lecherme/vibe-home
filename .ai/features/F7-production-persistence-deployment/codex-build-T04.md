@@ -4,7 +4,6 @@
 - T04
 
 ## Files Changed
-- `backend/Dockerfile`
 - `frontend/Dockerfile`
 - `docker-compose.yml`
 - `backend/README.md`
@@ -17,5 +16,5 @@
 - None
 
 ## Open Issues
-- `backend/app/core/config.py`: the backend still requires legacy `SUPABASE_KEY` and `SUPABASE_JWT_SECRET`; T04 documented `SUPABASE_KEY` as a compatibility env var, but aligning the code to `SUPABASE_SERVICE_ROLE_KEY` is out of scope for this task.
-- Full `docker compose up` validation was not completed in this sandbox because Docker builds failed on local Docker credential-helper/buildx permission errors; `docker compose config` succeeded with supplied env vars, and `backend/tests/test_health_service.py` passed locally.
+- Local verification gap: `frontend/npm run build` could not be completed in this shell because the installed Node version is `18.14.2`, while the upgraded Next.js app requires `>=20.9.0`.
+- Runtime verification gap: full `docker compose up` was not executed against the repo services because `backend/.env` and live Supabase credentials are not present in this workspace. Compose structure was validated successfully with temporary env files via `docker compose config`.
