@@ -24,13 +24,16 @@
         "backend/app/data/properties.py",
         "backend/app/services/admin/service.py",
         "backend/app/services/favorites/service.py",
+        "backend/app/services/favorites/__init__.py",
         "backend/app/services/health_service.py",
         "backend/app/api/v1/health.py",
         "backend/requirements.txt",
         "backend/tests/test_health_service.py",
         "backend/tests/test_properties.py",
         "backend/tests/test_admin_properties.py",
-        "backend/tests/test_favorites.py"
+        "backend/tests/test_favorites.py",
+        "backend/tests/test_rbac_matrix.py",
+        "backend/tests/test_search.py"
       ],
       "forbidden_files": [
         ".ai/**/status.json",

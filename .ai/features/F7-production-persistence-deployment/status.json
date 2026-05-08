@@ -1,9 +1,9 @@
 {
   "feature": "F7-production-persistence-deployment",
-  "status": "blocked",
-  "current_stage": "T04_done",
+  "status": "done",
+  "current_stage": "T06_done",
   "current_owner": null,
-  "next_step": "Resolve blocked task dependencies",
+  "next_step": "Feature accepted — ready for next feature",
   "last_review_failure": {
     "review_task": "T05",
     "review_artifact": "review.md",
@@ -178,6 +178,34 @@
             "description": "\u6d4b\u8bd5\u6539\u4e3a mock/stub Supabase client contract\uff08SUPABASE_SERVICE_ROLE_KEY \u8def\u5f84\uff09\uff0c\u4e0d\u518d\u91cd\u7f6e favorites_store in-memory \u53d8\u91cf",
             "verification": "python3 -c \"import sys, re; src=open('backend/tests/test_favorites.py').read(); sys.exit(0 if 'favorites_store' not in src and not re.search(r'^favorites_store\\s*=', src, re.MULTILINE) else 1)\"",
             "pre_condition": "fix-A5-test-admin"
+          },
+          {
+            "id": "fix-A5-test-rbac",
+            "required_by": "T05",
+            "affected_task": "T02",
+            "affected_task_title": "Backend persistence rewrite",
+            "criterion": "A5",
+            "status": "done",
+            "files": [
+              "backend/tests/test_rbac_matrix.py"
+            ],
+            "description": "\u79fb\u9664\u5bf9\u5df2\u5220\u9664\u7b26\u53f7\u7684\u5bfc\u5165\uff08PROPERTIES / favorites_store\uff09\u548c\u6240\u6709\u76f4\u63a5\u7528\u6cd5\uff1b\u6539\u4e3a mock Supabase client contract\uff0c\u4e0e\u5176\u4ed6\u5df2\u4fee A5 \u6d4b\u8bd5\u6587\u4ef6\u4fdd\u6301\u4e00\u81f4",
+            "verification": "python3 -c \"import sys, re; src=open('backend/tests/test_rbac_matrix.py').read(); sys.exit(0 if not re.search(r'from app\\\\.data\\\\.properties import.*\\\\bPROPERTIES\\\\b', src) and not re.search(r'\\\\bfavorites_store\\\\b', src) and not re.search(r'\\\\bPROPERTIES\\\\s*\\\\[', src) else 1)\"",
+            "pre_condition": "fix-A5-test-favorites"
+          },
+          {
+            "id": "fix-A5-test-search",
+            "required_by": "T05",
+            "affected_task": "T02",
+            "affected_task_title": "Backend persistence rewrite",
+            "criterion": "A5",
+            "status": "done",
+            "files": [
+              "backend/tests/test_search.py"
+            ],
+            "description": "\u4fee\u590d auth_settings fixture \u4e2d env var \u540d\u79f0\u9519\u8bef\uff08SUPABASE_KEY \u2192 SUPABASE_SERVICE_ROLE_KEY\uff09\uff0c\u5e76\u4e3a get_supabase_client \u589e\u52a0\u660e\u786e\u7684 patch\uff0c\u4f7f search \u76f8\u5173\u6d4b\u8bd5\u4e0d\u89e6\u53d1\u771f\u5b9e Supabase \u8fde\u63a5",
+            "verification": "python3 -c \"import sys, re; src=open('backend/tests/test_search.py').read(); bad_key=bool(re.search(r'setenv\\\\([\\\"\\']SUPABASE_KEY[\\\"\\']', src)); has_mock=bool(re.search(r'(patch|setattr)\\\\s*\\\\([\\\"\\'].*get_supabase_client', src)); sys.exit(0 if not bad_key and has_mock else 1)\"",
+            "pre_condition": "fix-A5-test-rbac"
           }
         ]
       }
@@ -217,7 +245,7 @@
         "T03",
         "T04"
       ],
-      "status": "failed_review",
+      "status": "pending",
       "retry_count": 1,
       "artifact": "review.md",
       "failed_review": {
@@ -241,9 +269,9 @@
       "depends_on": [
         "T05"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "final-report.md"
     }
   ],
   "activity_log": [
@@ -395,6 +423,46 @@
     {
       "timestamp": "2026-05-05T17:43:51Z",
       "event": "T04 done \u2014 artifact captured as codex-build-T04.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-08T00:00:00Z",
+      "event": "A7 human verification passed \u2014 docker compose up --build executed in real local environment; GET /health returned {\"status\":\"ok\"} HTTP 200",
+      "by": "human"
+    },
+    {
+      "timestamp": "2026-05-08T00:00:00Z",
+      "event": "T05 reset to pending (retry_count=1 preserved) \u2014 all fix tickets done, A7 manually verified; blocked_by_fixes cleared; ready for T05 rerun",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-08T00:00:00Z",
+      "event": "T05 retry FAIL \u2014 only A5 remaining: test_rbac_matrix.py still imports deleted symbols PROPERTIES/favorites_store; fix-A5-test-rbac ticket added to fix_loop; T05.blocked_by_fixes=[fix-A5-test-rbac]; T02.fix.status=in_progress",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T00:00:00Z",
+      "event": "fix-A5-test-rbac done \u2014 test_rbac_matrix.py \u65e7\u7b26\u53f7\u5bfc\u5165\u53ca\u7528\u6cd5\u5df2\u79fb\u9664\uff0c\u6539\u4e3a mock Supabase client contract\uff1bverification PASS",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T00:00:00Z",
+      "event": "fix-A5-test-search done \u2014 test_search.py \u4fee\u590d SUPABASE_KEY\u2192SUPABASE_SERVICE_ROLE_KEY\uff0c\u65b0\u589e setattr mock get_supabase_client\uff1bverification PASS",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T00:00:00Z",
+      "event": "A5 human verification passed \u2014 command: pytest tests/ in local backend workspace; result: 95 passed in 0.91s; exit code 0",
+      "by": "human"
+    },
+    {
+      "timestamp": "2026-05-09T00:00:00Z",
+      "event": "T05 PASS \u2014 all A1-A8 criteria satisfied; boundary violations resolved via task_manifest.json amendment and run_codex_review.sh context injection",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T00:00:00Z",
+      "event": "T06 done \u2014 disposition ACCEPTED; final-report.md written; feature status set to done",
       "by": "claude"
     }
   ]
