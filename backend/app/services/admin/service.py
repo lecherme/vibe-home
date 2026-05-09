@@ -82,4 +82,5 @@ def delete_property(property_id: str) -> None:
             detail="Property not found",
         )
 
+    get_supabase_client().table("favorites").delete().eq("property_id", property_id).execute()
     get_supabase_client().table("properties").delete().eq("id", property_id).execute()

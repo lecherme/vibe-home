@@ -1,0 +1,185 @@
+{
+  "feature": "F8-production-hardening",
+  "status": "done",
+  "current_stage": "T06_done",
+  "current_owner": null,
+  "next_step": "Feature accepted \u2014 ready for next feature",
+  "last_review_failure": {
+    "review_task": "T05",
+    "review_artifact": "review.md",
+    "verdict": "FAIL",
+    "fix_path": "direct_fixup",
+    "failed_criteria": ["A2"],
+    "failure_types": {
+      "architecture_mismatch": "F8 spec \u5047\u8bbe\u540e\u7aef\u6709 POST /api/v1/auth/* \u767b\u5f55\u7aef\u70b9\uff0c\u4f46\u5b9e\u9645\u67b6\u6784\u4e2d signIn/signUp \u7531\u524d\u7aef\u76f4\u8fde Supabase\uff0c\u540e\u7aef\u65e0\u6b64\u7c7b\u7aef\u70b9",
+      "synthetic_endpoint": "T02 \u4e3a\u6ee1\u8db3\u6d4b\u8bd5\u865a\u6784\u4e86 POST /api/v1/auth/me\uff0c\u8be5\u7aef\u70b9\u65e0\u4efb\u4f55\u771f\u5b9e\u4e1a\u52a1\u8c03\u7528\u65b9\uff0c\u5c5e\u4e8e\u65e0\u610f\u4e49 API \u6269\u5f20"
+    },
+    "fix_instructions": [
+      "A2-1: \u5220\u9664 backend/app/api/v1/auth/router.py \u4e2d POST /api/v1/auth/me \u5408\u6210\u7aef\u70b9\uff08L114-120\uff09",
+      "A2-2: \u5728 GET /api/v1/auth/me \u7aef\u70b9\u4e0a\u52a0 @auth_rate_limiter.limit(get_auth_rate_limit) \u88c5\u9970\u5668\uff0c\u5e76\u4e3a\u51fd\u6570\u7b7e\u540d\u8865 request: Request \u53c2\u6570",
+      "A2-3: \u5c06 backend/tests/test_rate_limiting.py \u4e2d\u4e09\u5904 client.post(...) \u6539\u4e3a client.get(...)",
+      "A2-4: \u4ece backend/requirements.txt \u79fb\u9664 slowapi==0.1.9\uff08\u81ea\u5b9a\u4e49 AuthRateLimiter \u672a\u4f7f\u7528\u8be5\u5e93\uff09"
+    ],
+    "doc_corrections": [
+      "spec.md: Backend \u2014 Rate limiting \u8282\u5df2\u6821\u6b63\u76ee\u6807\u7aef\u70b9\u4e3a GET /api/v1/auth/me\uff0c\u6ce8\u660e\u67b6\u6784\u539f\u56e0",
+      "tasks.md: T02 Scope \u5df2\u66f4\u65b0\uff0c\u5220\u9664 slowapi/main.py wiring\uff0c\u6539\u4e3a\u5bf9 GET /me \u65bd\u52a0 rate limit",
+      "acceptance.md: A2 \u5df2\u6539\u5199\uff0c\u660e\u786e\u9a8c\u6536\u76ee\u6807\u4e3a GET /api/v1/auth/me\uff0c\u7981\u6b62 POST /auth/me \u5b58\u5728"
+    ]
+  },
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "CORS hardening",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T01.md"
+    },
+    {
+      "id": "T02",
+      "title": "Auth rate limiting",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [
+        "T01"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T02.md"
+    },
+    {
+      "id": "T03",
+      "title": "Structured JSON logging",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [
+        "T01"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T03.md"
+    },
+    {
+      "id": "T04",
+      "title": "Cascade delete favorites",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [
+        "T01"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T04.md"
+    },
+    {
+      "id": "T05",
+      "title": "Codex review",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": [
+        "T02",
+        "T03",
+        "T04"
+      ],
+      "status": "done",
+      "retry_count": 1,
+      "artifact": "review.md"
+    },
+    {
+      "id": "T06",
+      "title": "Claude acceptance",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": [
+        "T05"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "final-report.md"
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-05-09T00:00:00Z",
+      "event": "feature workspace initialized \u2014 spec.md, tasks.md, owner.md, acceptance.md, status.json, task_manifest.json created",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T14:45:20Z",
+      "event": "T01 started \u2014 CORS hardening",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T14:47:07Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T14:50:02Z",
+      "event": "T02 started \u2014 Auth rate limiting",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T14:56:05Z",
+      "event": "T02 needs-verification \u2014 scope check failed: manifest had auth.py, actual file is auth/router.py (Claude-side manifest error)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T15:00:00Z",
+      "event": "T02 done \u2014 direct fixup: task_manifest.json, tasks.md, owner.md corrected to auth/router.py; implementation verified correct (slowapi, AuthRateLimiter, test_rate_limiting.py, RATE_LIMIT_AUTH env var all present)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T15:03:44Z",
+      "event": "T03 started \u2014 Structured JSON logging",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T15:07:32Z",
+      "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T15:09:19Z",
+      "event": "T04 started \u2014 Cascade delete favorites",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T15:11:22Z",
+      "event": "T04 done \u2014 artifact captured as codex-build-T04.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T15:19:25Z",
+      "event": "T05 FAIL \u2014 A2 architecture mismatch: spec assumed POST auth endpoints but backend has none; Codex invented synthetic POST /auth/me; review.md written",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T15:30:00Z",
+      "event": "doc correction: spec.md, tasks.md, acceptance.md updated \u2014 A2 target changed from POST /api/v1/auth/* to GET /api/v1/auth/me with architecture note",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T15:30:00Z",
+      "event": "direct_fixup started \u2014 4 minimal changes: delete POST /auth/me, add rate limit to GET /auth/me, fix test method, remove slowapi",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T15:30:00Z",
+      "event": "direct_fixup done \u2014 auth/router.py: POST /me removed, GET /me rate-limited; test_rate_limiting.py: POST\u2192GET; requirements.txt: slowapi removed",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T15:40:00Z",
+      "event": "T05 retry-1 PASS \u2014 A1/A2/A3/A4 all passed; review.md written; previous review archived as review.attempt-20260509-153821.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-09T15:45:00Z",
+      "event": "T06 done \u2014 disposition ACCEPTED; final-report.md written; feature status set to done",
+      "by": "claude"
+    }
+  ]
+}

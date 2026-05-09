@@ -47,12 +47,33 @@ _TEST_PROPERTIES = [
     },
 ]
 
+_TEST_FAVORITES = [
+    {
+        "user_id": "user-123",
+        "property_id": "prop_001",
+        "created_at": "2026-04-24T12:00:00+00:00",
+    },
+    {
+        "user_id": "user-456",
+        "property_id": "prop_001",
+        "created_at": "2026-04-24T12:05:00+00:00",
+    },
+    {
+        "user_id": "user-123",
+        "property_id": "prop_002",
+        "created_at": "2026-04-24T12:10:00+00:00",
+    },
+]
 
-def _mock_supabase(properties: list[dict[str, object]]) -> MagicMock:
+
+def _mock_supabase(
+    properties: list[dict[str, object]],
+    favorites: list[dict[str, object]],
+) -> MagicMock:
     client = MagicMock()
 
     def _table(name: str) -> MagicMock:
-        if name != "properties":
+        if name not in {"properties", "favorites"}:
             raise AssertionError(f"Unexpected table requested: {name}")
 
         table = MagicMock()
@@ -62,6 +83,7 @@ def _mock_supabase(properties: list[dict[str, object]]) -> MagicMock:
             "payload": None,
             "limit": None,
         }
+        store = properties if name == "properties" else favorites
 
         table.select.side_effect = lambda *args, **kwargs: (context.update({"op": "select"}) or table)
         table.insert.side_effect = lambda payload: (context.update({"op": "insert", "payload": payload}) or table)
@@ -75,7 +97,7 @@ def _mock_supabase(properties: list[dict[str, object]]) -> MagicMock:
         def _execute() -> MagicMock:
             response = MagicMock()
             filters = context["filters"]
-            matched = [row for row in properties if all(row.get(column) == value for column, value in filters)]
+            matched = [row for row in store if all(row.get(column) == value for column, value in filters)]
 
             if context["op"] == "select":
                 rows = copy.deepcopy(matched)
@@ -84,20 +106,20 @@ def _mock_supabase(properties: list[dict[str, object]]) -> MagicMock:
                 response.data = rows
             elif context["op"] == "insert":
                 new_row = copy.deepcopy(context["payload"])
-                properties.append(new_row)
+                store.append(new_row)
                 response.data = [copy.deepcopy(new_row)]
             elif context["op"] == "update":
-                for row in properties:
+                for row in store:
                     if all(row.get(column) == value for column, value in filters):
                         row.update(context["payload"])
                 response.data = [
                     copy.deepcopy(row)
-                    for row in properties
+                    for row in store
                     if all(row.get(column) == value for column, value in filters)
                 ]
             elif context["op"] == "delete":
                 removed_ids = {id(row) for row in matched}
-                properties[:] = [row for row in properties if id(row) not in removed_ids]
+                store[:] = [row for row in store if id(row) not in removed_ids]
                 response.data = copy.deepcopy(matched)
             else:
                 raise AssertionError(f"Unexpected operation: {context['op']}")
@@ -121,11 +143,12 @@ def test_state(monkeypatch: pytest.MonkeyPatch) -> dict[str, list[dict[str, obje
     get_settings.cache_clear()
 
     properties = copy.deepcopy(_TEST_PROPERTIES)
-    mock_client = _mock_supabase(properties)
+    favorites = copy.deepcopy(_TEST_FAVORITES)
+    mock_client = _mock_supabase(properties, favorites)
     monkeypatch.setattr("app.data.properties.get_supabase_client", lambda: mock_client)
     monkeypatch.setattr("app.services.admin.service.get_supabase_client", lambda: mock_client)
 
-    yield {"properties": properties}
+    yield {"properties": properties, "favorites": favorites}
 
     get_settings.cache_clear()
 
@@ -225,6 +248,7 @@ def test_delete_property_service_removes_property_from_shared_store(
     delete_property(property_id)
 
     assert all(property_item["id"] != property_id for property_item in test_state["properties"])
+    assert all(favorite["property_id"] != property_id for favorite in test_state["favorites"])
 
 
 def test_post_admin_property_creates_property_and_returns_201(
@@ -301,6 +325,7 @@ def test_delete_admin_property_removes_property_and_returns_204(
     assert response.status_code == 204
     assert response.content == b""
     assert all(property_item["id"] != property_id for property_item in test_state["properties"])
+    assert all(favorite["property_id"] != property_id for favorite in test_state["favorites"])
 
 
 def test_delete_admin_property_returns_404_for_missing_property(client: TestClient) -> None:
