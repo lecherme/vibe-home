@@ -1,6 +1,6 @@
 # vibe_home
 
-A full-stack Hong Kong property listing platform — and a **production demonstration of multi-agent software orchestration**. Every feature in this project is designed, implemented, reviewed, and accepted by a structured pipeline of AI agents coordinated through a file-based state machine.
+A full-stack Hong Kong property listing platform — and a **production demonstration of multi-agent orchestration layer**. Every feature in this project is designed, implemented, reviewed, and accepted by a structured pipeline of AI agents coordinated through a file-based state machine.
 
 The codebase itself is the output. The orchestration system is the methodology.
 
