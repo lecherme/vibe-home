@@ -40,6 +40,8 @@ if [[ -z "$TASK_BLOCK" ]]; then
   exit 1
 fi
 
+TASK_TYPE=$(echo "$TASK_BLOCK" | awk '/\*\*type:\*\*/{print $NF; exit}')
+
 PROMPT="You are Gemini, a UI scaffolding and low-risk implementation worker.
 
 You must directly create or update the required files in the repository.
@@ -59,7 +61,7 @@ Exception — Registration-only additions:
 If the out-of-scope file is a barrel/index export file, a route registry file, or an i18n translation file,
 AND the entire change is (a) purely additive — no deletions, no logic changes — and (b) ≤ 3 lines total,
 you MAY apply the change without stopping.
-You MUST log it in ## Files Changed with tag "(registration-only exemption)".
+You MUST log it in ## Files Changed with tag \"(registration-only exemption)\".
 All other out-of-scope modifications still require immediate stop + blocker.
 
 ## Your Role Constraints
@@ -178,6 +180,77 @@ When done, output a build report in this format:
 ## Open Issues
 - list any blockers, tsc errors, or incomplete items; or 'None'
 "
+
+# audit tasks override: read-only mode, no tsc, different report format
+if [[ "$TASK_TYPE" == "audit" ]]; then
+PROMPT="You are Gemini, performing a read-only audit task.
+
+You must NOT create, modify, or delete any files in frontend/ or backend/.
+Do not run tsc, npm, or any build/compile commands.
+Do not modify status.json.
+Do NOT create or write report files yourself. Output the audit report ONLY to stdout.
+The wrapper script will capture stdout into the correct feature-scoped artifact.
+
+## Your Role — Read-Only Audit
+- Read and analyze source files as instructed by the current task.
+- Identify bugs and UX issues; do NOT fix them.
+- Categorize every finding as P0 (true bug), P1 (UX gap), or P2 (polish).
+- Do NOT call Supabase directly from frontend code (just note if you see it).
+- Do NOT modify lib/api/, lib/auth/, or any source files.
+
+## Feature Spec
+$SPEC
+
+## All Tasks (for context)
+$TASKS
+
+## Task to Execute Now: $TASK_ID
+$TASK_BLOCK
+
+$RETRY_BLOCK
+
+## Owner Context
+$OWNER
+
+## stdout / stderr discipline — CRITICAL
+- Your stdout is captured DIRECTLY as the artifact file by the wrapper script.
+- stdout must contain ONLY the final # Gemini Build Report block — nothing else.
+- Do NOT print any reasoning, planning, progress notes, tool call descriptions,
+  file read summaries, or intermediate analysis to stdout.
+- All thinking, exploration notes, and execution logs must go to stderr only.
+- The artifact validation will FAIL and the task will be marked failed if stdout
+  contains anything before '# Gemini Build Report'.
+
+## Instructions
+Read all files listed in the task scope. Do NOT modify any source files.
+Produce a complete audit report categorizing every finding as P0, P1, or P2.
+When done, output the audit report in this exact format:
+
+# Gemini Build Report
+
+## Task Completed
+- $TASK_ID
+
+## P0 — 真实 Bug（功能不正确或产生报错）
+| # | 页面/组件 | 问题描述 | 受影响文件 |
+|---|-----------|----------|------------|
+
+## P1 — 明显 UX 缺口（功能缺失但不报错）
+| # | 页面/组件 | 问题描述 | 受影响文件 |
+|---|-----------|----------|------------|
+
+## P2 — Polish（体验细节，不影响主流程）
+| # | 页面/组件 | 问题描述 | 受影响文件 |
+|---|-----------|----------|------------|
+
+## Verification
+- No source files were modified during this audit.
+- Files inspected: list key files reviewed
+
+## Open Issues
+- None / list any audit coverage limitations
+"
+fi
 
 REPORT_FILE="$FEATURE_DIR/gemini-build-${TASK_ID}.md"
 LOG_FILE="$FEATURE_DIR/gemini-build-${TASK_ID}.log"

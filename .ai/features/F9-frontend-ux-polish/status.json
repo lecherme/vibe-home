@@ -1,0 +1,112 @@
+{
+  "feature": "F9-frontend-ux-polish",
+  "status": "in_progress",
+  "current_stage": "phase_2_ready",
+  "current_owner": null,
+  "next_step": "Run T02 (Codex): bash tools/run_codex.sh .ai/features/F9-frontend-ux-polish T02",
+  "last_review_failure": null,
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Frontend UX Audit（只读审计）",
+      "owner": "gemini",
+      "type": "audit",
+      "depends_on": [],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "gemini-build-T01.md"
+    },
+    {
+      "id": "T02",
+      "title": "Codex：收藏错误类型 + 登录 redirect 保留",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T03",
+      "title": "Gemini：收藏链路前端修复",
+      "owner": "gemini",
+      "type": "build",
+      "depends_on": ["T02"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T04",
+      "title": "Gemini：搜索/URL 状态持久化",
+      "owner": "gemini",
+      "type": "build",
+      "depends_on": ["T03"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T05",
+      "title": "Gemini：认证前端行为 + Admin 表单校验",
+      "owner": "gemini",
+      "type": "build",
+      "depends_on": ["T04"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T06",
+      "title": "Gemini：图片降级 + 全页面状态覆盖",
+      "owner": "gemini",
+      "type": "build",
+      "depends_on": ["T05"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T07",
+      "title": "Codex review",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": ["T02", "T03", "T04", "T05", "T06"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    },
+    {
+      "id": "T08",
+      "title": "Claude acceptance",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": ["T07"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-05-10T15:44:53Z",
+      "event": "feature workspace initialized from template",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-11T00:00:00Z",
+      "event": "planning complete: spec/tasks/acceptance/owner/status/task_manifest all finalized for phase 1 (T01 audit); phase 2 tasks to be appended after T01 review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-11T08:00:00Z",
+      "event": "T01 audit complete (by gemini worker): 5 P0 bugs, 6 P1 UX gaps, 5 P2 polish items identified; artifact: gemini-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-11T08:30:00Z",
+      "event": "phase 2 planning complete: T02-T08 defined; all P0 and high-value P1 items scoped; P2 deferred; no feature split needed",
+      "by": "claude"
+    }
+  ]
+}

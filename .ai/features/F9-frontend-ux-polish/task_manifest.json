@@ -1,0 +1,167 @@
+{
+  "feature": "F9-frontend-ux-polish",
+  "tasks": {
+    "T01": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "frontend/**/*.ts",
+        "frontend/**/*.tsx",
+        "frontend/**/*.js",
+        "frontend/**/*.css",
+        "backend/**",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "gemini-build-T01.md",
+      "verify_commands": [
+        "grep -c '## P0' .ai/features/F9-frontend-ux-polish/gemini-build-T01.md",
+        "grep -c '## P1' .ai/features/F9-frontend-ux-polish/gemini-build-T01.md",
+        "grep -c '## P2' .ai/features/F9-frontend-ux-polish/gemini-build-T01.md"
+      ]
+    },
+    "T02": {
+      "allowed_files": [
+        "frontend/lib/api/favorites.ts",
+        "frontend/middleware.ts"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "frontend/app/**",
+        "frontend/components/**",
+        "backend/**",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "codex-build-T02.md",
+      "verify_commands": [
+        "grep -n 'FavoriteConflictError' frontend/lib/api/favorites.ts",
+        "grep -n 'redirectTo' frontend/middleware.ts",
+        "cd frontend && npx tsc --noEmit 2>&1 | tail -5"
+      ]
+    },
+    "T03": {
+      "allowed_files": [
+        "frontend/components/features/favorites/favorite-button.tsx",
+        "frontend/app/(dashboard)/properties/[id]/page.tsx",
+        "frontend/app/(dashboard)/properties/page.tsx",
+        "frontend/app/(dashboard)/search/page.tsx"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "frontend/lib/**",
+        "frontend/middleware.ts",
+        "backend/**",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "gemini-build-T03.md",
+      "verify_commands": [
+        "grep -n 'FavoriteConflictError' frontend/components/features/favorites/favorite-button.tsx",
+        "grep -n 'isFavoriteLoaded' 'frontend/app/(dashboard)/properties/[id]/page.tsx'",
+        "cd frontend && npx tsc --noEmit 2>&1 | tail -5"
+      ]
+    },
+    "T04": {
+      "allowed_files": [
+        "frontend/app/(dashboard)/search/page.tsx",
+        "frontend/app/(dashboard)/properties/page.tsx"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "frontend/lib/**",
+        "frontend/middleware.ts",
+        "backend/**",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "gemini-build-T04.md",
+      "verify_commands": [
+        "grep -n 'useSearchParams' frontend/app/\\(dashboard\\)/search/page.tsx",
+        "cd frontend && npx tsc --noEmit 2>&1 | tail -5"
+      ]
+    },
+    "T05": {
+      "allowed_files": [
+        "frontend/components/features/properties/NavBar.tsx",
+        "frontend/components/features/auth/LoginForm.tsx",
+        "frontend/app/(dashboard)/admin/properties/page.tsx",
+        "frontend/components/features/admin/property-form.tsx"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "frontend/lib/**",
+        "frontend/middleware.ts",
+        "backend/**",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "gemini-build-T05.md",
+      "verify_commands": [
+        "grep -n 'router.refresh' frontend/components/features/properties/NavBar.tsx",
+        "grep -n 'redirectTo' frontend/components/features/auth/LoginForm.tsx",
+        "cd frontend && npx tsc --noEmit 2>&1 | tail -5"
+      ]
+    },
+    "T06": {
+      "allowed_files": [
+        "frontend/components/features/properties/PropertyCard.tsx",
+        "frontend/components/features/properties/PropertyDetail.tsx",
+        "frontend/app/(dashboard)/properties/page.tsx",
+        "frontend/app/(dashboard)/search/page.tsx",
+        "frontend/app/(dashboard)/favorites/page.tsx",
+        "frontend/app/(dashboard)/admin/properties/page.tsx"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "frontend/lib/**",
+        "frontend/middleware.ts",
+        "backend/**",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log"
+      ],
+      "expected_artifact": "gemini-build-T06.md",
+      "verify_commands": [
+        "grep -n 'onError' frontend/components/features/properties/PropertyCard.tsx",
+        "grep -n 'onError' frontend/components/features/properties/PropertyDetail.tsx",
+        "cd frontend && npx tsc --noEmit 2>&1 | tail -5"
+      ]
+    },
+    "T07": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "frontend/**",
+        "backend/**"
+      ],
+      "expected_artifact": "review.md",
+      "verify_commands": []
+    },
+    "T08": {
+      "allowed_files": [
+        ".ai/features/F9-frontend-ux-polish/final-report.md",
+        ".ai/features/F9-frontend-ux-polish/status.json"
+      ],
+      "forbidden_files": [
+        "frontend/**",
+        "backend/**"
+      ],
+      "expected_artifact": "final-report.md",
+      "verify_commands": [
+        "grep -c 'Disposition' .ai/features/F9-frontend-ux-polish/final-report.md"
+      ]
+    }
+  }
+}
