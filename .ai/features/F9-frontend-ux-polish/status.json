@@ -3,7 +3,7 @@
   "status": "in_progress",
   "current_stage": "phase_2_ready",
   "current_owner": null,
-  "next_step": "Run T02 (Codex): bash tools/run_codex.sh .ai/features/F9-frontend-ux-polish T02",
+  "next_step": "Run T04 (Gemini): bash tools/run_gemini.sh .ai/features/F9-frontend-ux-polish T04",
   "last_review_failure": null,
   "tasks": [
     {
@@ -22,9 +22,9 @@
       "owner": "codex",
       "type": "build",
       "depends_on": [],
-      "status": "pending",
-      "retry_count": 0,
-      "artifact": null
+      "status": "done",
+      "retry_count": 1,
+      "artifact": "codex-build-T02.md"
     },
     {
       "id": "T03",
@@ -32,9 +32,9 @@
       "owner": "gemini",
       "type": "build",
       "depends_on": ["T02"],
-      "status": "pending",
-      "retry_count": 0,
-      "artifact": null
+      "status": "done",
+      "retry_count": 2,
+      "artifact": "gemini-build-T03.md"
     },
     {
       "id": "T04",
@@ -106,6 +106,16 @@
     {
       "timestamp": "2026-05-11T08:30:00Z",
       "event": "phase 2 planning complete: T02-T08 defined; all P0 and high-value P1 items scoped; P2 deferred; no feature split needed",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-15T00:00:00Z",
+      "event": "T02 done (by codex, CODEX_BYPASS_SANDBOX=1): FavoriteConflictError exported from lib/api/favorites.ts; addFavorite throws on 409; middleware writes redirectTo param on unauthenticated redirect. codex-build-T02.md artifact incomplete (stdout/stderr routing issue in harness); diff verified by Claude, tsc passed in Codex sandbox. Supplementary record: claude-verification-T02.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-15T00:00:00Z",
+      "event": "T03 done (by gemini, retry_count=2 due to fnm/bwrap harness fixes): FavoriteButton handles 409 silently; isFavoriteLoaded guard on detail page; properties/search pages sync favorite state via Promise.all. scope verified by Claude, tsc exit 0 in Gemini sandbox.",
       "by": "claude"
     }
   ]

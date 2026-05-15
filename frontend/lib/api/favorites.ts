@@ -3,6 +3,13 @@ import type { FavoriteList, FavoriteStatus } from "@/types/favorites";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+export class FavoriteConflictError extends Error {
+  constructor(message = "Favorite already exists") {
+    super(message);
+    this.name = "FavoriteConflictError";
+  }
+}
+
 export async function addFavorite(propertyId: string): Promise<void> {
   const accessToken = await getAccessToken();
 
@@ -18,6 +25,10 @@ export async function addFavorite(propertyId: string): Promise<void> {
   });
 
   if (!res.ok) {
+    if (res.status === 409) {
+      throw new FavoriteConflictError();
+    }
+
     throw new Error(`HTTP ${res.status} ${res.statusText}`);
   }
 }

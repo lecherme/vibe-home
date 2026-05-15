@@ -145,7 +145,12 @@ None, or list any remaining concerns or contract violations for Claude to evalua
 
 # --- Run Codex (capture stdout to temp; tee stderr to log) ---
 set +e
-codex exec --skip-git-repo-check "$PROMPT" \
+CODEX_FLAGS=(--skip-git-repo-check)
+if [[ "${CODEX_BYPASS_SANDBOX:-0}" == "1" ]]; then
+  CODEX_FLAGS+=(--dangerously-bypass-approvals-and-sandbox)
+fi
+
+codex exec "${CODEX_FLAGS[@]}" "$PROMPT" \
   2> >(tee "$LOG_FILE" >&2) \
   > "$CODEX_TMP"
 CODEX_EXIT=$?

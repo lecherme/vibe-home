@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { favoritesApi } from "@/lib/api/favorites";
+import { favoritesApi, FavoriteConflictError } from "@/lib/api/favorites";
 
 interface FavoriteButtonProps {
   propertyId: string;
@@ -45,9 +45,15 @@ export function FavoriteButton({
       }
       onToggle?.(!previousState);
     } catch (error) {
-      // Revert state on error
-      console.error("Failed to update favorite status:", error);
-      setIsFavorited(previousState);
+      if (error instanceof FavoriteConflictError) {
+        // If it's already favorited, just keep it favorited and don't show error
+        setIsFavorited(true);
+        onToggle?.(true);
+      } else {
+        // Revert state on other errors
+        console.error("Failed to update favorite status:", error);
+        setIsFavorited(previousState);
+      }
     } finally {
       setIsLoading(false);
     }

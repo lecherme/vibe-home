@@ -256,11 +256,13 @@ REPORT_FILE="$FEATURE_DIR/gemini-build-${TASK_ID}.md"
 LOG_FILE="$FEATURE_DIR/gemini-build-${TASK_ID}.log"
 
 GEMINI_BIN=$(which gemini)
-# Gemini CLI requires Node >=20. Resolve the fnm v20 node explicitly so this
-# script works regardless of which Node version the parent shell activated.
+# Gemini CLI requires Node >=20. Try fnm v20 first; fall back to system node.
 NODE_BIN=$(fnm exec --using=v20 node --print-eval "process.execPath" 2>/dev/null || true)
 if [[ -z "$NODE_BIN" ]]; then
-  NODE_BIN=$(ls "$HOME/.local/share/fnm/node-versions/v20."*/installation/bin/node 2>/dev/null | tail -1)
+  NODE_BIN=$(ls "$HOME/.local/share/fnm/node-versions/v20."*/installation/bin/node 2>/dev/null | tail -1 || true)
+fi
+if [[ -z "$NODE_BIN" ]]; then
+  NODE_BIN=$(which node)
 fi
 
 echo "Running gemini for: $FEATURE_DIR task=$TASK_ID"

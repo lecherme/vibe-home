@@ -16,6 +16,7 @@ export default function PropertyDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [isFavoriteLoaded, setIsFavoriteLoaded] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -23,6 +24,7 @@ export default function PropertyDetailPage() {
     let isMounted = true;
     setIsLoading(true);
     setError(null);
+    setIsFavoriteLoaded(false);
 
     propertiesApi.get(id)
       .then((res) => {
@@ -46,12 +48,14 @@ export default function PropertyDetailPage() {
       .then((favorited) => {
         if (isMounted) {
           setIsFavorited(favorited);
+          setIsFavoriteLoaded(true);
         }
       })
       .catch(() => {
         // Default to false on error or if unauthenticated
         if (isMounted) {
           setIsFavorited(false);
+          setIsFavoriteLoaded(true);
         }
       });
 
@@ -98,7 +102,11 @@ export default function PropertyDetailPage() {
   return (
     <div className="relative max-w-5xl mx-auto">
       <div className="absolute top-12 right-8 z-10 md:top-14 md:right-12">
-        <FavoriteButton propertyId={property.id} initialIsFavorited={isFavorited} />
+        {isFavoriteLoaded ? (
+          <FavoriteButton propertyId={property.id} initialIsFavorited={isFavorited} />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-slate-200 animate-pulse" />
+        )}
       </div>
       <PropertyDetail property={property} />
     </div>

@@ -146,7 +146,12 @@ echo "Running codex for: $FEATURE_DIR task=$TASK_ID"
 echo "Report → $REPORT_FILE"
 echo "Log    → $LOG_FILE"
 
-codex exec --skip-git-repo-check "$PROMPT" \
+CODEX_FLAGS=(--skip-git-repo-check)
+if [[ "${CODEX_BYPASS_SANDBOX:-0}" == "1" ]]; then
+  CODEX_FLAGS+=(--dangerously-bypass-approvals-and-sandbox)
+fi
+
+codex exec "${CODEX_FLAGS[@]}" "$PROMPT" \
   2> >(tee "$LOG_FILE" >&2) \
   | tee "$REPORT_FILE"
 

@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { propertiesApi } from "@/lib/api/properties";
+import { favoritesApi } from "@/lib/api/favorites";
 import type { PropertyListResponse } from "@/types/property";
 import { PropertyCard } from "@/components/features/properties/PropertyCard";
 import { PropertyListSkeleton } from "@/components/features/properties/PropertyListSkeleton";
@@ -14,6 +15,7 @@ function PropertyListContent() {
   const pageSize = 12;
 
   const [data, setData] = useState<PropertyListResponse | null>(null);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -22,10 +24,14 @@ function PropertyListContent() {
     setIsLoading(true);
     setError(null);
 
-    propertiesApi.list(page, pageSize)
-      .then((res) => {
+    Promise.all([
+      propertiesApi.list(page, pageSize),
+      favoritesApi.getFavorites(1, 100).catch(() => ({ items: [], total: 0, page: 1, page_size: 100 }))
+    ])
+      .then(([propertiesRes, favoritesRes]) => {
         if (isMounted) {
-          setData(res);
+          setData(propertiesRes);
+          setFavoriteIds(new Set(favoritesRes.items.map(f => f.id)));
           setIsLoading(false);
         }
       })
@@ -97,7 +103,11 @@ function PropertyListContent() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {data.items.map((property) => (
-          <PropertyCard key={property.id} property={property} />
+          <PropertyCard 
+            key={property.id} 
+            property={property} 
+            isFavorited={favoriteIds.has(property.id)}
+          />
         ))}
       </div>
 

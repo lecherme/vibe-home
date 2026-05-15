@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { propertiesApi } from "@/lib/api/properties";
+import { favoritesApi } from "@/lib/api/favorites";
 import type { SearchFilters, SearchResult } from "@/types/search";
 import { SearchBar } from "@/components/features/search/search-bar";
 import { FilterPanel } from "@/components/features/search/filter-panel";
@@ -14,6 +15,7 @@ export default function SearchPage() {
   const [location, setLocation] = useState("");
   const [filters, setFilters] = useState<SearchFilters>({});
   const [result, setResult] = useState<SearchResult | null>(null);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -26,8 +28,14 @@ export default function SearchPage() {
         ...filters,
         location: location || undefined,
       };
-      const data = await propertiesApi.searchProperties(searchFilters, searchPage, PAGE_SIZE);
-      setResult(data);
+      
+      const [searchData, favoritesRes] = await Promise.all([
+        propertiesApi.searchProperties(searchFilters, searchPage, PAGE_SIZE),
+        favoritesApi.getFavorites(1, 100).catch(() => ({ items: [], total: 0, page: 1, page_size: 100 }))
+      ]);
+
+      setResult(searchData);
+      setFavoriteIds(new Set(favoritesRes.items.map(f => f.id)));
     } catch (err: any) {
       setError(err.message || "Failed to fetch properties");
     } finally {
@@ -86,7 +94,11 @@ export default function SearchPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {result.items.map((property) => (
-              <PropertyCard key={property.id} property={property} />
+              <PropertyCard 
+                key={property.id} 
+                property={property} 
+                isFavorited={favoriteIds.has(property.id)}
+              />
             ))}
           </div>
 
