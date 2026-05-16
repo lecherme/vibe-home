@@ -3,8 +3,8 @@
   "status": "in_progress",
   "current_stage": "phase_2_ready",
   "current_owner": null,
-  "next_step": "Run T11 (Codex re-review): CODEX_BYPASS_SANDBOX=1 bash tools/run_codex_review.sh .ai/features/F9-frontend-ux-polish T11",
-  "last_review_failure": "T07: FAIL — B4 middleware Supabase boundary violation; A16 search retry no-op; W1 LoginForm open redirect",
+  "next_step": "Run T08 (Claude acceptance): Claude reads review.md + all artifacts and writes final-report.md",
+  "last_review_failure": null,
   "tasks": [
     {
       "id": "T01",
@@ -141,9 +141,10 @@
       "owner": "codex",
       "type": "review",
       "depends_on": ["T09", "T10"],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "review.md",
+      "verdict": "PASS"
     },
     {
       "id": "T08",
@@ -220,6 +221,11 @@
     {
       "timestamp": "2026-05-16T14:00:00Z",
       "event": "T10 done (FIX-T10-A16-W1, by gemini via run_fix_gemini.sh): A16 — search/page.tsx: added retryCount state, retry button onClick changed to setRetryCount(prev=>prev+1), retryCount added to useEffect deps; retry now triggers performSearch even when URL is unchanged. W1 — LoginForm.tsx: redirectTo validated against /^\\//  but not //; invalid values fallback to /properties, preventing open redirect. scope: 2 files only (search/page.tsx + LoginForm.tsx). tsc PASS (docker compose run --no-deps exit 0). artifact: fix-reports/fix-report-FIX-T10-A16-W1.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-16T17:30:00Z",
+      "event": "T11 done (by codex re-review): verdict PASS. All A1-A16 and B1-B6 criteria pass. A16 PASS: search retry increments retryCount forcing performSearch re-run. B4 PASS: middleware Supabase imports confined to frontend/lib/auth/. W1 PASS: LoginForm redirectTo validates single-/ prefix, rejects protocol-relative redirects. No issues found, no required fixes. fix loop complete. last_review_failure cleared. artifact: review.md",
       "by": "claude"
     }
   ]

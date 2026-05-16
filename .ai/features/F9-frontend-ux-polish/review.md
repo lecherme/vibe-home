@@ -1,50 +1,46 @@
 # Review
 
 ## Verdict
-FAIL
+PASS
 
 ## Criteria Results
 | Criterion | Result | Notes |
 |-----------|--------|-------|
-| A1 | PASS | `FavoriteConflictError` exported from `frontend/lib/api/favorites.ts`. |
-| A2 | PASS | `addFavorite` throws `FavoriteConflictError` on HTTP 409; other errors throw generic `Error`. |
-| A3 | PASS | `FavoriteButton` handles `FavoriteConflictError` by setting favorite state true without reverting. |
-| A4 | PASS | Detail page gates `FavoriteButton` behind `isFavoriteLoaded`. |
-| A5 | PASS | Properties and search pages fetch favorites and pass `isFavorited` to `PropertyCard`. |
-| A6 | PASS | Search page uses URL query params via `useSearchParams` / `useRouter`. |
-| A7 | PASS | Clear filters updates URL and triggers URL-driven search flow. |
-| A8 | PASS | Properties page persists `page` in URL. |
-| A9 | PASS | Middleware adds `redirectTo` to login redirects. |
-| A10 | PASS | `NavBar` calls `router.refresh()` after sign out. |
-| A11 | PASS | No `window.confirm` / `window.alert` in admin properties page. |
-| A12 | PASS | `bedrooms` / `bathrooms` have min `1` and validation checks. |
-| A13 | PASS | `PropertyCard` and `PropertyDetail` include image `onError` fallback. |
-| A14 | PASS | Four required pages include loading skeletons. |
-| A15 | PASS | Four required pages include empty states. |
-| A16 | FAIL | Search page error retry calls `handleSearch`, which only pushes the current URL. If the failed request already matches that URL, this can be a no-op and not retry. |
-| B1 | PASS | No evidence Gemini modified `frontend/lib/` or `frontend/middleware.ts` after T02; activity log says scope verified. |
-| B2 | PASS | Codex-owned T02 files are limited to `frontend/lib/api/favorites.ts` and `frontend/middleware.ts`; app/component changes belong to Gemini tasks per activity log. |
-| B3 | PASS | No direct `fetch()` calls in `frontend/app/` or `frontend/components/`. |
-| B4 | FAIL | Supabase import exists in `frontend/middleware.ts`, outside `frontend/lib/auth/`, violating the written boundary. |
-| B5 | PASS | No package dependency changes detected. |
-| B6 | PASS | `cd frontend && node node_modules/typescript/bin/tsc --noEmit` exits 0. |
-| status.json | PASS | Current working tree has no tracked `status.json` diff; activity log attributes status updates to Claude. |
-| API types | PASS | No backend API shape changes requiring new frontend types were introduced; existing API types are present under `frontend/types/`. |
+| A1 | PASS | `FavoriteConflictError` is exported from `frontend/lib/api/favorites.ts`. |
+| A2 | PASS | `addFavorite` throws `FavoriteConflictError` on HTTP 409 and generic `Error` otherwise. |
+| A3 | PASS | `FavoriteButton` handles `FavoriteConflictError` by setting favorited state to `true` without reverting. |
+| A4 | PASS | Detail page uses `isFavoriteLoaded`; `FavoriteButton` renders only after favorite status resolves. |
+| A5 | PASS | Properties and search pages fetch favorites, build `Set<property.id>`, and pass `isFavorited` to `PropertyCard`. |
+| A6 | PASS | Search page uses `useSearchParams` / `useRouter` and writes filters to URL query string. |
+| A7 | PASS | Clear filters updates URL and triggers the URL-driven search effect. |
+| A8 | PASS | Properties pagination reads/writes `page` in URL query string. |
+| A9 | PASS | Middleware appends `redirectTo` for unauthenticated protected-route redirects. |
+| A10 | PASS | `NavBar` calls `router.refresh()` after successful sign out. |
+| A11 | PASS | Admin delete no longer uses native `confirm` / `alert`; inline confirmation UI is used. |
+| A12 | PASS | `PropertyForm` enforces bedrooms/bathrooms minimum `1` in validation and input `min`. |
+| A13 | PASS | `PropertyCard` and `PropertyDetail` both define image `onError` fallback handlers. |
+| A14 | PASS | `/properties`, `/search`, `/favorites`, and `/admin/properties` have loading skeletons. |
+| A15 | PASS | All four target pages have empty states with visible copy. |
+| A16 | PASS | All four target pages have error states with retry entries; search retry now increments `retryCount`, so it re-runs even when URL is unchanged. |
+| B1 | PASS | Gemini did not modify `frontend/lib/` or `frontend/middleware.ts` outside authorized fix-loop scope. |
+| B2 | PASS | Codex did not modify `frontend/app/` or `frontend/components/`; fix-loop authorized files are respected. |
+| B3 | PASS | No direct `fetch()` calls found in `frontend/app/` or `frontend/components/`. |
+| B4 | PASS | Supabase imports are only under `frontend/lib/auth/`, including the new middleware client helper. |
+| B5 | PASS | `frontend/package.json` and lockfile show no dependency changes. |
+| B6 | PASS | `node node_modules/typescript/bin/tsc --noEmit` passed in `frontend/`. |
+| Status ownership | PASS | `status.json` is not modified in the current diff; activity log attributes orchestration to Claude. |
+| API types | PASS | No new backend API contract was introduced by this feature; existing frontend types remain under `frontend/types/`. |
+| Business logic boundary | PASS | Frontend components use `frontend/lib/api/` / `frontend/lib/auth/` wrappers; no direct API transport or Supabase logic is embedded in app/components. |
 
 ## Issues Found
-- BLOCKER: `frontend/app/(dashboard)/search/page.tsx:138-140` retry button calls `handleSearch`, but `handleSearch` only calls `router.push` with the current query. For an error on the current URL, this may not re-run `performSearch`, so A16 is not reliably satisfied.
-- BLOCKER: `frontend/middleware.ts:1` imports `@supabase/ssr` directly. The acceptance boundary says Supabase imports are only allowed in `frontend/lib/auth/`.
-- WARNING: `frontend/components/features/auth/LoginForm.tsx:11-24` trusts the user-controlled `redirectTo` query param directly in `router.push`. It should validate that the value is an internal relative path, not `//...`, `http...`, or `javascript:...`.
+- None.
 
 ## Required Fixes
-- Change the search error retry to directly re-run the current URL-derived search, or add a retry counter/effect dependency that guarantees a new request without relying on same-URL navigation.
-- Move middleware Supabase client creation/imports behind a helper in `frontend/lib/auth/`, so Supabase imports are confined to the allowed directory.
-- Sanitize `redirectTo` before `router.push`; allow only internal paths such as `/properties/123?...`, otherwise fall back to `/properties`.
+- None.
 
 ## Approved Items
-- Favorite 409 handling is correctly implemented end to end.
-- Favorite state synchronization is present on detail, list, search, and favorites flows.
-- URL state persistence for search filters and properties pagination is implemented.
-- Sign-out refresh, admin inline delete confirmation, and property form minimum validation are implemented.
-- Image fallback and page loading/empty/error coverage are largely complete.
-- TypeScript passes with the local compiler command.
+- Previous blocker A16 is fixed: search retry now forces a new `performSearch`.
+- Previous blocker B4 is fixed: middleware no longer imports Supabase directly.
+- Previous warning W1 is fixed: `LoginForm` validates `redirectTo` and rejects protocol-relative redirects.
+- All A1-A16 and B1-B6 criteria pass.
+- TypeScript verification passes.
