@@ -3,7 +3,7 @@
   "status": "in_progress",
   "current_stage": "phase_2_ready",
   "current_owner": null,
-  "next_step": "Run T07 (Codex): CODEX_BYPASS_SANDBOX=1 bash tools/run_codex_review.sh .ai/features/F9-frontend-ux-polish",
+  "next_step": "Run T07 (Codex): CODEX_BYPASS_SANDBOX=1 bash tools/run_codex_review.sh .ai/features/F9-frontend-ux-polish T07",
   "last_review_failure": null,
   "tasks": [
     {
