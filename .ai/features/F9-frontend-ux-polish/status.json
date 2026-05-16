@@ -1,9 +1,9 @@
 {
   "feature": "F9-frontend-ux-polish",
-  "status": "in_progress",
-  "current_stage": "phase_2_ready",
+  "status": "done",
+  "current_stage": "done",
   "current_owner": null,
-  "next_step": "Run T08 (Claude acceptance): Claude reads review.md + all artifacts and writes final-report.md",
+  "next_step": null,
   "last_review_failure": null,
   "tasks": [
     {
@@ -152,9 +152,10 @@
       "owner": "claude",
       "type": "acceptance",
       "depends_on": ["T11"],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "final-report.md",
+      "verdict": "ACCEPTED"
     }
   ],
   "activity_log": [
@@ -226,6 +227,11 @@
     {
       "timestamp": "2026-05-16T17:30:00Z",
       "event": "T11 done (by codex re-review): verdict PASS. All A1-A16 and B1-B6 criteria pass. A16 PASS: search retry increments retryCount forcing performSearch re-run. B4 PASS: middleware Supabase imports confined to frontend/lib/auth/. W1 PASS: LoginForm redirectTo validates single-/ prefix, rejects protocol-relative redirects. No issues found, no required fixes. fix loop complete. last_review_failure cleared. artifact: review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-16T18:00:00Z",
+      "event": "T08 done (Claude acceptance): ACCEPTED. All A1-A16 and B1-B6 PASS per T11 review. T07 initial review FAIL resolved via status-driven fix loop (T09 Codex B4, T10 Gemini A16+W1). Fix loop tracked via status.json fix tickets + fix reports + commits; tasks.md/owner.md not updated per decision to minimize orchestration doc changes. final-report.md written. Feature F9 complete.",
       "by": "claude"
     }
   ]
