@@ -3,7 +3,7 @@
   "status": "in_progress",
   "current_stage": "phase_2_ready",
   "current_owner": null,
-  "next_step": "Run T09 (Codex fix): CODEX_BYPASS_SANDBOX=1 bash tools/run_fix_codex.sh .ai/features/F9-frontend-ux-polish FIX-T09-B4",
+  "next_step": "Run T10 (Gemini fix): bash tools/run_fix_gemini.sh .ai/features/F9-frontend-ux-polish FIX-T10-A16-W1",
   "last_review_failure": "T07: FAIL — B4 middleware Supabase boundary violation; A16 search retry no-op; W1 LoginForm open redirect",
   "tasks": [
     {
@@ -85,14 +85,14 @@
       "owner": "codex",
       "type": "fix",
       "depends_on": ["T07"],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null,
+      "artifact": "fix-reports/fix-report-FIX-T09-B4.md",
       "fix": {
         "tickets": [
           {
             "id": "FIX-T09-B4",
-            "status": "pending",
+            "status": "done",
             "required_by": "T07",
             "affected_task": "T02",
             "affected_task_title": "Codex：收藏错误类型 + 登录 redirect 保留",
@@ -116,10 +116,24 @@
       "status": "pending",
       "retry_count": 0,
       "artifact": null,
-      "allowed_files": [
-        "frontend/app/(dashboard)/search/page.tsx",
-        "frontend/components/features/auth/LoginForm.tsx"
-      ]
+      "fix": {
+        "tickets": [
+          {
+            "id": "FIX-T10-A16-W1",
+            "status": "pending",
+            "required_by": "T07",
+            "affected_task": "T04 + T05",
+            "affected_task_title": "搜索/URL 状态持久化 + 认证前端行为",
+            "criterion": "A16 + W1",
+            "description": "Two fixes in two files. (1) A16 — frontend/app/(dashboard)/search/page.tsx: the error retry button calls handleSearch which only does router.push — no-op if the current URL already matches. Fix: add `const [retryCount, setRetryCount] = useState(0);` near the other state declarations; change the retry button onClick from `handleSearch` to `() => setRetryCount(prev => prev + 1)`; add `retryCount` to the useEffect dependency array so it reads `[searchParams, performSearch, retryCount]`. (2) W1 — frontend/components/features/auth/LoginForm.tsx: line 11 reads `const redirectTo = searchParams.get('redirectTo') || '/properties';` and passes it directly to router.push, allowing open redirect via values like `//evil.com`. Fix: replace that single line with two lines — first capture the raw value, then validate it starts with `/` but not `//`, falling back to `/properties` if invalid: `const raw = searchParams.get('redirectTo') || '/properties'; const redirectTo = raw.startsWith('/') && !raw.startsWith('//') ? raw : '/properties';`",
+            "verification": "sg docker -c \"docker compose run --rm --no-deps frontend sh -c 'node node_modules/typescript/bin/tsc --noEmit'\"",
+            "files": [
+              "frontend/app/(dashboard)/search/page.tsx",
+              "frontend/components/features/auth/LoginForm.tsx"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "T11",
@@ -196,6 +210,11 @@
     {
       "timestamp": "2026-05-16T12:00:00Z",
       "event": "fix loop created: T09 (Codex, B4 middleware boundary — new frontend/lib/auth/middleware-client.ts + update middleware.ts), T10 (Gemini, A16 search retry + W1 LoginForm open redirect), T11 (Codex re-review). T08 acceptance blocked until T11 PASS.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-16T13:00:00Z",
+      "event": "T09 done (FIX-T09-B4, by codex): created frontend/lib/auth/middleware-client.ts exporting createSupabaseMiddlewareClient; updated middleware.ts to import from @/lib/auth/middleware-client, removed direct @supabase/ssr import. scope: 2 files only (middleware.ts modified, middleware-client.ts new). harness verification failed (docker compose exec: service not running — env issue, not code issue); manual docker compose run --no-deps tsc_exit:0. artifact: fix-reports/fix-report-FIX-T09-B4.md",
       "by": "claude"
     }
   ]
