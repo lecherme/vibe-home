@@ -3,8 +3,8 @@
   "status": "in_progress",
   "current_stage": "phase_2_ready",
   "current_owner": null,
-  "next_step": "Run T07 (Codex): CODEX_BYPASS_SANDBOX=1 bash tools/run_codex_review.sh .ai/features/F9-frontend-ux-polish T07",
-  "last_review_failure": null,
+  "next_step": "Run T09 (Codex fix): CODEX_BYPASS_SANDBOX=1 bash tools/run_fix_codex.sh .ai/features/F9-frontend-ux-polish FIX-T09-B4",
+  "last_review_failure": "T07: FAIL — B4 middleware Supabase boundary violation; A16 search retry no-op; W1 LoginForm open redirect",
   "tasks": [
     {
       "id": "T01",
@@ -72,6 +72,61 @@
       "owner": "codex",
       "type": "review",
       "depends_on": ["T02", "T03", "T04", "T05", "T06"],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "review.md",
+      "verdict": "FAIL",
+      "blockers": ["A16 search retry no-op on same URL", "B4 middleware imports @supabase/ssr directly"],
+      "warnings": ["W1 LoginForm open redirect via redirectTo param"]
+    },
+    {
+      "id": "T09",
+      "title": "Codex fix: middleware Supabase boundary (B4)",
+      "owner": "codex",
+      "type": "fix",
+      "depends_on": ["T07"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null,
+      "fix": {
+        "tickets": [
+          {
+            "id": "FIX-T09-B4",
+            "status": "pending",
+            "required_by": "T07",
+            "affected_task": "T02",
+            "affected_task_title": "Codex：收藏错误类型 + 登录 redirect 保留",
+            "criterion": "B4",
+            "description": "frontend/middleware.ts imports createServerClient from @supabase/ssr directly, violating the boundary rule that Supabase imports must only appear in frontend/lib/auth/. Fix: create frontend/lib/auth/middleware-client.ts that exports a createSupabaseMiddlewareClient(request: NextRequest, response: NextResponse) factory function encapsulating createServerClient with cookie handlers (get/set/remove). Update frontend/middleware.ts to import createSupabaseMiddlewareClient from @/lib/auth/middleware-client and remove the direct @supabase/ssr import. The CookieOptions type import may also move to middleware-client.ts. Keep all routing logic (session check, redirectTo, admin role check) in middleware.ts unchanged.",
+            "verification": "sg docker -c \"docker compose exec frontend sh -c 'node node_modules/typescript/bin/tsc --noEmit'\"",
+            "files": [
+              "frontend/middleware.ts",
+              "frontend/lib/auth/middleware-client.ts"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T10",
+      "title": "Gemini fix: search retry + LoginForm open redirect (A16, W1)",
+      "owner": "gemini",
+      "type": "fix",
+      "depends_on": ["T07"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": null,
+      "allowed_files": [
+        "frontend/app/(dashboard)/search/page.tsx",
+        "frontend/components/features/auth/LoginForm.tsx"
+      ]
+    },
+    {
+      "id": "T11",
+      "title": "Codex re-review",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": ["T09", "T10"],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -81,7 +136,7 @@
       "title": "Claude acceptance",
       "owner": "claude",
       "type": "acceptance",
-      "depends_on": ["T07"],
+      "depends_on": ["T11"],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -131,6 +186,16 @@
     {
       "timestamp": "2026-05-16T00:00:00Z",
       "event": "T06 done (by gemini): PropertyCard+PropertyDetail image onError fallback to placeholder; four-page loading/empty/error states unified with retry entries. Two Claude inline fixes within T06 scope: useCallback import added to properties/page.tsx; ): null} JSX ternary fix in admin/properties/page.tsx. tsc exit 0 verified via docker compose run.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-16T12:00:00Z",
+      "event": "T07 done (by codex review): verdict FAIL. BLOCKER A16: search error retry calls handleSearch which only pushes current URL — no-op if URL unchanged, performSearch never re-runs. BLOCKER B4: frontend/middleware.ts imports @supabase/ssr directly, violating boundary (Supabase only allowed in frontend/lib/auth/). WARNING W1: LoginForm passes user-controlled redirectTo param to router.push without validation — open redirect risk. All other criteria A1-A15, B1-B3, B5-B6 PASS. artifact: review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-16T12:00:00Z",
+      "event": "fix loop created: T09 (Codex, B4 middleware boundary — new frontend/lib/auth/middleware-client.ts + update middleware.ts), T10 (Gemini, A16 search retry + W1 LoginForm open redirect), T11 (Codex re-review). T08 acceptance blocked until T11 PASS.",
       "by": "claude"
     }
   ]
