@@ -30,6 +30,7 @@ function SearchContent() {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const page = Number(searchParams.get("page")) || 1;
 
@@ -74,7 +75,7 @@ function SearchContent() {
     setLocation(loc);
     setFilters(f);
     performSearch(loc, f, p);
-  }, [searchParams, performSearch]);
+  }, [searchParams, performSearch, retryCount]);
 
   const updateURL = (loc: string, f: SearchFilters, p: number) => {
     const params = new URLSearchParams();
@@ -136,7 +137,7 @@ function SearchContent() {
           <h3 className="text-red-800 font-bold text-xl mb-2">Search failed</h3>
           <p className="text-red-700 mb-6 max-w-md">{error}</p>
           <button 
-            onClick={handleSearch}
+            onClick={() => setRetryCount(prev => prev + 1)}
             className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

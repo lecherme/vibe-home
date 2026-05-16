@@ -3,7 +3,7 @@
   "status": "in_progress",
   "current_stage": "phase_2_ready",
   "current_owner": null,
-  "next_step": "Run T10 (Gemini fix): bash tools/run_fix_gemini.sh .ai/features/F9-frontend-ux-polish FIX-T10-A16-W1",
+  "next_step": "Run T11 (Codex re-review): CODEX_BYPASS_SANDBOX=1 bash tools/run_codex_review.sh .ai/features/F9-frontend-ux-polish T11",
   "last_review_failure": "T07: FAIL — B4 middleware Supabase boundary violation; A16 search retry no-op; W1 LoginForm open redirect",
   "tasks": [
     {
@@ -113,14 +113,14 @@
       "owner": "gemini",
       "type": "fix",
       "depends_on": ["T07"],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null,
+      "artifact": "fix-reports/fix-report-FIX-T10-A16-W1.md",
       "fix": {
         "tickets": [
           {
             "id": "FIX-T10-A16-W1",
-            "status": "pending",
+            "status": "done",
             "required_by": "T07",
             "affected_task": "T04 + T05",
             "affected_task_title": "搜索/URL 状态持久化 + 认证前端行为",
@@ -215,6 +215,11 @@
     {
       "timestamp": "2026-05-16T13:00:00Z",
       "event": "T09 done (FIX-T09-B4, by codex): created frontend/lib/auth/middleware-client.ts exporting createSupabaseMiddlewareClient; updated middleware.ts to import from @/lib/auth/middleware-client, removed direct @supabase/ssr import. scope: 2 files only (middleware.ts modified, middleware-client.ts new). harness verification failed (docker compose exec: service not running — env issue, not code issue); manual docker compose run --no-deps tsc_exit:0. artifact: fix-reports/fix-report-FIX-T09-B4.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-16T14:00:00Z",
+      "event": "T10 done (FIX-T10-A16-W1, by gemini via run_fix_gemini.sh): A16 — search/page.tsx: added retryCount state, retry button onClick changed to setRetryCount(prev=>prev+1), retryCount added to useEffect deps; retry now triggers performSearch even when URL is unchanged. W1 — LoginForm.tsx: redirectTo validated against /^\\//  but not //; invalid values fallback to /properties, preventing open redirect. scope: 2 files only (search/page.tsx + LoginForm.tsx). tsc PASS (docker compose run --no-deps exit 0). artifact: fix-reports/fix-report-FIX-T10-A16-W1.md",
       "by": "claude"
     }
   ]

@@ -8,7 +8,8 @@ import { signIn } from "@/lib/auth/session";
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/properties";
+  const raw = searchParams.get("redirectTo") || "/properties";
+  const redirectTo = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/properties";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
