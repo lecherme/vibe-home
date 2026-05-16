@@ -5,6 +5,10 @@ interface PropertyDetailProps {
 }
 
 export function PropertyDetail({ property }: PropertyDetailProps) {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = "/images/properties/property-placeholder-exterior.svg";
+  };
+
   return (
     <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -16,6 +20,7 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
                 <img
                   src={property.images[0]}
                   alt={property.title}
+                  onError={handleImageError}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -24,6 +29,7 @@ export function PropertyDetail({ property }: PropertyDetailProps) {
                   <img
                     src={img}
                     alt={`${property.title} ${index + 2}`}
+                    onError={handleImageError}
                     className="w-full h-full object-cover"
                   />
                 </div>

@@ -127,8 +127,23 @@ function SearchContent() {
       </div>
 
       {error && (
-        <div className="mb-8 rounded-md bg-red-50 p-4 text-sm text-red-700">
-          {error}
+        <div className="mb-8 bg-red-50 border border-red-200 rounded-lg p-12 flex flex-col items-center text-center">
+          <div className="mb-4 text-red-400">
+            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-red-800 font-bold text-xl mb-2">Search failed</h3>
+          <p className="text-red-700 mb-6 max-w-md">{error}</p>
+          <button 
+            onClick={handleSearch}
+            className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Try Again
+          </button>
         </div>
       )}
 
@@ -172,12 +187,18 @@ function SearchContent() {
           )}
         </>
       ) : (
-        !loading && (
-          <div className="text-center py-12 bg-white rounded-lg border border-dashed border-gray-300">
-            <p className="text-gray-500">No properties found matching your criteria.</p>
+        !loading && !error && (
+          <div className="text-center py-20 bg-white rounded-lg border border-dashed border-gray-300">
+            <div className="mb-4 text-gray-300">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <p className="text-gray-600 text-lg font-medium">No properties found matching your criteria.</p>
+            <p className="text-gray-400 text-sm mt-2 mb-6">Try adjusting your filters or search area.</p>
             <button
               onClick={handleClearFilters}
-              className="mt-4 text-indigo-600 hover:text-indigo-500 font-medium"
+              className="inline-flex items-center px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
             >
               Clear all filters
             </button>

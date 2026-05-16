@@ -3,7 +3,7 @@
   "status": "in_progress",
   "current_stage": "phase_2_ready",
   "current_owner": null,
-  "next_step": "Run T06 (Gemini): bash tools/run_gemini.sh .ai/features/F9-frontend-ux-polish T06",
+  "next_step": "Run T07 (Codex): CODEX_BYPASS_SANDBOX=1 bash tools/run_codex_review.sh .ai/features/F9-frontend-ux-polish",
   "last_review_failure": null,
   "tasks": [
     {
@@ -62,9 +62,9 @@
       "owner": "gemini",
       "type": "build",
       "depends_on": ["T05"],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "gemini-build-T06.md"
     },
     {
       "id": "T07",
@@ -126,6 +126,11 @@
     {
       "timestamp": "2026-05-16T00:00:00Z",
       "event": "T05 done (by gemini): NavBar signOut adds router.refresh(); LoginForm reads redirectTo param and redirects back; admin delete replaces confirm()/alert() with inline deletingId confirm UI; PropertyForm bedrooms/bathrooms min changed to 1 in validate+input. scope verified, tsc exit 0. review note: validate() function in property-form.tsx is now dead code (handleSubmit inlines validation); no behavior impact, deferred to T07 review.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-16T00:00:00Z",
+      "event": "T06 done (by gemini): PropertyCard+PropertyDetail image onError fallback to placeholder; four-page loading/empty/error states unified with retry entries. Two Claude inline fixes within T06 scope: useCallback import added to properties/page.tsx; ): null} JSX ternary fix in admin/properties/page.tsx. tsc exit 0 verified via docker compose run.",
       "by": "claude"
     }
   ]

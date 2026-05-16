@@ -11,6 +11,10 @@ interface PropertyCardProps {
 export function PropertyCard({ property, isFavorited, onFavoriteToggle }: PropertyCardProps) {
   const firstImage = property.images[0] || "/images/properties/property-placeholder-exterior.svg";
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = "/images/properties/property-placeholder-exterior.svg";
+  };
+
   return (
     <div className="group relative bg-white rounded-lg border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
       <Link 
@@ -21,6 +25,7 @@ export function PropertyCard({ property, isFavorited, onFavoriteToggle }: Proper
           <img
             src={firstImage}
             alt={property.title}
+            onError={handleImageError}
             className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
           />
         </div>

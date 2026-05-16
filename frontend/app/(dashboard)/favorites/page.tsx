@@ -53,12 +53,21 @@ export default function FavoritesPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-8">My Favorites</h1>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <p className="text-red-700 font-medium mb-4">{error}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-12 flex flex-col items-center text-center">
+          <div className="mb-4 text-red-400">
+            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-red-800 font-bold text-xl mb-2">Failed to load favorites</h3>
+          <p className="text-red-700 mb-6 max-w-md">{error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
           >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
             Try Again
           </button>
         </div>
@@ -71,7 +80,7 @@ export default function FavoritesPage() {
       <h1 className="text-3xl font-bold text-slate-900 mb-8">My Favorites</h1>
       
       {favorites.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-dashed border-slate-300">
+        <div className="text-center py-20 bg-white rounded-xl border border-dashed border-slate-300">
           <div className="mb-4 text-slate-300">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -94,7 +103,7 @@ export default function FavoritesPage() {
           </p>
           <a
             href="/properties"
-            className="inline-flex items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
           >
             Browse Properties
           </a>
