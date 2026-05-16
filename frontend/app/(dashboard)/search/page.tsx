@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { propertiesApi } from "@/lib/api/properties";
 import { favoritesApi } from "@/lib/api/favorites";
 import type { SearchFilters, SearchResult } from "@/types/search";
+import type { PropertyStatus } from "@/types/property";
 import { SearchBar } from "@/components/features/search/search-bar";
 import { FilterPanel } from "@/components/features/search/filter-panel";
 import { PropertyCard } from "@/components/features/properties/PropertyCard";
@@ -11,26 +13,41 @@ import { PropertyListSkeleton } from "@/components/features/properties/PropertyL
 
 const PAGE_SIZE = 9;
 
-export default function SearchPage() {
-  const [location, setLocation] = useState("");
-  const [filters, setFilters] = useState<SearchFilters>({});
+function SearchContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Local state for inputs to keep them snappy while typing
+  const [location, setLocation] = useState(searchParams.get("location") || "");
+  const [filters, setFilters] = useState<SearchFilters>({
+    min_price: searchParams.get("min_price") ? Number(searchParams.get("min_price")) : undefined,
+    max_price: searchParams.get("max_price") ? Number(searchParams.get("max_price")) : undefined,
+    bedrooms: searchParams.get("bedrooms") ? Number(searchParams.get("bedrooms")) : undefined,
+    status: (searchParams.get("status") as PropertyStatus) || undefined,
+  });
+
   const [result, setResult] = useState<SearchResult | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
 
-  const performSearch = useCallback(async (searchPage: number) => {
+  const page = Number(searchParams.get("page")) || 1;
+
+  const performSearch = useCallback(async (
+    loc: string,
+    f: SearchFilters,
+    p: number
+  ) => {
     setLoading(true);
     setError(null);
     try {
       const searchFilters: SearchFilters = {
-        ...filters,
-        location: location || undefined,
+        ...f,
+        location: loc || undefined,
       };
       
       const [searchData, favoritesRes] = await Promise.all([
-        propertiesApi.searchProperties(searchFilters, searchPage, PAGE_SIZE),
+        propertiesApi.searchProperties(searchFilters, p, PAGE_SIZE),
         favoritesApi.getFavorites(1, 100).catch(() => ({ items: [], total: 0, page: 1, page_size: 100 }))
       ]);
 
@@ -41,21 +58,48 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  }, [location, filters]);
-
-  // Initial search
-  useEffect(() => {
-    performSearch(1);
   }, []);
 
+  // Sync state and trigger search when URL parameters change
+  useEffect(() => {
+    const loc = searchParams.get("location") || "";
+    const f: SearchFilters = {
+      min_price: searchParams.get("min_price") ? Number(searchParams.get("min_price")) : undefined,
+      max_price: searchParams.get("max_price") ? Number(searchParams.get("max_price")) : undefined,
+      bedrooms: searchParams.get("bedrooms") ? Number(searchParams.get("bedrooms")) : undefined,
+      status: (searchParams.get("status") as PropertyStatus) || undefined,
+    };
+    const p = Number(searchParams.get("page")) || 1;
+
+    setLocation(loc);
+    setFilters(f);
+    performSearch(loc, f, p);
+  }, [searchParams, performSearch]);
+
+  const updateURL = (loc: string, f: SearchFilters, p: number) => {
+    const params = new URLSearchParams();
+    if (loc) params.set("location", loc);
+    if (f.min_price) params.set("min_price", String(f.min_price));
+    if (f.max_price) params.set("max_price", String(f.max_price));
+    if (f.bedrooms) params.set("bedrooms", String(f.bedrooms));
+    if (f.status) params.set("status", f.status);
+    if (p > 1) params.set("page", String(p));
+    
+    router.push(`/search?${params.toString()}`);
+  };
+
   const handleSearch = () => {
-    setPage(1);
-    performSearch(1);
+    updateURL(location, filters, 1);
   };
 
   const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-    performSearch(newPage);
+    updateURL(location, filters, newPage);
+  };
+
+  const handleClearFilters = () => {
+    setLocation("");
+    setFilters({});
+    updateURL("", {}, 1);
   };
 
   const totalPages = result ? Math.ceil(result.total / PAGE_SIZE) : 0;
@@ -74,7 +118,10 @@ export default function SearchPage() {
         
         <FilterPanel 
           filters={filters} 
-          onChange={setFilters}
+          onChange={(newFilters) => {
+            setFilters(newFilters);
+            updateURL(location, newFilters, 1);
+          }}
           isLoading={loading}
         />
       </div>
@@ -129,12 +176,7 @@ export default function SearchPage() {
           <div className="text-center py-12 bg-white rounded-lg border border-dashed border-gray-300">
             <p className="text-gray-500">No properties found matching your criteria.</p>
             <button
-              onClick={() => {
-                setLocation("");
-                setFilters({});
-                setPage(1);
-                // We'll let the next effect trigger the search
-              }}
+              onClick={handleClearFilters}
               className="mt-4 text-indigo-600 hover:text-indigo-500 font-medium"
             >
               Clear all filters
@@ -149,5 +191,18 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Search Properties</h1>
+        <PropertyListSkeleton />
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   );
 }

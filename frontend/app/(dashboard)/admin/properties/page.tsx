@@ -12,6 +12,7 @@ export default function AdminPropertiesPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProperties();
@@ -32,18 +33,15 @@ export default function AdminPropertiesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this property? This action cannot be undone.")) {
-      return;
-    }
-
     // Optimistic update
     const previousProperties = [...properties];
     setProperties(properties.filter((p) => p.id !== id));
+    setDeletingId(null);
 
     try {
       await adminApi.deleteProperty(id);
     } catch (err) {
-      alert("Failed to delete property. Please try again.");
+      setError("Failed to delete property. Please try again.");
       setProperties(previousProperties);
       console.error(err);
     }
@@ -153,18 +151,38 @@ export default function AdminPropertiesPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        href={`/admin/properties/${property.id}/edit`}
-                        className="text-blue-600 hover:text-blue-900 mr-6"
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(property.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
+                      {deletingId === property.id ? (
+                        <div className="flex items-center justify-end gap-2">
+                          <span className="text-slate-500 text-xs">Sure?</span>
+                          <button
+                            onClick={() => handleDelete(property.id)}
+                            className="text-red-600 hover:text-red-900 font-bold"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            onClick={() => setDeletingId(null)}
+                            className="text-slate-600 hover:text-slate-900"
+                          >
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <Link
+                            href={`/admin/properties/${property.id}/edit`}
+                            className="text-blue-600 hover:text-blue-900 mr-6"
+                          >
+                            Edit
+                          </Link>
+                          <button
+                            onClick={() => setDeletingId(property.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}

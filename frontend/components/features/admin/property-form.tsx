@@ -65,8 +65,8 @@ export function PropertyForm({
     if (!formData.description.trim()) newErrors.description = "Description is required";
     if (formData.price <= 0) newErrors.price = "Price must be positive";
     if (!formData.location.trim()) newErrors.location = "Location is required";
-    if (formData.bedrooms < 0) newErrors.bedrooms = "Bedrooms cannot be negative";
-    if (formData.bathrooms < 0) newErrors.bathrooms = "Bathrooms cannot be negative";
+    if (formData.bedrooms < 1) newErrors.bedrooms = "At least 1 bedroom is required";
+    if (formData.bathrooms < 1) newErrors.bathrooms = "At least 1 bathroom is required";
     if (formData.area <= 0) newErrors.area = "Area must be positive";
 
     setErrors(newErrors);
@@ -77,7 +77,28 @@ export function PropertyForm({
     e.preventDefault();
     setFormError(null);
 
-    if (!validate()) return;
+    const newErrors: Partial<Record<keyof AdminPropertyCreate, string>> = {};
+
+    if (!formData.title.trim()) newErrors.title = "Title is required";
+    if (!formData.description.trim()) newErrors.description = "Description is required";
+    if (formData.price <= 0) newErrors.price = "Price must be positive";
+    if (!formData.location.trim()) newErrors.location = "Location is required";
+    if (formData.bedrooms < 1) newErrors.bedrooms = "At least 1 bedroom is required";
+    if (formData.bathrooms < 1) newErrors.bathrooms = "At least 1 bathroom is required";
+    if (formData.area <= 0) newErrors.area = "Area must be positive";
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      // Scroll to first error
+      const firstErrorField = Object.keys(newErrors)[0];
+      const element = document.getElementsByName(firstErrorField)[0];
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        (element as HTMLElement).focus();
+      }
+      return;
+    }
 
     try {
       await onSubmit(formData);
@@ -168,8 +189,8 @@ export function PropertyForm({
             value={formData.bedrooms || ""}
             onChange={handleChange}
             className={inputClasses("bedrooms")}
-            min="0"
-            placeholder="0"
+            min="1"
+            placeholder="1"
             disabled={isLoading}
           />
           {errors.bedrooms && <p className="mt-1 text-xs text-red-500 font-medium">{errors.bedrooms}</p>}
@@ -183,8 +204,8 @@ export function PropertyForm({
             value={formData.bathrooms || ""}
             onChange={handleChange}
             className={inputClasses("bathrooms")}
-            min="0"
-            placeholder="0"
+            min="1"
+            placeholder="1"
             disabled={isLoading}
           />
           {errors.bathrooms && <p className="mt-1 text-xs text-red-500 font-medium">{errors.bathrooms}</p>}

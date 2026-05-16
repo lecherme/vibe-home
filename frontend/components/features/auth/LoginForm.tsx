@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "@/lib/auth/session";
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo") || "/properties";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +21,7 @@ export default function LoginForm() {
 
     try {
       await signIn(email, password);
-      router.push("/");
+      router.push(redirectTo);
       router.refresh();
     } catch (err: any) {
       setError(err.message || "Invalid email or password");

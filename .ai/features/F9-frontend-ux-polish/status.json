@@ -3,7 +3,7 @@
   "status": "in_progress",
   "current_stage": "phase_2_ready",
   "current_owner": null,
-  "next_step": "Run T04 (Gemini): bash tools/run_gemini.sh .ai/features/F9-frontend-ux-polish T04",
+  "next_step": "Run T06 (Gemini): bash tools/run_gemini.sh .ai/features/F9-frontend-ux-polish T06",
   "last_review_failure": null,
   "tasks": [
     {
@@ -42,9 +42,9 @@
       "owner": "gemini",
       "type": "build",
       "depends_on": ["T03"],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "gemini-build-T04.md"
     },
     {
       "id": "T05",
@@ -52,9 +52,9 @@
       "owner": "gemini",
       "type": "build",
       "depends_on": ["T04"],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "gemini-build-T05.md"
     },
     {
       "id": "T06",
@@ -116,6 +116,16 @@
     {
       "timestamp": "2026-05-15T00:00:00Z",
       "event": "T03 done (by gemini, retry_count=2 due to fnm/bwrap harness fixes): FavoriteButton handles 409 silently; isFavoriteLoaded guard on detail page; properties/search pages sync favorite state via Promise.all. scope verified by Claude, tsc exit 0 in Gemini sandbox.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-16T00:00:00Z",
+      "event": "T04 done (by gemini): search/page.tsx URL state persistence via useSearchParams/useRouter; URL-driven single-path architecture (action→updateURL→searchParams→effect→search); Clear filters auto-triggers search; properties/page.tsx already had URL pagination, no change needed. scope verified, tsc exit 0, no useEffect loop risk.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-05-16T00:00:00Z",
+      "event": "T05 done (by gemini): NavBar signOut adds router.refresh(); LoginForm reads redirectTo param and redirects back; admin delete replaces confirm()/alert() with inline deletingId confirm UI; PropertyForm bedrooms/bathrooms min changed to 1 in validate+input. scope verified, tsc exit 0. review note: validate() function in property-form.tsx is now dead code (handleSubmit inlines validation); no behavior impact, deferred to T07 review.",
       "by": "claude"
     }
   ]
