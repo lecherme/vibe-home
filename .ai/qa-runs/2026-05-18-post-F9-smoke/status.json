@@ -1,0 +1,40 @@
+{
+  "feature": "qa-run-2026-05-18-post-F9-smoke",
+  "tasks": [
+    {
+      "id": "QA-FIX",
+      "title": "QA Fix Run",
+      "fix": {
+        "tickets": [
+          {
+            "id": "BUG-002-FIX-1",
+            "status": "pending",
+            "required_by": "QA-2026-05-18",
+            "affected_task": "LoginForm",
+            "affected_task_title": "登录无反应 — allowedDevOrigins fix attempt",
+            "criterion": "BUG-002",
+            "description": "Add allowedDevOrigins to frontend/next.config.mjs: [\"192.168.31.136\", \"192.168.31.221\", \"100.102.19.18\"]. No other files. Restart frontend container. Verify Console has no blocked cross-origin warnings and login calls Supabase auth.",
+            "verification": "Manual: restart frontend, open /login, check Console for blocked-cross-origin warnings, attempt login, verify Supabase auth request in Network tab and successful redirect",
+            "files": [
+              "frontend/next.config.mjs"
+            ]
+          },
+          {
+            "id": "BUG-001-FIX",
+            "status": "pending",
+            "required_by": "QA-2026-05-18",
+            "affected_task": "LoginForm",
+            "affected_task_title": "LoginForm GET 凭据泄露",
+            "criterion": "SEC-01",
+            "description": "Two changes in two files. (1) frontend/components/features/auth/LoginForm.tsx: add method=\"post\" to the <form> tag (line ~39, currently `<form className=\"space-y-6\" onSubmit={handleSubmit}>`). Change to `<form method=\"post\" className=\"space-y-6\" onSubmit={handleSubmit}>`. (2) frontend/app/(auth)/login/page.tsx: LoginForm uses useSearchParams() which requires a Suspense boundary. Wrap <LoginForm /> with <Suspense fallback={null}>. Import Suspense from 'react'.",
+            "verification": "sg docker -c \"docker compose run --rm --no-deps frontend sh -c 'node node_modules/typescript/bin/tsc --noEmit'\"",
+            "files": [
+              "frontend/components/features/auth/LoginForm.tsx",
+              "frontend/app/(auth)/login/page.tsx"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

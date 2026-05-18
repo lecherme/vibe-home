@@ -36,7 +36,7 @@ export default function LoginForm() {
         Sign in to your account
       </h2>
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form method="post" className="space-y-6" onSubmit={handleSubmit}>
         {error && (
           <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
             {error}
