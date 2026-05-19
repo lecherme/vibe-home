@@ -25,58 +25,60 @@
 
 | ID | 描述 | Status | Evidence | Notes |
 |----|------|--------|----------|-------|
-| SEC-01 | 登录表单提交后 email/password 不出现在 URL | **FAIL** | （原始）URL 出现 `?email=...&password=...` GET 泄露；BUG-001-FIX 后 method=post 改为 POST body，URL 不再泄露，但登录功能中断（BUG-002） | 待 BUG-002 修复后复测 |
-| SEC-02 | 登录凭据不出现在 browser history | **FAIL** | 原始 GET URL 进 history；POST 修复后 URL 干净，但功能中断 | 待 BUG-002 修复后复测 |
-| SEC-03 | 登录凭据不出现在 Docker logs | **FAIL** | 原始 GET 进 access log；POST 后 log 为 `POST /login 200`，凭据不在路径中 — 部分改善，但功能中断 | 待 BUG-002 修复后复测 |
-| SEC-04 | network tab 显示凭据在 POST body，不在 URL params | **FAIL** | POST body 含凭据（form-urlencoded），URL 干净——但为原生 form POST 非 Supabase 调用，功能中断 | 待 BUG-002 修复后复测 |
-| SEC-05 | redirectTo 不能跳转到外部域名 | | | 登录功能中断，暂无法测试 |
+| SEC-01 | 登录表单提交后 email/password 不出现在 URL | **PASS** | 复测：URL 保持 `/login`，凭据发往 `supabase.co/auth/v1/token?grant_type=password`，不出现在 URL | BUG-001-FIX 有效 |
+| SEC-02 | 登录凭据不出现在 browser history | **PASS** | 复测：browser history 仅记录 `/login`，无 query string 凭据 | BUG-001-FIX 有效 |
+| SEC-03 | 登录凭据不出现在 Docker logs | **PASS** | 复测：frontend log 仅 `GET /login 200` → `GET /properties 200`，无凭据出现；auth 直接走 Supabase，不经 Next.js server | |
+| SEC-04 | network tab 显示凭据在 POST body，不在 URL params | **PASS** | 复测：凭据在 POST body 发往 Supabase（`grant_type=password, email, password`），URL 干净 | |
+| SEC-05 | redirectTo 不能跳转到外部域名 | **PASS** | 已登出访问 `/login?redirectTo=https://evil.com`，登录后落到 `/properties`，未跳转外部域 | LoginForm L12 验证正确拒绝非相对路径 |
 
 ### Section 1 — Route Protection & redirectTo
 
 | ID | 描述 | Status | Evidence | Notes |
 |----|------|--------|----------|-------|
-| AUTH-01 | 未登录访问 /properties → /login?redirectTo=/properties | | | |
-| AUTH-02 | 未登录访问 /search → /login?redirectTo=/search | | | |
-| AUTH-03 | 未登录访问 /favorites → /login?redirectTo=/favorites | | | |
-| AUTH-04 | 未登录访问 /admin/properties → 拒绝或重定向 | | | |
-| AUTH-05 | 已登录访问 /login → 跳离 auth 页 | | | |
-| AUTH-06 | 已登录访问 /register → 跳离 auth 页 | | | |
+| AUTH-01 | 未登录访问 /properties → /login?redirectTo=/properties | **PASS** | 重定向到 `/login?redirectTo=%2Fproperties` | |
+| AUTH-02 | 未登录访问 /search → /login?redirectTo=/search | **PASS** | 重定向到 `/login?redirectTo=%2Fsearch` | |
+| AUTH-03 | 未登录访问 /favorites → /login?redirectTo=/favorites | **PASS** | 重定向到 `/login?redirectTo=%2Ffavorites` | |
+| AUTH-04 | 未登录访问 /admin/properties → 拒绝或重定向 | **PASS** | 重定向到 `/login?redirectTo=%2Fadmin%2Fproperties` | |
+| AUTH-05 | 已登录访问 /login → 跳离 auth 页 | **FAIL** | 已登录访问 `/login?redirectTo=https://evil.com` → 落到 `http://192.168.31.136:3000`（根路由 HealthPage） | middleware 踢出 /login 时 redirect 目标是 `/` 而非 `/properties`，BUG-003 同一根因 |
+| AUTH-06 | 已登录访问 /register → 跳离 auth 页 | **FAIL** | 已登录访问 `/register` → 落到 `http://192.168.31.136:3000`（根路由 HealthPage） | 跳离 auth 页✓，但落点是 `/` 而非 `/properties`，BUG-003 同一根因 |
 
 ### Section 2 — Authentication（login/logout/redirectTo 回跳）
 
 | ID | 描述 | Status | Evidence | Notes |
 |----|------|--------|----------|-------|
-| AUTH-07 | 有效账户登录成功 | | | |
-| AUTH-08 | 登录后回跳到 redirectTo 原始路由 | | | |
-| AUTH-09 | 无 redirectTo 时落地 /properties | | | |
-| AUTH-10 | 登录失败显示错误，表单可继续使用 | | | |
-| AUTH-11 | Sign out 清除 session，跳转 /login | | | |
-| AUTH-12 | 登出后 browser back 不能回到保护页面 | | | |
-| AUTH-13 | 注册：密码不一致显示错误 | | | |
+| AUTH-07 | 有效账户登录成功 | **PASS** | 登录后跳转到 `/properties` | |
+| AUTH-08 | 登录后回跳到 redirectTo 原始路由 | **PASS** | `/login?redirectTo=%2Fsearch` 登录后落到 `/search`，页面内容正常（含搜索条件栏和搜索按钮） | |
+| AUTH-09 | 无 redirectTo 时落地 /properties | **PASS** | 与 AUTH-07 同测，落点 `/properties` | |
+| AUTH-10 | 登录失败显示错误，表单可继续使用 | **PASS** | 错误密码显示 "Invalid login credentials"；重新填写正确密码后登录成功跳转 `/properties` | |
+| AUTH-11 | Sign out 清除 session，跳转 /login | **PASS** | Sign out 后跳转到 `/login` | |
+| AUTH-12 | 登出后 browser back 不能回到保护页面 | **PASS** | 登出后按 back → 落到 `/login?redirectTo=%2Fproperties`，未直接进入 `/properties` | middleware 拦截成功 |
+| AUTH-13 | 注册：密码不一致显示错误 | **PASS** | 显示 "Passwords do not match" | |
 
 ### Section 5 — Search URL State + Clear Filters + Retry
 
 | ID | 描述 | Status | Evidence | Notes |
 |----|------|--------|----------|-------|
-| SRCH-01 | /search 无筛选加载结果 | | | |
-| SRCH-02 | location 搜索更新 URL + 结果 | | | |
-| SRCH-03 | 筛选参数持久化到 URL query string | | | |
-| SRCH-04 | Clear filters 重置 URL + 结果，不需手动再点 Search | | | |
-| SRCH-05 | 搜索分页保留 active filters | | | |
-| SRCH-06 | browser back/forward 保持表单状态与结果同步 | | | |
-| SRCH-07 | 搜索出错显示 error state，retry 重新执行同一查询（URL 不变时也能重试） | | | |
+| SRCH-01 | /search 无筛选加载结果 | **PASS** | 无筛选条件下正常加载房源列表 | 搜索字段：Min Price、Max Price（input）；Min Bedrooms、Status（select）|
+| SRCH-02 | location 搜索更新 URL + 结果 | **PASS** | location 框回车和点搜索按钮均可触发搜索，URL 同步更新 | location 字段样式不显眼（UX 观察，非阻断）|
+| SRCH-03 | 筛选参数持久化到 URL query string | **PASS** | 筛选参数同步到 URL | **UX 观察：** Min Price 每次变动即触发搜索（非点搜索按钮后触发），体验待产品决策：是预期的 live-search 还是应改为 debounce/on-submit |
+| SRCH-04 | Clear filters 重置 URL + 结果，不需手动再点 Search | **FAIL** | 页面未见 Clear filters / 重置按钮 | 功能缺失或 UI 未暴露入口 |
+| SRCH-05 | 搜索分页保留 active filters | **PASS** | 翻页后 URL 筛选参数保留 | |
+| SRCH-06 | browser back/forward 保持表单状态与结果同步 | **PASS** | 前进后退时 URL 和搜索结果同步 | |
+| SRCH-07 | 搜索出错显示 error state，retry 重新执行同一查询（URL 不变时也能重试） | **SKIPPED** | 后端正常运行，本轮不强行模拟错误状态 | 后续用 mock/断 backend 单独测 |
 
 ### Section 6 — Favorites Add/Remove
 
+> **观察（待验证）：** 收藏按钮疑似乐观更新，点击后 UI 立即变化。FAV-01~05 测试时重点确认：请求期间是否有 loading 状态、失败是否回滚、409 是否静默处理。若不符合产品预期（等真实请求后再更新）则开 bug。
+
 | ID | 描述 | Status | Evidence | Notes |
 |----|------|--------|----------|-------|
-| FAV-01 | 列表页可添加收藏 | | | |
-| FAV-02 | 列表页可取消收藏 | | | |
-| FAV-03 | 详情页可添加收藏 | | | |
-| FAV-04 | 详情页可取消收藏 | | | |
-| FAV-05 | 重复收藏不破坏 UI（409 静默处理） | | | |
-| FAV-06 | /favorites 页列出已收藏房源 | | | |
-| FAV-07 | 从 /favorites 页移除收藏后卡片消失 | | | |
+| FAV-01 | 列表页可添加收藏 | **PASS** | 点击后图标变化，收藏成功 | UX 观察：可操作时 cursor 为手形，请求期间为默认指针（loading 反馈通过 cursor 体现，疑似乐观更新待确认）|
+| FAV-02 | 列表页可取消收藏 | **PASS** | 再次点击取消收藏，图标恢复 | |
+| FAV-03 | 详情页可添加收藏 | **PASS** | 详情页收藏功能正常 | |
+| FAV-04 | 详情页可取消收藏 | **PASS** | 详情页取消收藏功能正常 | |
+| FAV-05 | 重复收藏不破坏 UI（409 静默处理） | **PASS** | 快速连点 2~3 次无异常、无报错 | |
+| FAV-06 | /favorites 页列出已收藏房源 | **PASS** | 收藏后访问 `/favorites` 房源正常显示 | **跨 tab 同步观察：** 另一窗口取消收藏后，/favorites 页不自动更新；刷新后才反映最新状态 |
+| FAV-07 | 从 /favorites 页移除收藏后卡片消失 | **PASS** | 卡片移除后消失，功能正确 | UX 观察：无移除动效/过渡动画，卡片瞬间消失 |
 
 ### Section 8 — Admin Create/Edit/Delete
 
@@ -158,6 +160,21 @@
   - `/favorites` 不作为任何角色的默认首页
 - **Root cause:** `LoginForm.tsx` L12 验证逻辑：`raw.startsWith("/") && !raw.startsWith("//")` — `"/"` 通过验证被视为合法 redirectTo，但 `/` 是 HealthPage；middleware 对未登录访问根路由 `/` 生成 `redirectTo=/`，触发此路径
 - **Severity:** high（登录后落错页，非 blocker）
+- **Status:** open — 不修，待授权
+- **附加影响:** 根路由 `/`（HealthPage）无 Sign Out 按钮和导航入口，用户落到此页后需手动导航到 `/properties` 才能登出；BUG-003 修复后复评
+
+---
+
+### BUG-004 — /search 无 Clear Filters 入口（P2 · Medium）
+
+- **ID:** BUG-004
+- **Flow:** Search
+- **Page/route:** `/search`
+- **User role:** any authenticated
+- **Steps to reproduce:** 填写任意筛选条件后，寻找重置/清除按钮
+- **Actual result:** 页面未见 Clear filters / 重置按钮
+- **Expected result:** 应有 Clear filters 入口，点击后重置 URL 参数并自动刷新结果（无需再点搜索）
+- **Severity:** medium
 - **Status:** open — 不修，待授权
 
 ---
