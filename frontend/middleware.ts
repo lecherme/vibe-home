@@ -6,6 +6,7 @@ type AppRole = "user" | "admin";
 
 interface JwtPayload {
   app_role?: AppRole;
+  app_metadata?: { app_role?: AppRole };
 }
 
 function decodeJwtPayload(token: string): JwtPayload | null {
@@ -62,7 +63,9 @@ export async function middleware(request: NextRequest) {
   }
 
   if (session && isAdminRoute) {
-    const role = decodeJwtPayload(session.access_token)?.app_role;
+    const role =
+      decodeJwtPayload(session.access_token)?.app_role ??
+      decodeJwtPayload(session.access_token)?.app_metadata?.app_role;
 
     if (role !== "admin") {
       const redirectUrl = request.nextUrl.clone();

@@ -1,5 +1,23 @@
 # QA Fix Tickets — 2026-05-18-post-F9-smoke
 
+## BUG-005-FIX
+
+- **Bug:** BUG-005 — Admin role claim mismatch（middleware 读取顶层 app_role，Supabase 实际存在 app_metadata.app_role）
+- **Owner:** Codex
+- **Severity:** P0 / Blocker
+- **Attempt:** FIX-1
+- **Allowed files:**
+  - `frontend/middleware.ts`
+- **Requirements:**
+  1. `JwtPayload` interface 增加 `app_metadata?: { app_role?: AppRole }` 字段
+  2. admin role 读取逻辑改为：先读顶层 `payload.app_role`，fallback 读 `payload.app_metadata?.app_role`（兼容两种 claim 结构）
+  3. 不修改其他任何文件
+  4. tsc 通过（`npx tsc --noEmit`）
+- **Verification:** tsc exit 0；手动复测 ADMIN-01
+- **Status:** pending
+
+---
+
 ## BUG-002-FIX-1
 
 - **Bug:** BUG-002 — 登录无反应（React onSubmit 未拦截，hydration 待确认）

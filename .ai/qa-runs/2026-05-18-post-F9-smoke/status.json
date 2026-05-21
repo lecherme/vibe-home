@@ -7,6 +7,19 @@
       "fix": {
         "tickets": [
           {
+            "id": "BUG-005-FIX",
+            "status": "pending",
+            "required_by": "QA-2026-05-18",
+            "affected_task": "AdminAccess",
+            "affected_task_title": "Admin role claim mismatch — middleware reads wrong JWT path",
+            "criterion": "ADMIN-01",
+            "description": "Fix frontend/middleware.ts only. (1) Add app_metadata?: { app_role?: AppRole } to JwtPayload interface. (2) Change admin role read logic to: const role = decodeJwtPayload(session.access_token)?.app_role ?? decodeJwtPayload(session.access_token)?.app_metadata?.app_role — supporting both top-level and app_metadata claim structures. No other files. tsc must pass.",
+            "verification": "npx tsc --noEmit in frontend directory, exit 0; then manual retest ADMIN-01",
+            "files": [
+              "frontend/middleware.ts"
+            ]
+          },
+          {
             "id": "BUG-002-FIX-1",
             "status": "pending",
             "required_by": "QA-2026-05-18",

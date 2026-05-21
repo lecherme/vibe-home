@@ -84,13 +84,13 @@
 
 | ID | 描述 | Status | Evidence | Notes |
 |----|------|--------|----------|-------|
-| ADMIN-01 | admin 用户可访问 /admin/properties | | | |
-| ADMIN-02 | 非 admin 用户被拦截 | | | |
-| ADMIN-03 | 填写表单创建新房源 | | | |
-| ADMIN-04 | 新建房源出现在公开列表 | | | |
-| ADMIN-05 | 编辑已有房源，保存后变更可见 | | | |
-| ADMIN-06 | 取消删除确认不改变数据 | | | |
-| ADMIN-07 | 确认删除后房源从列表消失 | | | |
+| ADMIN-01 | admin 用户可访问 /admin/properties | **PASS** | BUG-005-FIX 后，`victorxzf@gmail.com` 重新登录后可正常访问 `/admin/properties`，列表显示正常 | BUG-005-FIX 有效 |
+| ADMIN-02 | 非 admin 用户被拦截 | **PASS** | `coolhorse@qq.com` 访问 `/admin/properties` → 重定向到 `http://192.168.31.136:3000`（HealthPage） | 拦截正确；落点为 `/` 是 BUG-003 已知问题 |
+| ADMIN-03 | 填写表单创建新房源 | **FAIL** | 填写表单点保存 → `HTTP 403: Insufficient permissions`；`lib/api/admin.ts:77` 抛出 AdminApiError | BUG-006：后端 security.py 读顶层 `app_role`，Supabase JWT 实际在 `app_metadata.app_role` |
+| ADMIN-04 | 新建房源出现在公开列表 | **BLOCKED** | 阻塞于 ADMIN-03 / BUG-006，无法创建房源 | |
+| ADMIN-05 | 编辑已有房源，保存后变更可见 | **FAIL** | 填写编辑内容点保存 → `HTTP 403: Insufficient permissions`；`lib/api/admin.ts:77` | BUG-006 同一根因 |
+| ADMIN-06 | 取消删除确认不改变数据 | **PASS** | 点删除 → 取消确认 → 数据不变 | |
+| ADMIN-07 | 确认删除后房源从列表消失 | **FAIL** | 确认删除 → `HTTP 403: Insufficient permissions`；`lib/api/admin.ts:110` `deleteProperty` | BUG-006 同一根因 |
 
 ### Section 12 — Password Reset（Known Issue）
 
@@ -162,6 +162,42 @@
 - **Severity:** high（登录后落错页，非 blocker）
 - **Status:** open — 不修，待授权
 - **附加影响:** 根路由 `/`（HealthPage）无 Sign Out 按钮和导航入口，用户落到此页后需手动导航到 `/properties` 才能登出；BUG-003 修复后复评
+
+---
+
+### BUG-006 — 后端 admin role claim mismatch（P0 · Blocker）
+
+- **ID:** BUG-006
+- **Flow:** Admin CRUD（create / edit / delete）
+- **Page/route:** `/admin/properties`
+- **User role:** admin
+- **Steps to reproduce:** 以 admin 身份登录，在 `/admin/properties` 创建、编辑或删除房源
+- **Actual result:** 所有写操作返回 `HTTP 403: Insufficient permissions`；错误来源 `lib/api/admin.ts:77`（AdminApiError），后端 `require_role("admin")` 拒绝请求
+- **Expected result:** admin 用户可正常执行创建、编辑、删除操作
+- **Root cause:** `backend/app/core/security.py` 从 JWT payload 读取顶层 `app_role` 字段；但 Supabase 默认将自定义 claim 存入 `app_metadata`，实际路径为 `payload["app_metadata"]["app_role"]`；后端始终读到 `None`，fallback 为 `"user"` role，触发 403
+- **Fix direction:** 改 `security.py` 中 role 提取逻辑，支持 `payload.get("app_role") or payload.get("app_metadata", {}).get("app_role")`
+- **Severity:** blocker（admin 写操作完全不可用）
+- **Status:** open — 不修，待授权
+- **Related:** BUG-005（frontend middleware 同病，已修）；ADMIN-03/05/07 FAIL；ADMIN-04 BLOCKED
+
+---
+
+### BUG-005 — Admin role claim mismatch（P0 · Blocker）
+
+- **ID:** BUG-005
+- **Flow:** Admin access control
+- **Page/route:** `/admin/properties`
+- **User role:** admin
+- **Steps to reproduce:** 将账户 `app_metadata` 设为 `{"app_role": "admin"}`，登录后访问 `/admin/properties`
+- **Actual result:** 重定向到 `/`（HealthPage），admin 无法进入管理页面
+- **Expected result:** admin 用户可正常访问 `/admin/properties`
+- **Root cause:** `frontend/middleware.ts` 读取 `decodeJwtPayload(token)?.app_role`（JWT 顶层），但 Supabase 默认将自定义 claim 存入 `app_metadata`，实际 JWT 结构为 `payload.app_metadata.app_role`；两者路径不一致导致 middleware 始终读到 `undefined`，将所有用户视为非 admin
+- **Fix directions:**
+  - **短期（推荐）：** 改 `middleware.ts`，读取 `payload.app_metadata?.app_role`
+  - **长期：** 配置 Supabase custom access token hook，在 JWT 顶层注入 `app_role` claim
+- **Severity:** blocker（admin 功能完全不可用）
+- **Status:** open — 不修，待授权
+- **Related:** ADMIN-01 FAIL；ADMIN-03~07 全部阻塞
 
 ---
 
