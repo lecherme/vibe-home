@@ -86,19 +86,19 @@
 |----|------|--------|----------|-------|
 | ADMIN-01 | admin 用户可访问 /admin/properties | **PASS** | BUG-005-FIX 后，`victorxzf@gmail.com` 重新登录后可正常访问 `/admin/properties`，列表显示正常 | BUG-005-FIX 有效 |
 | ADMIN-02 | 非 admin 用户被拦截 | **PASS** | `coolhorse@qq.com` 访问 `/admin/properties` → 重定向到 `http://192.168.31.136:3000`（HealthPage） | 拦截正确；落点为 `/` 是 BUG-003 已知问题 |
-| ADMIN-03 | 填写表单创建新房源 | **FAIL** | 填写表单点保存 → `HTTP 403: Insufficient permissions`；`lib/api/admin.ts:77` 抛出 AdminApiError | BUG-006：后端 security.py 读顶层 `app_role`，Supabase JWT 实际在 `app_metadata.app_role` |
-| ADMIN-04 | 新建房源出现在公开列表 | **BLOCKED** | 阻塞于 ADMIN-03 / BUG-006，无法创建房源 | |
-| ADMIN-05 | 编辑已有房源，保存后变更可见 | **FAIL** | 填写编辑内容点保存 → `HTTP 403: Insufficient permissions`；`lib/api/admin.ts:77` | BUG-006 同一根因 |
+| ADMIN-03 | 填写表单创建新房源 | **PASS** | BUG-006-FIX 后，创建房源保存成功 | |
+| ADMIN-04 | 新建房源出现在公开列表 | **PASS** | 新建房源在 `/properties` 列表可见；admin 在该页可见收藏控件并触发 HTTP 403，见 BUG-007 | |
+| ADMIN-05 | 编辑已有房源，保存后变更可见 | **PASS** | 编辑保存后变更正常显示 | |
 | ADMIN-06 | 取消删除确认不改变数据 | **PASS** | 点删除 → 取消确认 → 数据不变 | |
-| ADMIN-07 | 确认删除后房源从列表消失 | **FAIL** | 确认删除 → `HTTP 403: Insufficient permissions`；`lib/api/admin.ts:110` `deleteProperty` | BUG-006 同一根因 |
+| ADMIN-07 | 确认删除后房源从列表消失 | **PASS** | 确认删除后房源正常消失 | |
 
 ### Section 12 — Password Reset（Known Issue）
 
 | ID | 描述 | Status | Evidence | Notes |
 |----|------|--------|----------|-------|
-| RESET-01 | /login 页有 "Forgot password" 入口 | | | |
-| RESET-02 | 提交 reset 请求后显示确认提示 | | | |
-| RESET-03 | 点击邮件中 reset 链接打开 reset 表单 | BLOCKED | 已知问题：reset 链接打不开 | 待修复后验证 |
+| RESET-01 | /login 页有 "Forgot password" 入口 | **FAIL** | `/login` 页面无 "Forgot password" 或任何密码重置入口 | 功能缺失 |
+| RESET-02 | 提交 reset 请求后显示确认提示 | **BLOCKED** | 阻塞于 RESET-01，无入口可测 | |
+| RESET-03 | 点击邮件中 reset 链接打开 reset 表单 | **BLOCKED** | 已知问题：reset 链接打不开 | 待修复后验证 |
 
 ---
 
@@ -165,20 +165,17 @@
 
 ---
 
-### BUG-006 — 后端 admin role claim mismatch（P0 · Blocker）
+### BUG-004 — /search 无 Clear Filters 入口（P2 · Medium）
 
-- **ID:** BUG-006
-- **Flow:** Admin CRUD（create / edit / delete）
-- **Page/route:** `/admin/properties`
-- **User role:** admin
-- **Steps to reproduce:** 以 admin 身份登录，在 `/admin/properties` 创建、编辑或删除房源
-- **Actual result:** 所有写操作返回 `HTTP 403: Insufficient permissions`；错误来源 `lib/api/admin.ts:77`（AdminApiError），后端 `require_role("admin")` 拒绝请求
-- **Expected result:** admin 用户可正常执行创建、编辑、删除操作
-- **Root cause:** `backend/app/core/security.py` 从 JWT payload 读取顶层 `app_role` 字段；但 Supabase 默认将自定义 claim 存入 `app_metadata`，实际路径为 `payload["app_metadata"]["app_role"]`；后端始终读到 `None`，fallback 为 `"user"` role，触发 403
-- **Fix direction:** 改 `security.py` 中 role 提取逻辑，支持 `payload.get("app_role") or payload.get("app_metadata", {}).get("app_role")`
-- **Severity:** blocker（admin 写操作完全不可用）
+- **ID:** BUG-004
+- **Flow:** Search
+- **Page/route:** `/search`
+- **User role:** any authenticated
+- **Steps to reproduce:** 填写任意筛选条件后，寻找重置/清除按钮
+- **Actual result:** 页面未见 Clear filters / 重置按钮
+- **Expected result:** 应有 Clear filters 入口，点击后重置 URL 参数并自动刷新结果（无需再点搜索）
+- **Severity:** medium
 - **Status:** open — 不修，待授权
-- **Related:** BUG-005（frontend middleware 同病，已修）；ADMIN-03/05/07 FAIL；ADMIN-04 BLOCKED
 
 ---
 
@@ -196,22 +193,59 @@
   - **短期（推荐）：** 改 `middleware.ts`，读取 `payload.app_metadata?.app_role`
   - **长期：** 配置 Supabase custom access token hook，在 JWT 顶层注入 `app_role` claim
 - **Severity:** blocker（admin 功能完全不可用）
-- **Status:** open — 不修，待授权
-- **Related:** ADMIN-01 FAIL；ADMIN-03~07 全部阻塞
+- **Status:** **fixed** — BUG-005-FIX 已应用（2026-05-21）；ADMIN-01 手动复测 PASS
+- **Related:** ADMIN-01 复测 PASS；BUG-006（backend 同病，已修）
 
 ---
 
-### BUG-004 — /search 无 Clear Filters 入口（P2 · Medium）
+### BUG-006 — 后端 admin role claim mismatch（P0 · Blocker）
 
-- **ID:** BUG-004
-- **Flow:** Search
-- **Page/route:** `/search`
-- **User role:** any authenticated
-- **Steps to reproduce:** 填写任意筛选条件后，寻找重置/清除按钮
-- **Actual result:** 页面未见 Clear filters / 重置按钮
-- **Expected result:** 应有 Clear filters 入口，点击后重置 URL 参数并自动刷新结果（无需再点搜索）
-- **Severity:** medium
+- **ID:** BUG-006
+- **Flow:** Admin CRUD（create / edit / delete）
+- **Page/route:** `/admin/properties`
+- **User role:** admin
+- **Steps to reproduce:** 以 admin 身份登录，在 `/admin/properties` 创建、编辑或删除房源
+- **Actual result:** 所有写操作返回 `HTTP 403: Insufficient permissions`；错误来源 `lib/api/admin.ts:77`（AdminApiError），后端 `require_role("admin")` 拒绝请求
+- **Expected result:** admin 用户可正常执行创建、编辑、删除操作
+- **Root cause:** `backend/app/core/security.py` 从 JWT payload 读取顶层 `app_role` 字段；但 Supabase 默认将自定义 claim 存入 `app_metadata`，实际路径为 `payload["app_metadata"]["app_role"]`；后端始终读到 `None`，fallback 为 `"user"` role，触发 403
+- **Fix direction:** 改 `security.py` 中 role 提取逻辑，支持 `payload.get("app_role") or payload.get("app_metadata", {}).get("app_role")`
+- **Severity:** blocker（admin 写操作完全不可用）
+- **Status:** **fixed** — BUG-006-FIX 已应用（2026-05-22）；ADMIN-03/05/07 手动复测全 PASS
+- **Related:** BUG-005（frontend middleware 同病，已修）；ADMIN-03/05/07 复测 PASS；ADMIN-04 PASS
+
+---
+
+### BUG-007 — Admin 可访问 user-facing /properties 页并触发收藏 403（P2 · Medium/High）
+
+- **ID:** BUG-007
+- **Flow:** Admin / Route separation
+- **Page/route:** `/properties`
+- **User role:** admin
+- **Steps to reproduce:** 以 admin 身份登录，访问 `/properties`，点击任意房源收藏按钮
+- **Actual result:** admin 可正常访问 `/properties`，页面显示普通用户收藏控件；点击收藏返回 `HTTP 403 Forbidden`（`lib/api/favorites.ts:32`）
+- **Expected result:** admin 访问 `/properties` 应被重定向到 `/admin/properties`；或 user-facing 收藏控件不应对 admin 角色显示
+- **Root cause:** frontend middleware 只保护 `/admin*` 路由，未限制 admin 进入 user-facing dashboard routes；favorites 后端拒绝 admin 操作是正确行为（admin 不应有收藏记录）；问题在于 admin 不应到达此页面或看到此控件
+- **Severity:** medium/high（取决于产品决策：admin 是否允许以普通用户身份浏览；现状是 admin 可浏览但操作残缺）
 - **Status:** open — 不修，待授权
+- **Related:** ADMIN-04 复测时暴露；BUG-003（middleware 对 auth 用户的 redirect 逻辑）
+
+---
+
+### BUG-008 — Password reset flow missing/broken（P2 · Deferred）
+
+- **ID:** BUG-008
+- **Flow:** Password Reset
+- **Page/route:** `/login`、`/reset-password`（或等效路由）
+- **User role:** any unauthenticated
+- **Actual result:**
+  1. `/login` 页面无 "Forgot password" / "Reset password" 入口（RESET-01 FAIL）
+  2. 无入口导致 reset 表单提交无法测试（RESET-02 BLOCKED）
+  3. 即使通过邮件收到 reset 链接，点击后链接打不开（RESET-03 BLOCKED，已知问题）
+- **Expected result:** `/login` 有密码重置入口；提交邮箱后显示确认提示；邮件链接可打开 reset 表单并完成密码更新
+- **Root cause:** 密码重置 UI 未实现（入口缺失）；reset 链接处理逻辑存在已知问题
+- **Severity:** P2 · Deferred（MVP 阶段暂不要求时可推迟；若 MVP 必须则升 P1 · High）
+- **Status:** open — 不修，待授权
+- **Related:** RESET-01 FAIL；RESET-02/03 BLOCKED
 
 ---
 
@@ -219,10 +253,10 @@
 
 | 类别 | Total | PASS | FAIL | BLOCKED | SKIPPED |
 |------|-------|------|------|---------|---------|
-| SEC | 5 | | | | |
-| AUTH | 13 | | | | |
-| SRCH | 7 | | | | |
-| FAV | 7 | | | | |
-| ADMIN | 7 | | | | |
-| RESET | 3 | | | 1 | |
-| **合计** | **42** | | | **1** | |
+| SEC | 5 | 5 | 0 | 0 | 0 |
+| AUTH | 13 | 11 | 2 | 0 | 0 |
+| SRCH | 7 | 5 | 1 | 0 | 1 |
+| FAV | 7 | 7 | 0 | 0 | 0 |
+| ADMIN | 7 | 7 | 0 | 0 | 0 |
+| RESET | 3 | 0 | 1 | 2 | 0 |
+| **合计** | **42** | **35** | **4** | **2** | **1** |

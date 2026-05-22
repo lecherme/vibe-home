@@ -68,7 +68,7 @@ async def get_current_user(authorization: Optional[str] = Header(default=None)) 
 
     payload = verify_jwt(token)
 
-    raw_role = payload.get("app_role")
+    raw_role = payload.get("app_role") or payload.get("app_metadata", {}).get("app_role")
     if raw_role is None:
         raw_role = "user" if payload.get("role") == "authenticated" else None
 

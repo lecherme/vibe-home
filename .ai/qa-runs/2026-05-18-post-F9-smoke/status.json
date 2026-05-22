@@ -7,8 +7,21 @@
       "fix": {
         "tickets": [
           {
+            "id": "BUG-006-FIX",
+            "status": "verified",
+            "required_by": "QA-2026-05-18",
+            "affected_task": "AdminCRUD",
+            "affected_task_title": "后端 admin role claim mismatch — security.py reads wrong JWT path",
+            "criterion": "ADMIN-03",
+            "description": "Fix backend/app/core/security.py only. In get_current_user(), change line 71 from: raw_role = payload.get(\"app_role\") to: raw_role = payload.get(\"app_role\") or payload.get(\"app_metadata\", {}).get(\"app_role\"). This supports both top-level app_role and app_metadata.app_role claim structures. No other files. Run pytest or equivalent backend check.",
+            "verification": "docker compose exec backend pytest or equivalent, exit 0",
+            "files": [
+              "backend/app/core/security.py"
+            ]
+          },
+          {
             "id": "BUG-005-FIX",
-            "status": "pending",
+            "status": "verified",
             "required_by": "QA-2026-05-18",
             "affected_task": "AdminAccess",
             "affected_task_title": "Admin role claim mismatch — middleware reads wrong JWT path",
@@ -21,7 +34,7 @@
           },
           {
             "id": "BUG-002-FIX-1",
-            "status": "pending",
+            "status": "verified",
             "required_by": "QA-2026-05-18",
             "affected_task": "LoginForm",
             "affected_task_title": "登录无反应 — allowedDevOrigins fix attempt",
@@ -34,7 +47,7 @@
           },
           {
             "id": "BUG-001-FIX",
-            "status": "pending",
+            "status": "verified",
             "required_by": "QA-2026-05-18",
             "affected_task": "LoginForm",
             "affected_task_title": "LoginForm GET 凭据泄露",
