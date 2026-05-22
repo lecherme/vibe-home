@@ -165,15 +165,16 @@
 
 ---
 
-### BUG-004 — /search 无 Clear Filters 入口（P2 · Medium）
+### BUG-004 — /search Clear Filters 仅在 No Results 状态显示（P2 · Medium）
 
 - **ID:** BUG-004
 - **Flow:** Search
 - **Page/route:** `/search`
 - **User role:** any authenticated
-- **Steps to reproduce:** 填写任意筛选条件后，寻找重置/清除按钮
-- **Actual result:** 页面未见 Clear filters / 重置按钮
-- **Expected result:** 应有 Clear filters 入口，点击后重置 URL 参数并自动刷新结果（无需再点搜索）
+- **Steps to reproduce:** 设置筛选条件，在有结果的状态下寻找清除/重置按钮
+- **Actual result:** "Clear all filters" 按钮只在「无结果」状态下渲染（`search/page.tsx`）；有筛选条件且有结果时，用户无法清除 filters，必须手动逐个重置
+- **Expected result:** Clear Filters 按钮应始终可见（或在有 active filters 时显示），无论是否有搜索结果
+- **Root cause（已确认）:** `frontend/app/(dashboard)/search/page.tsx` 中 Clear Filters 按钮在 no-results 条件块内渲染，active filters + 有结果时不渲染
 - **Severity:** medium
 - **Status:** open — 不修，待授权
 
@@ -246,6 +247,108 @@
 - **Severity:** P2 · Deferred（MVP 阶段暂不要求时可推迟；若 MVP 必须则升 P1 · High）
 - **Status:** open — 不修，待授权
 - **Related:** RESET-01 FAIL；RESET-02/03 BLOCKED
+
+---
+
+### BUG-009 — NavBar 缺少主导航链接 / 无角色感知（P1 · High）
+
+- **ID:** BUG-009
+- **Flow:** Navigation
+- **Page/route:** NavBar（所有 dashboard 页面）
+- **User role:** any authenticated
+- **Actual result:** NavBar 无 /search、/favorites 链接；admin 无 /admin/properties 链接；所有角色均无法通过 NavBar 导航，只能手动输入 URL
+- **Expected result:** NavBar 应包含角色感知链接 — 普通用户显示 /properties、/search、/favorites；admin 显示 /admin/properties（或至少有入口）
+- **Root cause:** `frontend/components/features/properties/NavBar.tsx` 为静态组件，未读取用户 role，未渲染 /search、/favorites、/admin 链接
+- **Severity:** high（app 实际不可导航，所有路由靠手动 URL 访问）
+- **Status:** open — 不修，待授权
+- **Related:** BUG-003（admin 登录后默认落点）；BUG-007（admin 误入 /properties 无导航出口）；Gemini audit NEW-001/002
+
+---
+
+### BUG-010 — Favorites 分页缺失 + favorite-state 上限不一致（P2 · Medium）
+
+- **ID:** BUG-010
+- **Flow:** Favorites
+- **Page/route:** `/favorites`、`/search`
+- **User role:** any authenticated
+- **Actual result:**
+  1. `/favorites` 页 pageSize=12，无分页 UI；>12 条收藏永远看不到（`favorites/page.tsx`）
+  2. `/search` 页 getFavorites 请求 page_size=100，但 backend favorites 接口上限为 50；>50 条收藏时搜索结果中收藏状态显示为未收藏（"ghost unfavorited"）
+- **Expected result:** /favorites 页应支持分页；frontend 请求 page_size 应与 backend 上限对齐，或 backend 提供全量收藏接口
+- **Root cause:** `favorites/page.tsx` 无分页组件；`search/page.tsx` hardcode page_size=100；`backend/app/api/v1/favorites/router.py` max page_size=50
+- **Severity:** medium
+- **Status:** open — 不修，待授权
+- **Related:** Gemini audit NEW-005/008
+
+---
+
+### BUG-011 — Admin 房源列表无分页（P2 · Medium）
+
+- **ID:** BUG-011
+- **Flow:** Admin
+- **Page/route:** `/admin/properties`
+- **User role:** admin
+- **Actual result:** `admin/properties/page.tsx` 固定请求 page_size=100，无分页 UI；房源超过 100 条时无法访问后续数据，且单次加载性能随数据量线性下降
+- **Expected result:** admin 列表应支持分页或无限滚动
+- **Root cause:** `frontend/app/(dashboard)/admin/properties/page.tsx` hardcode page_size=100，无分页组件
+- **Severity:** medium（当前数据量小影响有限；规模增长后为 high）
+- **Status:** open — 不修，待授权
+- **Related:** Gemini audit NEW-003
+
+---
+
+### BUG-012 — Admin 表单 image_url（string）与 Property 类型 images（array）不一致（P3 · Low）
+
+- **ID:** BUG-012
+- **Flow:** Admin / Data model
+- **Page/route:** `/admin/properties`
+- **User role:** admin
+- **Actual result:** `property-form.tsx` 使用 `image_url`（单字符串）提交；核心 `Property` 类型期望 `images`（数组）；admin 每次只能上传一张图，且存在字段映射开销
+- **Expected result:** 表单支持多图 URL 或与 Property 数据模型对齐
+- **Root cause:** `frontend/components/features/admin/property-form.tsx` 数据模型未与 `Property` 类型同步
+- **Severity:** low（功能可用，限制为单图）
+- **Status:** open — 不修，待授权
+- **Related:** Gemini audit NEW-009
+
+---
+
+### BUG-013 — 生产环境 API URL 无 fallback，部署风险（P2 · Medium）
+
+- **ID:** BUG-013
+- **Flow:** Configuration / Deployment
+- **Page/route:** N/A
+- **User role:** N/A
+- **Actual result:** `frontend/lib/api/properties.ts` 中 `NEXT_PUBLIC_API_URL` 缺省 fallback 为 `localhost:8000`；生产环境漏配环境变量时，浏览器请求会打到用户本机，导致全站 API 不可用且报错不明显
+- **Expected result:** 缺少环境变量时应 build 报错或有明确 fallback，不应静默 fallback 到 localhost
+- **Severity:** medium（开发环境无影响；生产部署失误时影响全部 API）
+- **Status:** open — 不修，待授权
+- **Related:** BUG-002（开发环境同类配置问题）；Gemini audit NEW-004
+
+---
+
+### BUG-014 — 注册成功后未引导用户登录（P3 · Low）
+
+- **ID:** BUG-014
+- **Flow:** Authentication / Onboarding
+- **Page/route:** `/register`
+- **User role:** unauthenticated
+- **Actual result:** `RegisterForm.tsx` 注册成功后显示 success message，停留在 /register；用户需手动导航到 /login，增加摩擦
+- **Expected result:** 注册成功后自动跳转到 /login（或直接登录跳转到 /properties）
+- **Severity:** low
+- **Status:** open — 不修，待授权
+- **Related:** Gemini audit NEW-010
+
+---
+
+## Observations / Backlog（不开 bug，待产品决策）
+
+| ID | 来源 | 描述 |
+|----|------|------|
+| OBS-001 | SRCH-03 / Gemini NEW-006 | 搜索 UX 不一致：price/beds 字段实时触发搜索，location 需手动 Enter/Submit；混合体验待产品决策 |
+| OBS-002 | Gemini NEW-007 | getFavorites 请求失败时静默降级，搜索页所有房源显示为未收藏而非报错；可接受还是需要 error state 待产品决策 |
+| OBS-003 | FAV 测试 / Gemini NEW-012 | 收藏操作为乐观更新，API 失败时图标静默回滚，无 toast/error 提示；是否需要失败反馈待产品决策 |
+| OBS-004 | Gemini NEW-013 | AuthRateLimiter 为 in-memory + path-specific，不支持多实例横向扩展；单实例部署下无影响，扩容前需替换为 Redis 等分布式方案 |
+| OBS-005 | Gemini NEW-014 | 登录/注册表单无「显示密码」toggle，密码输入易误；UX polish，低优先级 |
 
 ---
 
