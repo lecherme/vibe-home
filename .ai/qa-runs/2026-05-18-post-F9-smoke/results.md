@@ -39,8 +39,8 @@
 | AUTH-02 | 未登录访问 /search → /login?redirectTo=/search | **PASS** | 重定向到 `/login?redirectTo=%2Fsearch` | |
 | AUTH-03 | 未登录访问 /favorites → /login?redirectTo=/favorites | **PASS** | 重定向到 `/login?redirectTo=%2Ffavorites` | |
 | AUTH-04 | 未登录访问 /admin/properties → 拒绝或重定向 | **PASS** | 重定向到 `/login?redirectTo=%2Fadmin%2Fproperties` | |
-| AUTH-05 | 已登录访问 /login → 跳离 auth 页 | **FAIL** | 已登录访问 `/login?redirectTo=https://evil.com` → 落到 `http://192.168.31.136:3000`（根路由 HealthPage） | middleware 踢出 /login 时 redirect 目标是 `/` 而非 `/properties`，BUG-003 同一根因 |
-| AUTH-06 | 已登录访问 /register → 跳离 auth 页 | **FAIL** | 已登录访问 `/register` → 落到 `http://192.168.31.136:3000`（根路由 HealthPage） | 跳离 auth 页✓，但落点是 `/` 而非 `/properties`，BUG-003 同一根因 |
+| AUTH-05 | 已登录访问 /login → 跳离 auth 页 | **PASS** | BUG-003-007-009-FIX 后，普通用户已登录访问 `/login` → 正确跳转 `/properties` | BUG-003-FIX 有效 |
+| AUTH-06 | 已登录访问 /register → 跳离 auth 页 | **PASS** | BUG-003-007-009-FIX 后，按角色默认页跳转（普通用户 → `/properties`，admin → `/admin/properties`） | BUG-003-FIX 有效 |
 
 ### Section 2 — Authentication（login/logout/redirectTo 回跳）
 
@@ -160,7 +160,7 @@
   - `/favorites` 不作为任何角色的默认首页
 - **Root cause:** `LoginForm.tsx` L12 验证逻辑：`raw.startsWith("/") && !raw.startsWith("//")` — `"/"` 通过验证被视为合法 redirectTo，但 `/` 是 HealthPage；middleware 对未登录访问根路由 `/` 生成 `redirectTo=/`，触发此路径
 - **Severity:** high（登录后落错页，非 blocker）
-- **Status:** open — 不修，待授权
+- **Status:** **fixed** — BUG-003-007-009-FIX 已应用（2026-05-22）；AC-01/03/04a 手动复测 PASS；AUTH-05/06 更新为 PASS
 - **附加影响:** 根路由 `/`（HealthPage）无 Sign Out 按钮和导航入口，用户落到此页后需手动导航到 `/properties` 才能登出；BUG-003 修复后复评
 
 ---
@@ -227,8 +227,8 @@
 - **Expected result:** admin 访问 `/properties` 应被重定向到 `/admin/properties`；或 user-facing 收藏控件不应对 admin 角色显示
 - **Root cause:** frontend middleware 只保护 `/admin*` 路由，未限制 admin 进入 user-facing dashboard routes；favorites 后端拒绝 admin 操作是正确行为（admin 不应有收藏记录）；问题在于 admin 不应到达此页面或看到此控件
 - **Severity:** medium/high（取决于产品决策：admin 是否允许以普通用户身份浏览；现状是 admin 可浏览但操作残缺）
-- **Status:** open — 不修，待授权
-- **Related:** ADMIN-04 复测时暴露；BUG-003（middleware 对 auth 用户的 redirect 逻辑）
+- **Status:** **fixed** — BUG-003-007-009-FIX 已应用（2026-05-22）；AC-05 手动复测 PASS（admin 访问 /properties → /admin/properties）
+- **Related:** ADMIN-04 复测时暴露；BUG-003（已修）；BUG-009（已修）
 
 ---
 
@@ -260,8 +260,8 @@
 - **Expected result:** NavBar 应包含角色感知链接 — 普通用户显示 /properties、/search、/favorites；admin 显示 /admin/properties（或至少有入口）
 - **Root cause:** `frontend/components/features/properties/NavBar.tsx` 为静态组件，未读取用户 role，未渲染 /search、/favorites、/admin 链接
 - **Severity:** high（app 实际不可导航，所有路由靠手动 URL 访问）
-- **Status:** open — 不修，待授权
-- **Related:** BUG-003（admin 登录后默认落点）；BUG-007（admin 误入 /properties 无导航出口）；Gemini audit NEW-001/002
+- **Status:** **fixed** — BUG-003-007-009-FIX 已应用（2026-05-22）；AC-07/08 手动复测 PASS（NavBar 按角色正确渲染）
+- **Related:** BUG-003（已修）；BUG-007（已修）；Gemini audit NEW-001/002
 
 ---
 
@@ -349,6 +349,7 @@
 | OBS-003 | FAV 测试 / Gemini NEW-012 | 收藏操作为乐观更新，API 失败时图标静默回滚，无 toast/error 提示；是否需要失败反馈待产品决策 |
 | OBS-004 | Gemini NEW-013 | AuthRateLimiter 为 in-memory + path-specific，不支持多实例横向扩展；单实例部署下无影响，扩容前需替换为 Redis 等分布式方案 |
 | OBS-005 | Gemini NEW-014 | 登录/注册表单无「显示密码」toggle，密码输入易误；UX polish，低优先级 |
+| OBS-006 | AC-07 复测 | 房源图片加载失败：`picsum.photos` ERR_NAME_NOT_RESOLVED（dev 网络 DNS 无法解析外部域名），Supabase Storage URL 来自不同项目（`ethrhylyxtoirnemsady` vs 配置的 `qldkxgeevgoojtthfvhx`），疑似数据库中存有旧项目的 stale image URL；不影响功能逻辑 |
 
 ---
 
@@ -357,9 +358,9 @@
 | 类别 | Total | PASS | FAIL | BLOCKED | SKIPPED |
 |------|-------|------|------|---------|---------|
 | SEC | 5 | 5 | 0 | 0 | 0 |
-| AUTH | 13 | 11 | 2 | 0 | 0 |
+| AUTH | 13 | 13 | 0 | 0 | 0 |
 | SRCH | 7 | 5 | 1 | 0 | 1 |
 | FAV | 7 | 7 | 0 | 0 | 0 |
 | ADMIN | 7 | 7 | 0 | 0 | 0 |
 | RESET | 3 | 0 | 1 | 2 | 0 |
-| **合计** | **42** | **35** | **4** | **2** | **1** |
+| **合计** | **42** | **37** | **2** | **2** | **1** |

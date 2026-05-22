@@ -7,6 +7,23 @@
       "fix": {
         "tickets": [
           {
+            "id": "BUG-003-007-009-FIX",
+            "status": "verified",
+            "required_by": "QA-2026-05-18",
+            "affected_task": "RoleLanding",
+            "affected_task_title": "BUG-003 + BUG-007 + BUG-009 — role landing / route separation / NavBar navigation",
+            "criterion": "BUG-003",
+            "description": "Fix role-based routing and navigation in 5 files. (1) NEW frontend/lib/auth/roles.ts: pure utils — getRoleFromJwt, getRoleFromSession, getDefaultPage(role), sanitizeRedirectTo(raw). (2) frontend/middleware.ts: use getRoleFromSession; fix authenticated+authRoute redirect to getDefaultPage(role); add admin+userFacingRoute block redirect to /admin/properties; fix non-admin+adminRoute redirect to /properties. (3) frontend/components/features/auth/LoginForm.tsx: use sanitizeRedirectTo; post-login push to getDefaultPage(role) after reading session. (4) frontend/app/(dashboard)/layout.tsx: async server component, create supabase server client via createServerClient+cookies(), read session, pass role prop to NavBar. (5) frontend/components/features/properties/NavBar.tsx: accept role prop; user→Properties/Search/Favorites/Sign out; admin→Admin Console/Sign out. tsc must pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0",
+            "files": [
+              "frontend/lib/auth/roles.ts",
+              "frontend/middleware.ts",
+              "frontend/components/features/auth/LoginForm.tsx",
+              "frontend/app/(dashboard)/layout.tsx",
+              "frontend/components/features/properties/NavBar.tsx"
+            ]
+          },
+          {
             "id": "BUG-006-FIX",
             "status": "verified",
             "required_by": "QA-2026-05-18",

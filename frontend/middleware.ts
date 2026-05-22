@@ -1,32 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 import { createSupabaseMiddlewareClient } from "@/lib/auth/middleware-client";
-
-type AppRole = "user" | "admin";
-
-interface JwtPayload {
-  app_role?: AppRole;
-  app_metadata?: { app_role?: AppRole };
-}
-
-function decodeJwtPayload(token: string): JwtPayload | null {
-  const [, payload] = token.split(".");
-
-  if (!payload) {
-    return null;
-  }
-
-  try {
-    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
-    const binary = atob(padded);
-    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
-
-    return JSON.parse(new TextDecoder().decode(bytes)) as JwtPayload;
-  } catch {
-    return null;
-  }
-}
+import { getDefaultPage, getRoleFromSession } from "@/lib/auth/roles";
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
@@ -44,6 +19,10 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAuthRoute = pathname === "/login" || pathname === "/register";
   const isAdminRoute = pathname.startsWith("/admin");
+  const isUserFacingRoute =
+    pathname.startsWith("/properties") ||
+    pathname.startsWith("/search") ||
+    pathname.startsWith("/favorites");
 
   if (!session && !isAuthRoute) {
     const redirectUrl = request.nextUrl.clone();
@@ -55,21 +34,28 @@ export async function middleware(request: NextRequest) {
   }
 
   if (session && isAuthRoute) {
+    const role = getRoleFromSession(session);
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/";
+    redirectUrl.pathname = getDefaultPage(role);
     redirectUrl.search = "";
 
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (session && isAdminRoute) {
-    const role =
-      decodeJwtPayload(session.access_token)?.app_role ??
-      decodeJwtPayload(session.access_token)?.app_metadata?.app_role;
+  if (session) {
+    const role = getRoleFromSession(session);
 
-    if (role !== "admin") {
+    if (role === "admin" && isUserFacingRoute) {
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/";
+      redirectUrl.pathname = "/admin/properties";
+      redirectUrl.search = "";
+
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (role !== "admin" && isAdminRoute) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/properties";
       redirectUrl.search = "";
 
       return NextResponse.redirect(redirectUrl);

@@ -3,13 +3,13 @@
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { signIn } from "@/lib/auth/session";
+import { getDefaultPage, getRoleFromSession, sanitizeRedirectTo } from "@/lib/auth/roles";
+import { getSession, signIn } from "@/lib/auth/session";
 
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const raw = searchParams.get("redirectTo") || "/properties";
-  const redirectTo = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/properties";
+  const sanitizedRedirectTo = sanitizeRedirectTo(searchParams.get("redirectTo"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +22,9 @@ export default function LoginForm() {
 
     try {
       await signIn(email, password);
-      router.push(redirectTo);
+      const session = await getSession();
+      const role = getRoleFromSession(session);
+      router.push(sanitizedRedirectTo ?? getDefaultPage(role));
       router.refresh();
     } catch (err: any) {
       setError(err.message || "Invalid email or password");
