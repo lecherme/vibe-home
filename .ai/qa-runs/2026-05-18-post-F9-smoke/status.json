@@ -63,6 +63,20 @@
             ]
           },
           {
+            "id": "BUG-004-FIX",
+            "status": "verified",
+            "required_by": "QA-2026-05-18",
+            "affected_task": "Search",
+            "affected_task_title": "BUG-004 — Clear Filters 仅在 no-results 状态显示",
+            "criterion": "SRCH-04",
+            "description": "Fix search page Clear Filters UX. Codex: (1) compute hasActiveFilters, (2) render Clear Filters button next to SearchBar, (3) always visible, disabled when no active filters, (4) remove old below-FilterPanel placement, (5) keep no-results Clear all filters. Claude fallback (authorized 2026-05-22): (6) expand scope to search-bar.tsx — add py-2 text-sm to input for height consistency; (7) add w-28 shrink-0 justify-center to Search button to prevent width shift on loading state. tsc must pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit exit 0; manual retest SRCH-04",
+            "files": [
+              "frontend/app/(dashboard)/search/page.tsx",
+              "frontend/components/features/search/search-bar.tsx"
+            ]
+          },
+          {
             "id": "BUG-001-FIX",
             "status": "verified",
             "required_by": "QA-2026-05-18",

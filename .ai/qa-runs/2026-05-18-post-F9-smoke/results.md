@@ -61,7 +61,7 @@
 | SRCH-01 | /search 无筛选加载结果 | **PASS** | 无筛选条件下正常加载房源列表 | 搜索字段：Min Price、Max Price（input）；Min Bedrooms、Status（select）|
 | SRCH-02 | location 搜索更新 URL + 结果 | **PASS** | location 框回车和点搜索按钮均可触发搜索，URL 同步更新 | location 字段样式不显眼（UX 观察，非阻断）|
 | SRCH-03 | 筛选参数持久化到 URL query string | **PASS** | 筛选参数同步到 URL | **UX 观察：** Min Price 每次变动即触发搜索（非点搜索按钮后触发），体验待产品决策：是预期的 live-search 还是应改为 debounce/on-submit |
-| SRCH-04 | Clear filters 重置 URL + 结果，不需手动再点 Search | **FAIL** | 页面未见 Clear filters / 重置按钮 | 功能缺失或 UI 未暴露入口 |
+| SRCH-04 | Clear filters 重置 URL + 结果，不需手动再点 Search | **PASS** | Clear Filters 按钮在 Search 右侧；有 active filters 时 enabled，无时 disabled（含禁止光标）；searching 期间同步禁用；点击清空所有条件和 URL | BUG-004-FIX 有效（2026-05-22） |
 | SRCH-05 | 搜索分页保留 active filters | **PASS** | 翻页后 URL 筛选参数保留 | |
 | SRCH-06 | browser back/forward 保持表单状态与结果同步 | **PASS** | 前进后退时 URL 和搜索结果同步 | |
 | SRCH-07 | 搜索出错显示 error state，retry 重新执行同一查询（URL 不变时也能重试） | **SKIPPED** | 后端正常运行，本轮不强行模拟错误状态 | 后续用 mock/断 backend 单独测 |
@@ -350,6 +350,8 @@
 | OBS-004 | Gemini NEW-013 | AuthRateLimiter 为 in-memory + path-specific，不支持多实例横向扩展；单实例部署下无影响，扩容前需替换为 Redis 等分布式方案 |
 | OBS-005 | Gemini NEW-014 | 登录/注册表单无「显示密码」toggle，密码输入易误；UX polish，低优先级 |
 | OBS-006 | AC-07 复测 | 房源图片加载失败：`picsum.photos` ERR_NAME_NOT_RESOLVED（dev 网络 DNS 无法解析外部域名），Supabase Storage URL 来自不同项目（`ethrhylyxtoirnemsady` vs 配置的 `qldkxgeevgoojtthfvhx`），疑似数据库中存有旧项目的 stale image URL；不影响功能逻辑 |
+| OBS-007 | SRCH 复测 2026-05-22 | **Backlog — 价格输入体验**：FilterPanel 每次 keystroke 立即触发搜索（updateURL → router.push → useEffect → performSearch），loading 期间 `disabled={isLoading}` 阻断输入。应改为 debounce（停止输入 ~500ms 后再触发），并在 loading 期间不阻断输入。影响文件：`filter-panel.tsx` + `search/page.tsx`；不并入 BUG-004-FIX |
+| OBS-008 | SRCH 复测 2026-05-22 | **Feature gap — Bathroom 筛选缺失**：`Property` 类型有 `bathrooms` 字段，`SearchFilters` 接口和 FilterPanel 均未暴露该筛选项；后端能否支持待确认。产品决策是否需要加入 |
 
 ---
 
@@ -359,8 +361,8 @@
 |------|-------|------|------|---------|---------|
 | SEC | 5 | 5 | 0 | 0 | 0 |
 | AUTH | 13 | 13 | 0 | 0 | 0 |
-| SRCH | 7 | 5 | 1 | 0 | 1 |
+| SRCH | 7 | 6 | 0 | 0 | 1 |
 | FAV | 7 | 7 | 0 | 0 | 0 |
 | ADMIN | 7 | 7 | 0 | 0 | 0 |
 | RESET | 3 | 0 | 1 | 2 | 0 |
-| **合计** | **42** | **37** | **2** | **2** | **1** |
+| **合计** | **42** | **38** | **1** | **2** | **1** |

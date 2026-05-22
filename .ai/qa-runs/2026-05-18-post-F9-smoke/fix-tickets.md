@@ -1,5 +1,31 @@
 # QA Fix Tickets — 2026-05-18-post-F9-smoke
 
+## BUG-004-FIX
+
+- **Bug:** BUG-004 — Clear Filters 仅在 no-results 状态显示
+- **Owner:** Codex + Claude fallback（布局调整）
+- **Severity:** P2 / Medium
+- **Allowed files:**
+  - `frontend/app/(dashboard)/search/page.tsx`
+  - `frontend/components/features/search/search-bar.tsx` ← Claude fallback 授权扩大 scope
+- **Requirements:**
+  1. 在 `SearchContent` 中计算 `hasActiveFilters`：`location` 非空，或 `filters.min_price / max_price / bedrooms / status` 任一有值，则为 true（已存在，不变）
+  2. 将 Clear Filters 按钮放在 `<SearchBar>` 同一行右侧（与 Search 按钮并排）：用 `flex flex-wrap items-center gap-2` 包裹，`<SearchBar>` 占 `flex-1 min-w-0`，Clear Filters 按钮紧跟其后
+  3. Clear Filters 按钮始终渲染；`hasActiveFilters === true` 时 enabled，否则 `disabled`；点击调用已有的 `handleClearFilters()`；padding/font/radius 与 Search 按钮一致
+  4. 移除 FilterPanel 下方/结果区上方的旧 Clear Filters 区块
+  5. 保留 no-results 状态下已有的 "Clear all filters" 按钮，不改动
+  6. input 加 `py-2 text-sm` 使高度与按钮一致
+  7. Search 按钮加 `w-28 shrink-0 justify-center`，loading 态文字变化不引起宽度抖动
+  8. 不新增函数，不改动 `handleClearFilters` 逻辑
+  9. tsc 通过
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0；手动复测 SRCH-04
+- **Claude Fallback Authorization:**
+  - 第一次：用户授权扩大 scope 到 `search-bar.tsx`，调整 input/Search 高度与按钮视觉一致性（2026-05-22）
+  - 第二次：用户授权修复 Search 按钮 loading 态宽度抖动，加 `w-28 shrink-0 justify-center`（2026-05-22）
+- **Status:** verified — tsc exit 0；SRCH-04 手动复测 PASS（2026-05-22）
+
+---
+
 ## BUG-003-007-009-FIX
 
 - **Bugs:** BUG-003 (redirectTo=/ → HealthPage) + BUG-007 (admin 访问 user-facing routes) + BUG-009 (NavBar 无导航/角色感知)

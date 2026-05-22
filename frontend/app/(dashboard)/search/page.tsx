@@ -104,18 +104,34 @@ function SearchContent() {
   };
 
   const totalPages = result ? Math.ceil(result.total / PAGE_SIZE) : 0;
+  const hasActiveFilters = Boolean(location.trim()) ||
+    filters.min_price !== undefined ||
+    filters.max_price !== undefined ||
+    filters.bedrooms !== undefined ||
+    Boolean(filters.status);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 space-y-4">
         <h1 className="text-3xl font-bold text-gray-900">Search Properties</h1>
         
-        <SearchBar 
-          value={location} 
-          onChange={setLocation} 
-          onSearch={handleSearch}
-          isLoading={loading}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <SearchBar
+              value={location}
+              onChange={setLocation}
+              onSearch={handleSearch}
+              isLoading={loading}
+            />
+          </div>
+          <button
+            onClick={handleClearFilters}
+            disabled={!hasActiveFilters || loading}
+            className="inline-flex shrink-0 items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Clear Filters
+          </button>
+        </div>
         
         <FilterPanel 
           filters={filters} 
