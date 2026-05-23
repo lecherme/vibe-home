@@ -1,5 +1,67 @@
 # QA Fix Tickets — 2026-05-18-post-F9-smoke
 
+## BUG-008-FIX
+
+- **Bugs:** RESET-01 (无 Forgot password 入口) + RESET-02 (无确认提示) + RESET-03 (reset 链接打不开)
+- **Owner:** Codex
+- **Severity:** P2 / Medium
+- **Allowed files:**
+  1. `frontend/lib/auth/session.ts`
+  2. `frontend/middleware.ts`
+  3. `frontend/components/features/auth/LoginForm.tsx`
+  4. `frontend/app/(auth)/forgot-password/page.tsx` ← 新建
+  5. `frontend/components/features/auth/ForgotPasswordForm.tsx` ← 新建
+  6. `frontend/app/(auth)/reset-password/page.tsx` ← 新建
+  7. `frontend/components/features/auth/ResetPasswordForm.tsx` ← 新建
+- **Requirements:**
+
+  **A. `frontend/lib/auth/session.ts`**
+  - 新增 `resetPasswordForEmail(email: string, redirectTo: string): Promise<void>`：调用 `supabase.auth.resetPasswordForEmail(email, { redirectTo })`，error 时 throw
+  - 新增 `updateUserPassword(newPassword: string): Promise<void>`：调用 `supabase.auth.updateUser({ password: newPassword })`，error 时 throw
+
+  **B. `frontend/middleware.ts`**
+  - `isAuthRoute`：加入 `/forgot-password`（与 `/login` / `/register` 相同行为：未登录可访问，已登录跳 defaultPage）
+  - `/reset-password`：**不加入 isAuthRoute**，也不加入任何已登录跳转逻辑；middleware 对该路径不做任何重定向，直接 `return response`，让页面自行处理 recovery session
+
+  **C. `frontend/components/features/auth/LoginForm.tsx`**
+  - 在"Don't have an account? Register"下方或 Sign in 按钮下方加 "Forgot password?" 链接，`href="/forgot-password"`
+
+  **D. `frontend/app/(auth)/forgot-password/page.tsx`（新建）**
+  - 用 `<Suspense fallback={null}>` 包裹 `<ForgotPasswordForm />`
+
+  **E. `frontend/components/features/auth/ForgotPasswordForm.tsx`（新建）**
+  - email 输入框 + Submit 按钮
+  - 提交时调 `resetPasswordForEmail(email, window.location.origin + '/reset-password')`
+  - 成功后显示确认提示（"Check your email for a password reset link"），隐藏表单；不自动跳转
+  - 错误时显示 error message
+  - 页面底部有返回 `/login` 链接
+
+  **F. `frontend/app/(auth)/reset-password/page.tsx`（新建）**
+  - 用 `<Suspense fallback={null}>` 包裹 `<ResetPasswordForm />`
+
+  **G. `frontend/components/features/auth/ResetPasswordForm.tsx`（新建）**
+  - 不手写 token / localStorage；依赖 Supabase client 从 URL hash 自动建立 recovery session
+  - 组件 mount 后调 `getSession()`：若 session 不存在或 `session.user` 为空，显示"链接无效或已过期"（含返回 `/login` 链接），不渲染密码表单，不提交
+  - 有效 recovery session 时：渲染 password + confirmPassword 两个输入框
+  - 提交前校验：两个字段不能为空，password 长度 ≥ 8，confirmPassword 必须与 password 相同；不满足时显示 inline 错误，不调 API
+  - 校验通过后调 `updateUserPassword(password)`
+  - 成功后调 `signOut()`，再 `router.push('/login')`
+  - 失败时显示 error message，不跳转
+
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
+- **Acceptance criteria（手动复测）:**
+  1. RESET-01：`/login` 页有 "Forgot password?" 链接，可跳转 `/forgot-password`
+  2. RESET-02：输入 email 提交后显示确认提示，不跳转
+  3. RESET-03：点击邮件中 reset 链接落到 `/reset-password`，能显示密码表单
+  4. 密码不一致时显示校验错误，不提交
+  5. 密码修改成功后跳转 `/login`
+  6. 已过期或无效链接访问 `/reset-password` 时显示错误提示
+  7. 已登录普通用户访问 `/forgot-password` → 跳转 `/properties`
+  8. 已登录用户访问 `/reset-password` → 不被踢走，正常显示页面
+- **Status:** verified — tsc exit 0；RESET-01/02/03 手动复测全 PASS（2026-05-23）
+
+---
+
 ## BUG-004-FIX
 
 - **Bug:** BUG-004 — Clear Filters 仅在 no-results 状态显示

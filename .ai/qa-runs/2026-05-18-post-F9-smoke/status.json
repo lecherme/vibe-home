@@ -7,6 +7,25 @@
       "fix": {
         "tickets": [
           {
+            "id": "BUG-008-FIX",
+            "status": "verified",
+            "required_by": "QA-2026-05-18",
+            "affected_task": "PasswordReset",
+            "affected_task_title": "RESET-01 + RESET-02 + RESET-03 — Forgot password flow end-to-end",
+            "criterion": "RESET-01",
+            "description": "Implement password reset flow via Supabase. (A) session.ts: add resetPasswordForEmail(email, redirectTo) and updateUserPassword(newPassword). (B) middleware.ts: add /forgot-password to isAuthRoute; /reset-password must NOT be redirected — return response directly for that path. (C) LoginForm.tsx: add 'Forgot password?' link to /forgot-password. (D) NEW forgot-password/page.tsx: Suspense wrapper. (E) NEW ForgotPasswordForm.tsx: email input, calls resetPasswordForEmail with window.location.origin+'/reset-password', shows confirmation on success, shows error on failure, has back-to-login link. (F) NEW reset-password/page.tsx: Suspense wrapper. (G) NEW ResetPasswordForm.tsx: on mount call getSession(); if no valid session show invalid/expired message with back-to-login link; if valid session show password+confirmPassword form; validate both non-empty, password>=8 chars, passwords match; on success call updateUserPassword then signOut then router.push('/login'); on failure show error. No manual token/localStorage handling. tsc must pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0",
+            "files": [
+              "frontend/lib/auth/session.ts",
+              "frontend/middleware.ts",
+              "frontend/components/features/auth/LoginForm.tsx",
+              "frontend/app/(auth)/forgot-password/page.tsx",
+              "frontend/components/features/auth/ForgotPasswordForm.tsx",
+              "frontend/app/(auth)/reset-password/page.tsx",
+              "frontend/components/features/auth/ResetPasswordForm.tsx"
+            ]
+          },
+          {
             "id": "BUG-003-007-009-FIX",
             "status": "verified",
             "required_by": "QA-2026-05-18",

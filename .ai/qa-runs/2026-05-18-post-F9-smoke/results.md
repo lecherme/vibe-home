@@ -96,9 +96,9 @@
 
 | ID | 描述 | Status | Evidence | Notes |
 |----|------|--------|----------|-------|
-| RESET-01 | /login 页有 "Forgot password" 入口 | **FAIL** | `/login` 页面无 "Forgot password" 或任何密码重置入口 | 功能缺失 |
-| RESET-02 | 提交 reset 请求后显示确认提示 | **BLOCKED** | 阻塞于 RESET-01，无入口可测 | |
-| RESET-03 | 点击邮件中 reset 链接打开 reset 表单 | **BLOCKED** | 已知问题：reset 链接打不开 | 待修复后验证 |
+| RESET-01 | /login 页有 "Forgot password" 入口 | **PASS** | BUG-008-FIX 后 /login 有 "Forgot password?" 链接，可跳 /forgot-password | BUG-008-FIX 有效 |
+| RESET-02 | 提交 reset 请求后显示确认提示 | **PASS** | 提交 email 后显示确认提示，邮件正常收到 | BUG-008-FIX 有效 |
+| RESET-03 | 点击邮件中 reset 链接打开 reset 表单 | **PASS** | 邮件链接落到 /reset-password；密码不一致校验、无效链接提示、已登录访问、修改成功跳 /login、新密码登录均 PASS | BUG-008-FIX 有效（2026-05-23）|
 
 ---
 
@@ -326,6 +326,20 @@
 
 ---
 
+### BUG-015 — ResetPasswordForm 缺少密码复杂度校验（P3 · Low）
+
+- **ID:** BUG-015
+- **Flow:** Password Reset
+- **Page/route:** `/reset-password`
+- **User role:** unauthenticated（recovery session）
+- **Actual result:** `ResetPasswordForm` 仅校验密码非空、长度 ≥ 8、两次输入一致；无复杂度要求（大小写、数字、特殊字符等）
+- **Expected result:** 根据产品安全策略决定是否需要复杂度校验
+- **Severity:** low
+- **Status:** open — 不阻塞 BUG-008-FIX；是否修复待产品决策
+- **Related:** RESET-03 复测（2026-05-23）
+
+---
+
 ### BUG-014 — 注册成功后未引导用户登录（P3 · Low）
 
 - **ID:** BUG-014
@@ -364,5 +378,5 @@
 | SRCH | 7 | 6 | 0 | 0 | 1 |
 | FAV | 7 | 7 | 0 | 0 | 0 |
 | ADMIN | 7 | 7 | 0 | 0 | 0 |
-| RESET | 3 | 0 | 1 | 2 | 0 |
-| **合计** | **42** | **38** | **1** | **2** | **1** |
+| RESET | 3 | 3 | 0 | 0 | 0 |
+| **合计** | **42** | **41** | **0** | **0** | **1** |

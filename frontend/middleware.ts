@@ -17,7 +17,14 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getSession();
 
   const { pathname } = request.nextUrl;
-  const isAuthRoute = pathname === "/login" || pathname === "/register";
+  if (pathname === "/reset-password") {
+    return response;
+  }
+
+  const isAuthRoute =
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/forgot-password";
   const isAdminRoute = pathname.startsWith("/admin");
   const isUserFacingRoute =
     pathname.startsWith("/properties") ||

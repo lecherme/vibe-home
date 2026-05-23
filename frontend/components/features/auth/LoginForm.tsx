@@ -89,6 +89,15 @@ export default function LoginForm() {
           </div>
         </div>
 
+        <div className="text-right">
+          <Link
+            href="/forgot-password"
+            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            Forgot password?
+          </Link>
+        </div>
+
         <div>
           <button
             type="submit"
