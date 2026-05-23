@@ -1,5 +1,8 @@
 {
   "feature": "qa-run-2026-05-18-post-F9-smoke",
+  "status": "completed",
+  "closed": "2026-05-23",
+  "final_result": "41 PASS / 0 FAIL / 0 BLOCKED / 1 SKIPPED",
   "tasks": [
     {
       "id": "QA-FIX",

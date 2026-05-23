@@ -1,10 +1,18 @@
 # QA Run: 2026-05-18 Post-F9 Smoke
 
 **Date:** 2026-05-18  
+**Closed:** 2026-05-23  
+**Run Status:** COMPLETED  
+**Final Result:** 41 PASS / 0 FAIL / 0 BLOCKED / 1 SKIPPED  
 **Tester:** Manual (QA lead: Claude)  
 **Branch/Commit:** `b7a9803` — feat(F9-frontend-ux-polish): checkpoint at T08_done — ACCEPTED  
 **Environment:** localhost — frontend :3000 / backend :8000 / docker compose  
 **Scope:** Post-F9 smoke — security, route protection, auth, search, favorites, admin, password reset  
+
+**Closure Notes:**
+- 本轮所有可修 bug/fix tickets 均已 verified（BUG-001 through BUG-009，含 BUG-003/007/009 合并修复）
+- SRCH-07 intentionally skipped，需要后续 mock/断 backend 专项测试
+- Backlog（不阻塞本轮）：BUG-015（密码复杂度）、OBS-007（价格输入 debounce）、OBS-008（Bathroom 筛选缺失）
 
 ---
 
