@@ -1,6 +1,6 @@
 # Open Bug Registry
 
-**Last updated:** 2026-05-24  
+**Last updated:** 2026-05-24 (BUG-013 closed)  
 **Source run:** [post-F9 smoke results](./../qa-runs/2026-05-18-post-F9-smoke/results.md)  
 **Scope:** Current open / deferred / skipped items only. Fixed BUG-001~009 not listed.
 
@@ -39,16 +39,6 @@
 - **Summary:** admin/properties/page.tsx 固定 page_size=100，无分页组件；>100 条房源时数据不可访问，单次加载性能随量线性下降
 - **Evidence:** [results.md § BUG-011](./../qa-runs/2026-05-18-post-F9-smoke/results.md#bug-011)
 - **Suggested next action:** 为 admin 列表添加分页组件，与 properties 列表风格一致
-
----
-
-### BUG-013 — 生产环境 API URL 无 fallback，部署风险
-- **Severity:** P2 · Medium
-- **Status:** open
-- **Source:** post-F9 smoke 配置审计
-- **Summary:** `frontend/lib/api/properties.ts` 中 `NEXT_PUBLIC_API_URL` 缺省 fallback 为 `localhost:8000`；生产漏配时浏览器请求打到用户本机，全站 API 不可用且报错不明显
-- **Evidence:** [results.md § BUG-013](./../qa-runs/2026-05-18-post-F9-smoke/results.md#bug-013)
-- **Suggested next action:** 移除 localhost fallback，改为缺省时 throw 明确错误或 build-time 检查
 
 ---
 

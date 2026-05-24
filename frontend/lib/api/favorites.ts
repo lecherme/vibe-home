@@ -1,7 +1,6 @@
+import { apiUrl } from "@/lib/api/config";
 import { getAccessToken } from "@/lib/auth/session";
 import type { FavoriteList, FavoriteStatus } from "@/types/favorites";
-
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export class FavoriteConflictError extends Error {
   constructor(message = "Favorite already exists") {

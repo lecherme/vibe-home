@@ -1,0 +1,32 @@
+{
+  "feature": "fix-run-2026-05-24-post-F9-followup",
+  "status": "in_progress",
+  "tasks": [
+    {
+      "id": "FIX-BATCH-01",
+      "title": "post-F9 Followup Fix Batch",
+      "fix": {
+        "tickets": [
+          {
+            "id": "BUG-013-FIX",
+            "status": "verified",
+            "required_by": "open-bugs.md",
+            "affected_task": "Configuration",
+            "affected_task_title": "BUG-013 — 生产环境 API URL 无 fallback，部署风险",
+            "criterion": "BUG-013",
+            "description": "Create frontend/lib/api/config.ts that exports apiUrl, throwing 'NEXT_PUBLIC_API_URL is not configured' if the env var is absent. Replace the inline `process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'` pattern in all 5 api files (properties.ts, auth.ts, favorites.ts, admin.ts, health.ts) with an import from config.ts. No localhost:8000 strings may remain in any api file. tsc must pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0",
+            "files": [
+              "frontend/lib/api/config.ts",
+              "frontend/lib/api/properties.ts",
+              "frontend/lib/api/auth.ts",
+              "frontend/lib/api/favorites.ts",
+              "frontend/lib/api/admin.ts",
+              "frontend/lib/api/health.ts"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

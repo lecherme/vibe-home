@@ -1,8 +1,7 @@
+import { apiUrl } from "@/lib/api/config";
 import { getAccessToken } from "@/lib/auth/session";
 import type { Property, PropertyListResponse } from "@/types/property";
 import type { SearchFilters, SearchResult } from "@/types/search";
-
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 function formatErrorMessage(status: number, message: string): string {
   const normalizedMessage = message.trim();

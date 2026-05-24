@@ -1,7 +1,6 @@
+import { apiUrl } from "@/lib/api/config";
 import { getAccessToken } from "@/lib/auth/session";
 import type { UserRead } from "@/types/auth";
-
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 async function getMe(): Promise<UserRead> {
   const accessToken = await getAccessToken();
