@@ -52,6 +52,14 @@ export async function middleware(request: NextRequest) {
   if (session) {
     const role = getRoleFromSession(session);
 
+    if (pathname === "/") {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = getDefaultPage(role);
+      redirectUrl.search = "";
+
+      return NextResponse.redirect(redirectUrl);
+    }
+
     if (role === "admin" && isUserFacingRoute) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/admin/properties";

@@ -25,6 +25,22 @@
               "frontend/lib/api/health.ts"
             ]
           }
+          ,
+          {
+            "id": "BUG-016-FIX",
+            "status": "verified",
+            "required_by": "open-bugs.md",
+            "affected_task": "Routing",
+            "affected_task_title": "BUG-016 — Root route / 显示 HealthPage 而非角色跳转",
+            "criterion": "BUG-016",
+            "description": "Fix root route / to redirect authenticated users by role instead of showing HealthPage. (1) middleware.ts: inside the existing if(session) block, add a check for pathname === '/' and redirect to getDefaultPage(role) using existing getRoleFromSession and getDefaultPage. (2) app/page.tsx: replace HealthPage content with a server component that calls redirect('/login') as a fallback. (3) NEW app/health/page.tsx: move the original HealthPage content here intact. Do not modify any other files. tsc must pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0",
+            "files": [
+              "frontend/middleware.ts",
+              "frontend/app/page.tsx",
+              "frontend/app/health/page.tsx"
+            ]
+          }
         ]
       }
     }

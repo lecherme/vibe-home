@@ -32,3 +32,23 @@ Source: `.ai/bugs/open-bugs.md`
   7. tsc 通过
 - **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
 - **Status:** verified — tsc exit 0；无 localhost:8000 残留（2026-05-24）
+
+---
+
+## BUG-016-FIX
+
+- **Bug:** BUG-016 — Root route / 显示 HealthPage 而非角色跳转
+- **Owner:** Codex
+- **Severity:** P2 / Medium
+- **Allowed files:**
+  1. `frontend/middleware.ts`
+  2. `frontend/app/page.tsx`
+  3. `frontend/app/health/page.tsx` ← 新建
+- **Requirements:**
+  1. `frontend/middleware.ts`：在 `if (session)` 块内，`pathname === "/"` 时按角色跳转：user → `/properties`，admin → `/admin/properties`；使用已有的 `getRoleFromSession` 和 `getDefaultPage`
+  2. `frontend/app/page.tsx`：移除 HealthPage 内容，改为 `redirect("/login")` 兜底（server component，import `redirect` from `next/navigation`）
+  3. `frontend/app/health/page.tsx`（新建）：迁移原 HealthPage 全部内容，保留健康检查功能不变
+  4. 不修改其他任何文件
+  5. tsc 通过
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
+- **Status:** verified — tsc exit 0；手动复测全 PASS（2026-05-25）

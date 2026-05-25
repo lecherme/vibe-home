@@ -1,6 +1,6 @@
 # Open Bug Registry
 
-**Last updated:** 2026-05-24 (BUG-013 closed)  
+**Last updated:** 2026-05-25  
 **Source run:** [post-F9 smoke results](./../qa-runs/2026-05-18-post-F9-smoke/results.md)  
 **Scope:** Current open / deferred / skipped items only. Fixed BUG-001~009 not listed.
 
@@ -39,16 +39,6 @@
 - **Summary:** admin/properties/page.tsx 固定 page_size=100，无分页组件；>100 条房源时数据不可访问，单次加载性能随量线性下降
 - **Evidence:** [results.md § BUG-011](./../qa-runs/2026-05-18-post-F9-smoke/results.md#bug-011)
 - **Suggested next action:** 为 admin 列表添加分页组件，与 properties 列表风格一致
-
----
-
-### BUG-016 — Root route / 显示 HealthPage 而非角色跳转
-- **Severity:** P2 · Medium
-- **Status:** open
-- **Source:** 发现于 2026-05-24，post-F9 run 关闭后
-- **Summary:** 直接访问 `/` 显示 HealthPage；未登录应跳 `/login`，普通用户应跳 `/properties`，admin 应跳 `/admin/properties`。BUG-003 已修 `redirectTo=/` 场景，但直接访问 `/` 本身未处理
-- **Evidence:** 手动测试；相关背景见 [results.md § BUG-003](./../qa-runs/2026-05-18-post-F9-smoke/results.md#bug-003)
-- **Suggested next action:** middleware 对 `/` 加角色感知跳转；或将根路由改为 server redirect component；HealthPage 如需保留可迁移到 `/health`
 
 ---
 
