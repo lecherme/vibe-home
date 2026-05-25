@@ -27,6 +27,19 @@
           }
           ,
           {
+            "id": "BUG-011-FIX",
+            "status": "verified",
+            "required_by": "open-bugs.md",
+            "affected_task": "Admin",
+            "affected_task_title": "BUG-011 — Admin 房源列表无分页",
+            "criterion": "BUG-011",
+            "description": "Fix frontend/app/(dashboard)/admin/properties/page.tsx only. SCOPE EXPANDED 2026-05-25. (1) Add page state (default from URL ?page= param, fallback 1), total state (default 0), PAGE_SIZE=20. (2) Sync page state to URL searchParam (?page=N) using useRouter+useSearchParams; restore from URL on refresh. (3) fetchProperties accepts page param, calls propertiesApi.list(page, PAGE_SIZE), updates total; useEffect depends on page. (4) Add Previous/Next pagination UI below table; hide when totalPages<=1; totalPages=Math.ceil(total/PAGE_SIZE). (5) handleDelete: after delete, if current page had only 1 item and page>1, go to page-1 then refresh; otherwise refresh current page. (6) Fix Actions column overflow truncation: remove overflow-hidden from outer container, ensure Edit/Delete fully visible at any window width. (7) No other files. tsc must pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0",
+            "files": [
+              "frontend/app/(dashboard)/admin/properties/page.tsx"
+            ]
+          },
+          {
             "id": "BUG-016-FIX",
             "status": "verified",
             "required_by": "open-bugs.md",

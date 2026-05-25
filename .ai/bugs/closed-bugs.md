@@ -17,6 +17,17 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-011 — Admin 房源列表无分页
+
+- **Fixed date:** 2026-05-25
+- **Verification:** tsc exit 0；手动复测 PASS — 分页控件、URL params 刷新保页、Actions 列完整显示、边界删除无空状态闪烁
+- **Fixing batch:** `.ai/fix-runs/2026-05-24-post-F9-followup` — BUG-011-FIX
+- **Fix:** 新增 PAGE_SIZE=20 分页逻辑；page 同步 URL `?page=N`；table-fixed 布局固定 Actions 列宽；边界删除保持 deleting 状态直到跳页
+- **Original source:** [results.md § BUG-011](./../qa-runs/2026-05-18-post-F9-smoke/results.md#bug-011)
+- **Fix report:** [fix-report-BUG-011-FIX](./../fix-runs/2026-05-24-post-F9-followup/fix-reports/fix-report-BUG-011-FIX.md)
+
+---
+
 ### BUG-016 — Root route / 显示 HealthPage 而非角色跳转
 
 - **Fixed date:** 2026-05-25

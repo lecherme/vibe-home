@@ -2,27 +2,52 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { propertiesApi } from "@/lib/api/properties";
 import { adminApi } from "@/lib/api/admin";
 import type { Property } from "@/types/property";
 import { PropertyListSkeleton } from "@/components/features/properties/PropertyListSkeleton";
 import { cn } from "@/lib/utils";
 
+const PAGE_SIZE = 20;
+
+function parsePageParam(value: string | null) {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 0 ? page : 1;
+}
+
 export default function AdminPropertiesPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [properties, setProperties] = useState<Property[]>([]);
+  const [page, setPage] = useState(() => parsePageParam(searchParams.get("page")));
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchProperties();
-  }, []);
+    const nextPage = parsePageParam(searchParams.get("page"));
+    setPage((currentPage) => (currentPage === nextPage ? currentPage : nextPage));
+  }, [searchParams]);
 
-  const fetchProperties = async () => {
+  useEffect(() => {
+    fetchProperties(page);
+  }, [page]);
+
+  const updatePage = (nextPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(nextPage));
+    setPage(nextPage);
+    router.push(`/admin/properties?${params.toString()}`);
+  };
+
+  const fetchProperties = async (pageToFetch: number) => {
     try {
       setIsLoading(true);
-      const data = await propertiesApi.list(1, 100);
+      const data = await propertiesApi.list(pageToFetch, PAGE_SIZE);
       setProperties(data.items);
+      setTotal(data.total);
       setError(null);
     } catch (err) {
       setError("Failed to fetch properties. Please try again later.");
@@ -33,19 +58,27 @@ export default function AdminPropertiesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    // Optimistic update
     const previousProperties = [...properties];
-    setProperties(properties.filter((p) => p.id !== id));
-    setDeletingId(null);
+    const isLastOnNonFirstPage = properties.length === 1 && page > 1;
 
     try {
       await adminApi.deleteProperty(id);
+      if (isLastOnNonFirstPage) {
+        updatePage(page - 1);
+      } else {
+        setProperties(properties.filter((p) => p.id !== id));
+        await fetchProperties(page);
+      }
     } catch (err) {
       setError("Failed to delete property. Please try again.");
       setProperties(previousProperties);
       console.error(err);
+    } finally {
+      setDeletingId(null);
     }
   };
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   if (isLoading) {
     return (
@@ -83,7 +116,7 @@ export default function AdminPropertiesPage() {
           <h3 className="text-red-800 font-bold text-xl mb-2">Management console error</h3>
           <p className="text-red-700 mb-6 max-w-md">{error}</p>
           <button 
-            onClick={fetchProperties}
+            onClick={() => fetchProperties(page)}
             className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,7 +127,7 @@ export default function AdminPropertiesPage() {
         </div>
       )}
 
-      {properties.length === 0 && !isLoading && !error ? (
+      {properties.length === 0 && !isLoading && !error && deletingId === null ? (
         <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-slate-200">
           <div className="mb-4 text-slate-300">
             <svg className="mx-auto h-16 w-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,17 +147,17 @@ export default function AdminPropertiesPage() {
           </Link>
         </div>
       ) : properties.length > 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200">
+            <table className="w-full table-fixed divide-y divide-slate-200">
               <thead className="bg-slate-50">
                 <tr>
                   <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Property</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Location</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Price</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="relative px-6 py-4">
-                    <span className="sr-only">Actions</span>
+                  <th scope="col" className="w-52 px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Location</th>
+                  <th scope="col" className="w-36 px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Price</th>
+                  <th scope="col" className="w-28 px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                  <th scope="col" className="w-40 px-6 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -165,9 +198,9 @@ export default function AdminPropertiesPage() {
                         {property.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="w-40 px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {deletingId === property.id ? (
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="inline-flex items-center gap-2">
                           <span className="text-slate-500 text-xs">Sure?</span>
                           <button
                             onClick={() => handleDelete(property.id)}
@@ -183,10 +216,10 @@ export default function AdminPropertiesPage() {
                           </button>
                         </div>
                       ) : (
-                        <>
+                        <div className="inline-flex items-center gap-4">
                           <Link
                             href={`/admin/properties/${property.id}/edit`}
-                            className="text-blue-600 hover:text-blue-900 mr-6"
+                            className="text-blue-600 hover:text-blue-900"
                           >
                             Edit
                           </Link>
@@ -196,7 +229,7 @@ export default function AdminPropertiesPage() {
                           >
                             Delete
                           </button>
-                        </>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -204,6 +237,27 @@ export default function AdminPropertiesPage() {
               </tbody>
             </table>
           </div>
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 px-6 py-4 border-t border-slate-200">
+              <button
+                onClick={() => updatePage(page - 1)}
+                disabled={page <= 1}
+                className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
+              >
+                Previous
+              </button>
+              <span className="text-slate-600">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                onClick={() => updatePage(page + 1)}
+                disabled={page >= totalPages}
+                className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       ) : null}
     </div>

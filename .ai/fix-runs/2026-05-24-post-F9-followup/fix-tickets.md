@@ -52,3 +52,25 @@ Source: `.ai/bugs/open-bugs.md`
   5. tsc 通过
 - **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
 - **Status:** verified — tsc exit 0；手动复测全 PASS（2026-05-25）
+
+---
+
+## BUG-011-FIX
+
+- **Bug:** BUG-011 — Admin 房源列表无分页
+- **Owner:** Codex
+- **Severity:** P2 / Medium
+- **Allowed files:**
+  - `frontend/app/(dashboard)/admin/properties/page.tsx`
+- **Requirements:**
+  1. 增加 `page` state（初始值从 URL searchParam `?page=` 读取，fallback 1）和 `total` state（初始值 0）；定义 `PAGE_SIZE = 20`
+  2. `page` state 变化时同步写入 URL searchParam（`?page=N`），使用 `useRouter` + `useSearchParams`；刷新后从 URL 恢复页码
+  3. `fetchProperties` 改为接收 `page` 参数，调用 `propertiesApi.list(page, PAGE_SIZE)`，同时更新 `total` state；`useEffect` 依赖 `page` 变化触发重新请求
+  4. 在表格下方加 Previous/Next 分页 UI（与 properties/page.tsx 风格一致）：`page <= 1` 时 Previous disabled，`page >= totalPages` 时 Next disabled；`totalPages = Math.ceil(total / PAGE_SIZE)`；`totalPages <= 1` 时不渲染分页区
+  5. 删除逻辑（`handleDelete`）：边界情况（当前页只剩 1 条且 `page > 1`）时，不做乐观移除，`setDeletingId(null)` 移到 `finally`，删除期间保持 deleting 状态；成功后调用 `updatePage(page - 1)` 跳页；空状态条件加 `deletingId === null` 守卫，防止闪现"No properties yet"。非边界情况：成功后乐观过滤并刷新当前页。（Claude 授权 fallback 修复，2026-05-25）
+  6. 修复 Actions 列（Edit/Delete）overflow 截断：改用 `w-full table-fixed` 表格布局，`th`/`td` 明确列宽（Location `w-52`、Price `w-36`、Status `w-28`、Actions `w-40 whitespace-nowrap`），内容用 `inline-flex gap-4`；1440px 桌面下 Edit/Delete 完整可见，无需水平滚动。（Claude 授权 fallback 修复，2026-05-25）
+  7. "Add Property" 链接保持不变（`href="/admin/properties/new"`）；编辑链接保持不变（`href=\`/admin/properties/${id}/edit\``）；不需要改路由，回来后从 URL 恢复当前页
+  8. 不修改其他任何文件
+  9. tsc 通过
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
+- **Status:** verified — 手动复测全 PASS（2026-05-25）

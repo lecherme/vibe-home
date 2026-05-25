@@ -32,16 +32,6 @@
 
 ---
 
-### BUG-011 — Admin 房源列表无分页
-- **Severity:** P2 · Medium
-- **Status:** open
-- **Source:** post-F9 smoke ADMIN 测试
-- **Summary:** admin/properties/page.tsx 固定 page_size=100，无分页组件；>100 条房源时数据不可访问，单次加载性能随量线性下降
-- **Evidence:** [results.md § BUG-011](./../qa-runs/2026-05-18-post-F9-smoke/results.md#bug-011)
-- **Suggested next action:** 为 admin 列表添加分页组件，与 properties 列表风格一致
-
----
-
 ### BUG-012 — Admin 表单 image_url（string）与 Property 类型 images（array）不一致
 - **Severity:** P3 · Low
 - **Status:** open / deferred
@@ -81,6 +71,15 @@
 - **Summary:** 搜索出错显示 error state，retry 重新执行同一查询（URL 不变时也能重试）；本轮 backend 正常运行，未模拟错误状态
 - **Evidence:** [results.md § SRCH-07](./../qa-runs/2026-05-18-post-F9-smoke/results.md)
 - **Suggested next action:** 单独安排专项测试，mock backend 或断开 backend 后测试 error UI 和 retry 逻辑
+
+---
+
+### BUG-017 — Admin 分页无直接跳页输入
+- **Severity:** P3 · Low
+- **Status:** backlog
+- **Source:** BUG-011-FIX 复测 2026-05-25
+- **Summary:** Admin 房源列表分页只有 Previous/Next，无法直接输入或点击具体页码跳转（如 "跳到第 5 页"）；数据量大时体验差
+- **Suggested next action:** 在分页区加页码输入框或页码按钮列表；产品确认 UI 风格后开 fix ticket
 
 ---
 
