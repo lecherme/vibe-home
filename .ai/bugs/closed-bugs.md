@@ -17,6 +17,17 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-012 — Admin 表单 image_url 与 Property.images 不一致
+
+- **Fixed date:** 2026-05-26
+- **Verification:** tsc exit 0；Python import exit 0；手动复测 PASS — 新增多图、编辑保留多图、Remove disabled
+- **Fixing batch:** `.ai/fix-runs/2026-05-24-post-F9-followup` — BUG-012-FIX
+- **Fix:** 后端 schema 改为 `images: list[str]`，删除 `_build_images()` 适配器；前端类型和表单对齐，动态 URL 列表（最多 5 个）；编辑页加载改为 `property.images ?? []`
+- **Original source:** [results.md § BUG-012](./../qa-runs/2026-05-18-post-F9-smoke/results.md#bug-012)
+- **Fix report:** [fix-report-BUG-012-FIX](./../fix-runs/2026-05-24-post-F9-followup/fix-reports/fix-report-BUG-012-FIX.md)
+
+---
+
 ### BUG-010 — Favorites 分页缺失 + ghost unfavorited
 
 - **Fixed date:** 2026-05-26

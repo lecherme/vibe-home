@@ -22,16 +22,6 @@
 
 ## Functional Bugs
 
-### BUG-012 — Admin 表单 image_url（string）与 Property 类型 images（array）不一致
-- **Severity:** P3 · Low
-- **Status:** open / deferred
-- **Source:** Gemini audit + post-F9 smoke
-- **Summary:** property-form.tsx 使用 `image_url`（单字符串）；Property 类型期望 `images`（数组）；每次只能上传一张图，存在字段映射问题
-- **Evidence:** [results.md § BUG-012](./../qa-runs/2026-05-18-post-F9-smoke/results.md#bug-012)
-- **Suggested next action:** 对齐表单字段与 Property 数据模型，支持多图 URL；产品确认需求后再修
-
----
-
 ### BUG-014 — 注册成功后未引导用户登录
 - **Severity:** P3 · Low
 - **Status:** open / deferred

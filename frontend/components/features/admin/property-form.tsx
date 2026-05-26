@@ -23,7 +23,7 @@ export function PropertyForm({
     bedrooms: 0,
     bathrooms: 0,
     area: 0,
-    image_url: "",
+    images: [""],
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof AdminPropertyCreate, string>>>({});
@@ -39,7 +39,7 @@ export function PropertyForm({
         bedrooms: initialValues.bedrooms ?? 0,
         bathrooms: initialValues.bathrooms ?? 0,
         area: initialValues.area ?? 0,
-        image_url: initialValues.image_url ?? "",
+        images: initialValues.images && initialValues.images.length > 0 ? initialValues.images : [""],
       });
     }
   }, [initialValues]);
@@ -56,6 +56,35 @@ export function PropertyForm({
     if (errors[name as keyof AdminPropertyCreate]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
+  };
+
+  const handleImageChange = (index: number, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      images:
+        index >= prev.images.length
+          ? [...prev.images, value]
+          : prev.images.map((image, imageIndex) =>
+              imageIndex === index ? value : image
+            ),
+    }));
+  };
+
+  const handleAddImage = () => {
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.length < 5 ? [...prev.images, ""] : prev.images,
+    }));
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      images:
+        prev.images.length > 1
+          ? prev.images.filter((_, imageIndex) => imageIndex !== index)
+          : [""],
+    }));
   };
 
   const validate = (): boolean => {
@@ -101,7 +130,10 @@ export function PropertyForm({
     }
 
     try {
-      await onSubmit(formData);
+      await onSubmit({
+        ...formData,
+        images: formData.images.map((image) => image.trim()).filter(Boolean),
+      });
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "An error occurred");
     }
@@ -228,17 +260,41 @@ export function PropertyForm({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-1">Image URL</label>
-        <input
-          type="text"
-          name="image_url"
-          value={formData.image_url}
-          onChange={handleChange}
-          className={inputClasses("image_url")}
-          placeholder="https://images.unsplash.com/..."
-          disabled={isLoading}
-        />
-        {errors.image_url && <p className="mt-1 text-xs text-red-500 font-medium">{errors.image_url}</p>}
+        <div className="flex items-center justify-between gap-3 mb-1">
+          <label className="block text-sm font-semibold text-slate-700">Image URLs</label>
+          <button
+            type="button"
+            onClick={handleAddImage}
+            disabled={isLoading || formData.images.length >= 5}
+            className="px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Add
+          </button>
+        </div>
+        <div className="space-y-2">
+          {(formData.images.length > 0 ? formData.images : [""]).map((imageUrl, index) => (
+            <div key={index} className="flex gap-2">
+              <input
+                type="text"
+                name="images"
+                value={imageUrl}
+                onChange={(e) => handleImageChange(index, e.target.value)}
+                className={inputClasses("images")}
+                placeholder="https://images.unsplash.com/..."
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => handleRemoveImage(index)}
+                disabled={isLoading || formData.images.length <= 1}
+                className="px-3 py-2 text-sm font-semibold text-slate-700 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+        {errors.images && <p className="mt-1 text-xs text-red-500 font-medium">{errors.images}</p>}
       </div>
 
       <div className="flex justify-end pt-4">

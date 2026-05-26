@@ -6,7 +6,7 @@ export interface AdminPropertyCreate {
   bedrooms: number;
   bathrooms: number;
   area: number;
-  image_url: string;
+  images: string[];
 }
 
 export interface AdminPropertyUpdate extends Partial<AdminPropertyCreate> {}

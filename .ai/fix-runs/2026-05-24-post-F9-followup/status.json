@@ -27,6 +27,23 @@
           }
           ,
           {
+            "id": "BUG-012-FIX",
+            "status": "verified",
+            "required_by": "open-bugs.md",
+            "affected_task": "Admin",
+            "affected_task_title": "BUG-012 — Admin 表单 image_url 与 Property.images 不一致",
+            "criterion": "BUG-012",
+            "description": "Fix 5 files: (1) backend/app/schemas/admin.py: replace image_url fields with images: list[str] = Field(default_factory=list) and Optional[list[str]]; add Field import from pydantic. (2) backend/app/services/admin/service.py: delete _build_images(), use data.images directly, update 'images' key in update_property. (3) frontend/types/admin.ts: image_url: string -> images: string[]. (4) frontend/components/features/admin/property-form.tsx: replace single input with dynamic URL list (max 5, Add/Remove buttons, filter empty strings on submit, allow images:[]). (5) frontend/app/(dashboard)/admin/properties/[id]/edit/page.tsx: map images: property.images ?? []. No file upload. tsc pass; python import check pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit exit 0; docker compose exec backend python -c 'from app.services.admin.service import create_property' exit 0",
+            "files": [
+              "backend/app/schemas/admin.py",
+              "backend/app/services/admin/service.py",
+              "frontend/types/admin.ts",
+              "frontend/components/features/admin/property-form.tsx",
+              "frontend/app/(dashboard)/admin/properties/[id]/edit/page.tsx"
+            ]
+          },
+          {
             "id": "BUG-010-FIX",
             "status": "verified",
             "required_by": "open-bugs.md",

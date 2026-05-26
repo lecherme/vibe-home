@@ -10,10 +10,6 @@ from app.schemas.property import Property as PropertyRead
 from app.schemas.property import PropertyStatus
 
 
-def _build_images(image_url: str) -> list[str]:
-    return [image_url] if image_url else []
-
-
 def create_property(data: PropertyCreate) -> PropertyRead:
     property_id = f"prop_{uuid4().hex}"
     while get_by_id(property_id) is not None:
@@ -28,7 +24,7 @@ def create_property(data: PropertyCreate) -> PropertyRead:
         bedrooms=data.bedrooms,
         bathrooms=data.bathrooms,
         area_sqm=data.area,
-        images=_build_images(data.image_url),
+        images=data.images,
         status=PropertyStatus.AVAILABLE,
         created_at=datetime.now(timezone.utc),
     )
@@ -61,8 +57,8 @@ def update_property(property_id: str, data: PropertyUpdate) -> PropertyRead:
         updated_values["bathrooms"] = updates["bathrooms"]
     if "area" in updates and updates["area"] is not None:
         updated_values["area_sqm"] = updates["area"]
-    if "image_url" in updates and updates["image_url"] is not None:
-        updated_values["images"] = _build_images(updates["image_url"])
+    if "images" in updates and updates["images"] is not None:
+        updated_values["images"] = updates["images"]
 
     updated_property = PropertyRead(**updated_values)
     (

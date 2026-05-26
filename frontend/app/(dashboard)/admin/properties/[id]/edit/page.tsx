@@ -29,7 +29,6 @@ export default function EditPropertyPage() {
       const property = await propertiesApi.get(id);
       
       // Map Property to AdminPropertyUpdate
-      // Note: Backend uses area_sqm and images[] but Admin API expects area and image_url
       setInitialValues({
         title: property.title,
         description: property.description,
@@ -38,7 +37,7 @@ export default function EditPropertyPage() {
         bedrooms: property.bedrooms,
         bathrooms: property.bathrooms,
         area: property.area_sqm,
-        image_url: property.images && property.images.length > 0 ? property.images[0] : "",
+        images: property.images ?? [],
       });
       setError(null);
     } catch (err) {

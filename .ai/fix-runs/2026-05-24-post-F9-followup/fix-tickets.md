@@ -55,6 +55,30 @@ Source: `.ai/bugs/open-bugs.md`
 
 ---
 
+## BUG-012-FIX
+
+- **Bug:** BUG-012 — Admin 表单 image_url（string）与 Property 类型 images（array）不一致
+- **Owner:** Codex
+- **Severity:** P3 / Low
+- **Allowed files:**
+  1. `backend/app/schemas/admin.py`
+  2. `backend/app/services/admin/service.py`
+  3. `frontend/types/admin.ts`
+  4. `frontend/components/features/admin/property-form.tsx`
+  5. `frontend/app/(dashboard)/admin/properties/[id]/edit/page.tsx`
+- **Requirements:**
+  1. `backend/app/schemas/admin.py`：`PropertyCreate.images` 改为 `images: list[str] = Field(default_factory=list)`；`PropertyUpdate.images` 改为 `images: Optional[list[str]] = None`；若文件未 import `Field`，则补 `from pydantic import Field`；删除旧的 `image_url` 字段
+  2. `backend/app/services/admin/service.py`：删除 `_build_images()` 函数；`create_property` 直接使用 `data.images`；`update_property` 改为 `if "images" in updates` 更新 `updated_values["images"]`；不再引用 `image_url`
+  3. `frontend/types/admin.ts`：`image_url: string` → `images: string[]`；`AdminPropertyUpdate extends Partial<AdminPropertyCreate>`，无需单独修改
+  4. `frontend/components/features/admin/property-form.tsx`：将单个 `image_url` text input 替换为动态 URL 列表；初始 1 个输入框；Add Image URL 按钮（最多 5 个）；每行有 Remove 按钮（只剩 1 个时 disabled）；提交前过滤空字符串；允许 `images: []`；不校验 URL 格式
+  5. `frontend/app/(dashboard)/admin/properties/[id]/edit/page.tsx`：加载时将 `image_url: property.images[0] ?? ""` 改为 `images: property.images ?? []`
+  6. 不修改其他任何文件；不实现文件上传
+  7. tsc 通过；`docker compose exec backend python -c "from app.services.admin.service import create_property"` exit 0
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0；`docker compose exec backend python -c "from app.services.admin.service import create_property"` exit 0
+- **Status:** verified — 手动复测全 PASS（2026-05-26）
+
+---
+
 ## BUG-010-FIX
 
 - **Bug:** BUG-010 — Favorites 分页缺失 + ghost unfavorited

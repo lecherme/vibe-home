@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class PropertyCreate(BaseModel):
@@ -11,7 +11,7 @@ class PropertyCreate(BaseModel):
     bedrooms: int
     bathrooms: int
     area: float
-    image_url: str = ""
+    images: list[str] = Field(default_factory=list)
 
 
 class PropertyUpdate(BaseModel):
@@ -22,4 +22,4 @@ class PropertyUpdate(BaseModel):
     bedrooms: Optional[int] = None
     bathrooms: Optional[int] = None
     area: Optional[float] = None
-    image_url: Optional[str] = None
+    images: Optional[list[str]] = None
