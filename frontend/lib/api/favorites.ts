@@ -78,6 +78,22 @@ export async function getFavorites(
   return res.json() as Promise<FavoriteList>;
 }
 
+export async function getAllFavoriteIds(): Promise<Set<string>> {
+  const pageSize = 50;
+  const ids = new Set<string>();
+  let page = 1;
+  let total = 0;
+
+  do {
+    const data = await getFavorites(page, pageSize);
+    data.items.forEach((property) => ids.add(property.id));
+    total = data.total;
+    page += 1;
+  } while ((page - 1) * pageSize < total);
+
+  return ids;
+}
+
 export async function isFavorite(propertyId: string): Promise<boolean> {
   const accessToken = await getAccessToken();
 
@@ -103,5 +119,6 @@ export const favoritesApi = {
   addFavorite,
   removeFavorite,
   getFavorites,
+  getAllFavoriteIds,
   isFavorite,
 };

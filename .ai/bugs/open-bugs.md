@@ -22,16 +22,6 @@
 
 ## Functional Bugs
 
-### BUG-010 — Favorites 分页缺失 + favorite-state 上限不一致
-- **Severity:** P2 · Medium
-- **Status:** open
-- **Source:** post-F9 smoke FAV/SRCH 测试
-- **Summary:** (1) `/favorites` pageSize=12，无分页 UI，>12 条收藏不可见；(2) `/search` 请求 page_size=100 但 backend 上限 50，>50 条收藏时显示 ghost unfavorited
-- **Evidence:** [results.md § BUG-010](./../qa-runs/2026-05-18-post-F9-smoke/results.md#bug-010)
-- **Suggested next action:** 修复 favorites/page.tsx 分页 UI；将 search 页 getFavorites page_size 改为 ≤50 或分页获取
-
----
-
 ### BUG-012 — Admin 表单 image_url（string）与 Property 类型 images（array）不一致
 - **Severity:** P3 · Low
 - **Status:** open / deferred

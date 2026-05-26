@@ -55,6 +55,31 @@ Source: `.ai/bugs/open-bugs.md`
 
 ---
 
+## BUG-010-FIX
+
+- **Bug:** BUG-010 — Favorites 分页缺失 + ghost unfavorited
+- **Owner:** Codex
+- **Severity:** P2 / Medium
+- **Allowed files:**
+  1. `frontend/app/(dashboard)/favorites/page.tsx`
+  2. `frontend/lib/api/favorites.ts`
+  3. `frontend/app/(dashboard)/search/page.tsx`
+- **Requirements:**
+  1. `favorites.ts`：新增 `getAllFavoriteIds()` 函数，每页请求 `page_size=50`（尊重后端 MAX_PAGE_SIZE=50），循环条件 `(page - 1) * 50 < total`，返回 `Set<string>`，包含该用户所有已收藏的 property id。
+  2. `search/page.tsx`：将 `favoritesApi.getFavorites(1, 100)` 替换为 `favoritesApi.getAllFavoriteIds()`；收藏拉取失败时继续静默降级为空集合（`new Set()`），不阻断搜索结果渲染。
+  3. `favorites/page.tsx`：
+     - 增加 `page` state（初始值从 URL `?page=` 读取，fallback 1）和 `total` state（初始值 0）；`PAGE_SIZE = 12`（与现有默认一致）
+     - `page` 变化时同步写入 URL searchParam（`?page=N`），使用 `useRouter` + `useSearchParams`；刷新后从 URL 恢复页码
+     - 调用 `favoritesApi.getFavorites(page, PAGE_SIZE)` 并更新 `total`；`useEffect` 依赖 `page`
+     - 在卡片列表下方加 Previous/Next 分页 UI：`page <= 1` 时 Previous disabled，`page >= totalPages` 时 Next disabled；`totalPages = Math.ceil(total / PAGE_SIZE)`；`totalPages <= 1` 时不渲染分页区
+     - 取消收藏后：若当前页 favorites 数量 > 1 则刷新当前页；若当前页只剩 1 条且 `page > 1` 则跳到 `page - 1`（与 BUG-011-FIX 边界逻辑一致）
+  4. 不修改其他任何文件；不改后端代码
+  5. tsc 通过
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
+- **Status:** verified — 手动复测全 PASS（2026-05-26）
+
+---
+
 ## BUG-011-FIX
 
 - **Bug:** BUG-011 — Admin 房源列表无分页

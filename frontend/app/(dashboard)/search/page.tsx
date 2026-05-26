@@ -49,11 +49,11 @@ function SearchContent() {
       
       const [searchData, favoritesRes] = await Promise.all([
         propertiesApi.searchProperties(searchFilters, p, PAGE_SIZE),
-        favoritesApi.getFavorites(1, 100).catch(() => ({ items: [], total: 0, page: 1, page_size: 100 }))
+        favoritesApi.getAllFavoriteIds().catch(() => new Set<string>())
       ]);
 
       setResult(searchData);
-      setFavoriteIds(new Set(favoritesRes.items.map(f => f.id)));
+      setFavoriteIds(favoritesRes);
     } catch (err: any) {
       setError(err.message || "Failed to fetch properties");
     } finally {

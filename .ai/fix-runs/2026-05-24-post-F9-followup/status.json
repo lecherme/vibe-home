@@ -27,6 +27,21 @@
           }
           ,
           {
+            "id": "BUG-010-FIX",
+            "status": "verified",
+            "required_by": "open-bugs.md",
+            "affected_task": "Favorites",
+            "affected_task_title": "BUG-010 — Favorites 分页缺失 + ghost unfavorited",
+            "criterion": "BUG-010",
+            "description": "Fix three files: (1) favorites.ts: add getAllFavoriteIds() that loops through pages of page_size=50 until (page-1)*50 >= total, returns Set<string> of all favorited property ids. (2) search/page.tsx: replace getFavorites(1,100) with getAllFavoriteIds(); on failure silently degrade to empty Set, do not block search. (3) favorites/page.tsx: add page state (from URL ?page=, fallback 1), total state, PAGE_SIZE=12; sync page to URL with useRouter+useSearchParams; call getFavorites(page, PAGE_SIZE) and update total; add Previous/Next pagination UI below card grid, hide when totalPages<=1; on unfavorite: if remaining items > 1 refresh current page, if last item on non-first page go to page-1. No backend changes. tsc must pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0",
+            "files": [
+              "frontend/app/(dashboard)/favorites/page.tsx",
+              "frontend/lib/api/favorites.ts",
+              "frontend/app/(dashboard)/search/page.tsx"
+            ]
+          },
+          {
             "id": "BUG-011-FIX",
             "status": "verified",
             "required_by": "open-bugs.md",

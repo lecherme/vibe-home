@@ -1,44 +1,75 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { favoritesApi } from "@/lib/api/favorites";
 import { PropertyCard } from "@/components/features/properties/PropertyCard";
 import { PropertyListSkeleton } from "@/components/features/properties/PropertyListSkeleton";
 import type { Property } from "@/types/property";
 
-export default function FavoritesPage() {
+const PAGE_SIZE = 12;
+
+function parsePage(value: string | null) {
+  const page = Number(value);
+  return Number.isFinite(page) && page > 0 ? page : 1;
+}
+
+function FavoritesContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialPage = parsePage(searchParams.get("page"));
   const [favorites, setFavorites] = useState<Property[]>([]);
+  const [page, setPage] = useState(initialPage);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    
-    async function loadFavorites() {
-      try {
-        setIsLoading(true);
-        const data = await favoritesApi.getFavorites();
-        if (isMounted) {
-          setFavorites(data.items);
-          setError(null);
-        }
-      } catch (err: any) {
-        if (isMounted) {
-          setError(err.message || "Failed to load favorites");
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
+  const setPageAndUrl = useCallback((nextPage: number) => {
+    setPage(nextPage);
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextPage > 1) {
+      params.set("page", String(nextPage));
+    } else {
+      params.delete("page");
     }
 
-    loadFavorites();
+    const query = params.toString();
+    router.push(query ? `/favorites?${query}` : "/favorites");
+  }, [router, searchParams]);
+
+  const loadFavorites = useCallback(async (currentPage: number) => {
+    setIsLoading(true);
+    const data = await favoritesApi.getFavorites(currentPage, PAGE_SIZE);
+    setFavorites(data.items);
+    setTotal(data.total);
+    setError(null);
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const urlPage = parsePage(searchParams.get("page"));
+    if (urlPage !== page) {
+      setPage(urlPage);
+    }
+  }, [page, searchParams]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    loadFavorites(page).catch((err: any) => {
+      if (isMounted) {
+        setError(err.message || "Failed to load favorites");
+        setIsLoading(false);
+      }
+    });
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [loadFavorites, page]);
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   if (isLoading) {
     return (
@@ -109,21 +140,70 @@ export default function FavoritesPage() {
           </a>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {favorites.map((property) => (
-            <PropertyCard
-              key={property.id}
-              property={property}
-              isFavorited={true}
-              onFavoriteToggle={(newState) => {
-                if (!newState) {
-                  setFavorites((prev) => prev.filter((p) => p.id !== property.id));
-                }
-              }}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {favorites.map((property) => (
+              <PropertyCard
+                key={property.id}
+                property={property}
+                isFavorited={true}
+                onFavoriteToggle={(newState) => {
+                  if (!newState) {
+                    if (favorites.length > 1) {
+                      loadFavorites(page).catch((err: any) => {
+                        setError(err.message || "Failed to load favorites");
+                        setIsLoading(false);
+                      });
+                    } else if (page > 1) {
+                      setPageAndUrl(page - 1);
+                    } else {
+                      loadFavorites(page).catch((err: any) => {
+                        setError(err.message || "Failed to load favorites");
+                        setIsLoading(false);
+                      });
+                    }
+                  }
+                }}
+              />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <button
+                onClick={() => setPageAndUrl(page - 1)}
+                disabled={page <= 1 || isLoading}
+                className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-slate-700">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPageAndUrl(page + 1)}
+                disabled={page >= totalPages || isLoading}
+                className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
+  );
+}
+
+export default function FavoritesPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-slate-900 mb-8">My Favorites</h1>
+        <PropertyListSkeleton />
+      </div>
+    }>
+      <FavoritesContent />
+    </Suspense>
   );
 }

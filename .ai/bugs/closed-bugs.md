@@ -17,6 +17,17 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-010 — Favorites 分页缺失 + ghost unfavorited
+
+- **Fixed date:** 2026-05-26
+- **Verification:** tsc exit 0；手动复测 PASS — /favorites 分页、URL params 刷新保页、取消收藏边界；/search 收藏同步回归 PASS
+- **Fixing batch:** `.ai/fix-runs/2026-05-24-post-F9-followup` — BUG-010-FIX
+- **Fix:** 新增 `getAllFavoriteIds()` 循环翻页（page_size=50）取全量收藏 ID；search 页改用该 helper 并静默降级；favorites 页加 PAGE_SIZE=12 分页 + URL params 同步 + 取消收藏边界逻辑
+- **Original source:** [results.md § BUG-010](./../qa-runs/2026-05-18-post-F9-smoke/results.md#bug-010)
+- **Fix report:** [fix-report-BUG-010-FIX](./../fix-runs/2026-05-24-post-F9-followup/fix-reports/fix-report-BUG-010-FIX.md)
+
+---
+
 ### BUG-011 — Admin 房源列表无分页
 
 - **Fixed date:** 2026-05-25
