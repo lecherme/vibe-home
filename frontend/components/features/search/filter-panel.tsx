@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { SearchFilters } from "@/types/search";
 import type { PropertyStatus } from "@/types/property";
 
@@ -11,14 +11,64 @@ interface FilterPanelProps {
 }
 
 export function FilterPanel({ filters, onChange, isLoading }: FilterPanelProps) {
+  const [localMinPrice, setLocalMinPrice] = useState(
+    filters.min_price?.toString() ?? ""
+  );
+  const [localMaxPrice, setLocalMaxPrice] = useState(
+    filters.max_price?.toString() ?? ""
+  );
+  const priceDebounceTimers = useRef<
+    Partial<Record<"min_price" | "max_price", ReturnType<typeof setTimeout>>>
+  >({});
+  const filtersRef = useRef(filters);
+
+  useEffect(() => {
+    filtersRef.current = filters;
+    if (!priceDebounceTimers.current.min_price) {
+      setLocalMinPrice(filters.min_price?.toString() ?? "");
+    }
+    if (!priceDebounceTimers.current.max_price) {
+      setLocalMaxPrice(filters.max_price?.toString() ?? "");
+    }
+  }, [filters]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(priceDebounceTimers.current).forEach((timer) => {
+        clearTimeout(timer);
+      });
+    };
+  }, []);
+
   const handleChange = (
     field: keyof SearchFilters,
     value: string | number | undefined
   ) => {
     onChange({
-      ...filters,
+      ...filtersRef.current,
       [field]: value === "" ? undefined : value,
     });
+  };
+
+  const handlePriceChange = (
+    field: "min_price" | "max_price",
+    value: string
+  ) => {
+    if (field === "min_price") {
+      setLocalMinPrice(value);
+    } else {
+      setLocalMaxPrice(value);
+    }
+
+    const existingTimer = priceDebounceTimers.current[field];
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    priceDebounceTimers.current[field] = setTimeout(() => {
+      handleChange(field, value ? Number(value) : "");
+      delete priceDebounceTimers.current[field];
+    }, 500);
   };
 
   return (
@@ -37,10 +87,8 @@ export function FilterPanel({ filters, onChange, isLoading }: FilterPanelProps) 
           <input
             type="number"
             id="min_price"
-            value={filters.min_price ?? ""}
-            onChange={(e) =>
-              handleChange("min_price", e.target.value ? Number(e.target.value) : "")
-            }
+            value={localMinPrice}
+            onChange={(e) => handlePriceChange("min_price", e.target.value)}
             placeholder="No min"
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             disabled={isLoading}
@@ -57,10 +105,8 @@ export function FilterPanel({ filters, onChange, isLoading }: FilterPanelProps) 
           <input
             type="number"
             id="max_price"
-            value={filters.max_price ?? ""}
-            onChange={(e) =>
-              handleChange("max_price", e.target.value ? Number(e.target.value) : "")
-            }
+            value={localMaxPrice}
+            onChange={(e) => handlePriceChange("max_price", e.target.value)}
             placeholder="No max"
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             disabled={isLoading}

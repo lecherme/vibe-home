@@ -101,7 +101,7 @@
           },
           {
             "id": "OBS-007-FIX",
-            "status": "pending",
+            "status": "verified",
             "required_by": "open-bugs.md",
             "affected_task": "Search",
             "affected_task_title": "OBS-007 — 价格输入无 debounce，loading 期间阻断输入",

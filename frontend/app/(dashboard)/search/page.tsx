@@ -224,7 +224,7 @@ function SearchContent() {
       )}
       
       {loading && result && (
-        <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-50">
+        <div className="pointer-events-none fixed inset-0 bg-white/50 flex items-center justify-center z-50">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
         </div>
       )}

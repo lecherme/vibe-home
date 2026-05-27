@@ -168,7 +168,7 @@ Source: `.ai/bugs/open-bugs.md`
   6. 不修改其他任何文件
   7. tsc 通过
 - **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
-- **Status:** pending
+- **Status:** verified — tsc PASS；手动复测全 PASS（2026-05-27）
 
 ---
 

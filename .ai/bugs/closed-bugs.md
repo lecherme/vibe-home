@@ -61,6 +61,17 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### OBS-007 — 价格输入无 debounce，loading 期间阻断输入
+
+- **Fixed date:** 2026-05-27
+- **Verification:** tsc exit 0；手动复测 PASS — 500ms debounce 生效，切换 bedrooms 时 price 不被清空，Clear Filters 正常，loading 期间 inputs 锁住
+- **Fixing batch:** `.ai/fix-runs/2026-05-24-post-F9-followup` — OBS-007-FIX
+- **Fix:** `filter-panel.tsx` 为 min/max price 引入 local state + 500ms debounce；useEffect guard 防止 typing 期间被其他 filter 变化覆盖；保留 `disabled={isLoading}` 避免并发请求 race condition（OBS-010 记录到 next-iteration）。`search/page.tsx` overlay 加 `pointer-events-none`
+- **Original source:** [results.md § OBS-007](./../qa-runs/2026-05-18-post-F9-smoke/results.md)
+- **Fix report:** [fix-report-OBS-007-FIX](./../fix-runs/2026-05-24-post-F9-followup/fix-reports/fix-report-OBS-007-FIX.md)
+
+---
+
 ### SRCH-07 — 搜索 error state + retry 专项测试
 
 - **Fixed date:** 2026-05-27

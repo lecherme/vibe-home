@@ -46,6 +46,9 @@ Actionable fix items remain tracked in `open-bugs.md`.
 - [ ] **OBS-009 — Search error stale-results UX**
   When a search request fails, the page retains the last successful result list under the fetch error banner. After navigating to a detail page and returning, the stale list is gone and only the error state shows. Both behaviors are functional and retry works correctly. Decide UX policy in a later polish pass: either clear stale results on error, or keep them with a "Showing last successful results" label.
 
+- [ ] **OBS-010 — Search overlapping request guard**
+  `search/page.tsx` has no AbortController or request ID guard. If loading-period input is ever re-enabled (e.g., allowing the user to refine filters while a search is in flight), concurrent requests could cause a slower earlier response to overwrite a newer one. Fix: add a `searchIdRef` counter in `performSearch` — increment on each call, discard response if `searchIdRef.current` has moved on. Alternatively use AbortController (requires signal threading into `properties.ts` / `favorites.ts`). Not needed while `disabled={isLoading}` is in place; revisit if that constraint is relaxed.
+
 ---
 
 这些事项不代表当前 bugfix 全部阻塞；Release Checklist 是上线前/本批次收口项，Next Iteration 是后续迭代。
