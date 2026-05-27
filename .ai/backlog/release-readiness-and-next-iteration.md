@@ -43,6 +43,9 @@ Actionable fix items remain tracked in `open-bugs.md`.
 - [ ] **全站 UI 统一美化**
   Consistent spacing, typography, colour tokens, and mobile responsiveness across all pages. Scope TBD after shadcn/ui adoption.
 
+- [ ] **OBS-009 — Search error stale-results UX**
+  When a search request fails, the page retains the last successful result list under the fetch error banner. After navigating to a detail page and returning, the stale list is gone and only the error state shows. Both behaviors are functional and retry works correctly. Decide UX policy in a later polish pass: either clear stale results on error, or keep them with a "Showing last successful results" label.
+
 ---
 
 这些事项不代表当前 bugfix 全部阻塞；Release Checklist 是上线前/本批次收口项，Next Iteration 是后续迭代。

@@ -61,6 +61,17 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### SRCH-07 — 搜索 error state + retry 专项测试
+
+- **Fixed date:** 2026-05-27
+- **Verification:** 手动测试 PASS — `docker compose stop backend` 后搜索显示 fetch error banner；Retry 重新执行同一查询（URL params 不变）；backend 恢复后正常展示结果
+- **Fixing batch:** N/A — 纯测试，无代码变更
+- **Fix:** 无需修复，功能正确
+- **UX observation:** 错误状态下旧列表仍保留但无 stale 标注，返回后旧列表消失；记录为 OBS-009，进入 next-iteration backlog
+- **Original source:** [results.md § SRCH-07](./../qa-runs/2026-05-18-post-F9-smoke/results.md)
+
+---
+
 ### BUG-015 — ResetPasswordForm / RegisterForm 缺少密码复杂度校验
 
 - **Fixed date:** 2026-05-27

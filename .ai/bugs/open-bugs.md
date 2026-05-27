@@ -25,15 +25,6 @@
 
 ## Skipped Tests
 
-### SRCH-07 — 搜索 error state + retry 专项测试
-- **Severity:** N/A · Test coverage gap
-- **Status:** skipped — intentional
-- **Source:** post-F9 smoke SRCH 测试
-- **Summary:** 搜索出错显示 error state，retry 重新执行同一查询（URL 不变时也能重试）；本轮 backend 正常运行，未模拟错误状态
-- **Evidence:** [results.md § SRCH-07](./../qa-runs/2026-05-18-post-F9-smoke/results.md)
-- **Suggested next action:** 单独安排专项测试，mock backend 或断开 backend 后测试 error UI 和 retry 逻辑
-
----
 
 ### BUG-017 — Admin 分页无直接跳页输入
 - **Severity:** P3 · Low
