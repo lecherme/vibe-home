@@ -17,6 +17,17 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-014 — 注册成功后未引导用户登录
+
+- **Fixed date:** 2026-05-27
+- **Verification:** tsc exit 0；手动复测 PASS — 3 秒自动跳 /login，Back to Login 立即跳转
+- **Fixing batch:** `.ai/fix-runs/2026-05-24-post-F9-followup` — BUG-014-FIX
+- **Fix:** RegisterForm 注册成功后用 useEffect 启动 3 秒 timer → router.push("/login")；保留 Back to Login 链接；unmount 时清理 timer
+- **Original source:** [results.md § BUG-014](./../qa-runs/2026-05-18-post-F9-smoke/results.md#bug-014)
+- **Fix report:** [fix-report-BUG-014-FIX](./../fix-runs/2026-05-24-post-F9-followup/fix-reports/fix-report-BUG-014-FIX.md)
+
+---
+
 ### BUG-012 — Admin 表单 image_url 与 Property.images 不一致
 
 - **Fixed date:** 2026-05-26

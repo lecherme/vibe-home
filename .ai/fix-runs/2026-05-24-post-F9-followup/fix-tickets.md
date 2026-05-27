@@ -55,6 +55,25 @@ Source: `.ai/bugs/open-bugs.md`
 
 ---
 
+## BUG-014-FIX
+
+- **Bug:** BUG-014 — 注册成功后未引导用户登录
+- **Owner:** Codex
+- **Severity:** P3 / Low
+- **Allowed files:**
+  1. `frontend/components/features/auth/RegisterForm.tsx`
+- **Requirements:**
+  1. 注册成功后显示当前 success message（"Please check your email to confirm your registration."）不变
+  2. 使用 `useEffect` 监听 `isSuccess`，`isSuccess === true` 时启动 3 秒 timer，timer 到期后调用 `router.push("/login")`
+  3. success 页面保留现有 "Back to Login" 链接，用户可立即点击跳转
+  4. 组件 unmount 时清理 timer（`return () => clearTimeout(timer)`）
+  5. 不修改其他任何文件
+  6. tsc 通过
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
+- **Status:** verified — 手动复测全 PASS（2026-05-27）
+
+---
+
 ## BUG-012-FIX
 
 - **Bug:** BUG-012 — Admin 表单 image_url（string）与 Property 类型 images（array）不一致

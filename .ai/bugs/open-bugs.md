@@ -22,16 +22,6 @@
 
 ## Functional Bugs
 
-### BUG-014 — 注册成功后未引导用户登录
-- **Severity:** P3 · Low
-- **Status:** open / deferred
-- **Source:** post-F9 smoke AUTH 测试 / Gemini audit NEW-010
-- **Summary:** RegisterForm 注册成功后停留在 /register，显示 success message；用户需手动导航到 /login
-- **Evidence:** [results.md § BUG-014](./../qa-runs/2026-05-18-post-F9-smoke/results.md#bug-014)
-- **Suggested next action:** 注册成功后自动跳 /login 或直接登录跳默认页
-
----
-
 ### BUG-015 — ResetPasswordForm 缺少密码复杂度校验
 - **Severity:** P3 · Low
 - **Status:** open / deferred — 待产品决策

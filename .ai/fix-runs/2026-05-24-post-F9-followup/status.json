@@ -27,6 +27,19 @@
           }
           ,
           {
+            "id": "BUG-014-FIX",
+            "status": "verified",
+            "required_by": "open-bugs.md",
+            "affected_task": "Auth",
+            "affected_task_title": "BUG-014 — 注册成功后未引导用户登录",
+            "criterion": "BUG-014",
+            "description": "Fix frontend/components/features/auth/RegisterForm.tsx only. After successful registration: keep existing success message; add useEffect that watches isSuccess, starts a 3-second timer on true, then calls router.push('/login'); keep Back to Login link; clear timer on unmount. tsc must pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0",
+            "files": [
+              "frontend/components/features/auth/RegisterForm.tsx"
+            ]
+          },
+          {
             "id": "BUG-012-FIX",
             "status": "verified",
             "required_by": "open-bugs.md",
