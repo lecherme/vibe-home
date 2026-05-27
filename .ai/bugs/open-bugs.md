@@ -22,15 +22,6 @@
 
 ## Functional Bugs
 
-### BUG-015 — ResetPasswordForm 缺少密码复杂度校验
-- **Severity:** P3 · Low
-- **Status:** partial — RegisterForm 手动 PASS；ResetPasswordForm code verified only；待 Supabase email rate limit 恢复后补测 reset 真实路径
-- **Source:** RESET-03 复测（2026-05-23）
-- **Summary:** 已接入 `validatePassword`（长度 ≥ 8、小写、大写、数字），但 reset 表单因邮件限流未完成端到端手测
-- **Evidence:** [fix-report BUG-015-FIX](./../fix-runs/2026-05-24-post-F9-followup/fix-reports/fix-report-BUG-015-FIX.md)
-- **Suggested next action:** 等 Supabase email rate limit 恢复（或配置自定义 SMTP）后，获取 recovery link，完成 ResetPasswordForm 弱密码拦截 + 强密码通过的手测
-
----
 
 ## Skipped Tests
 

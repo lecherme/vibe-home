@@ -79,7 +79,7 @@ Source: `.ai/bugs/open-bugs.md`
   4. 不修改其他任何文件
   5. tsc 通过
 - **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
-- **Status:** partial — tsc PASS；RegisterForm 手动复测 PASS（2026-05-27）；ResetPasswordForm code verified only，因 Supabase email rate limit 无法获取 recovery link，待限流恢复后补测 reset 表单真实路径
+- **Status:** verified — tsc PASS；RegisterForm + ResetPasswordForm 手动复测全 PASS（2026-05-27）
 
 ---
 

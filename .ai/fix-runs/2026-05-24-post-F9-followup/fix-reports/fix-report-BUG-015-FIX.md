@@ -22,4 +22,4 @@ None
 |---------|--------|--------|
 | `docker compose exec frontend npx tsc --noEmit` | 无输出 | **PASS — exit 0** |
 | 手动复测 RegisterForm | `pass` → 长度错误；`password1` → 缺大写；`PASSWORD1` → 缺小写；`Password` → 缺数字；`Password1/Password2` → 密码不匹配（复杂度通过才到此步）；`Password1/Password1` → 通过前端校验，触发 Supabase 注册，被 email rate limit 拦截（属基础设施限制，非代码问题）| **PASS — 2026-05-27** |
-| 手动复测 ResetPasswordForm | code verified only；已接入 `validatePassword`，但因 Supabase email rate limit 无法获取新 recovery link，未完成真实表单手动复测；等限流恢复后补测 reset 表单 | **pending — 待补测** |
+| 手动复测 ResetPasswordForm | 弱密码拦截正常（`password` → 长度错误；`Password` → 缺数字）；强密码 `Password1` 修改成功，自动跳 `/login`；新密码登录成功 | **PASS — 2026-05-27** |

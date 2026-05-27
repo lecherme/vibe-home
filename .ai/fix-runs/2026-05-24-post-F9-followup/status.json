@@ -28,7 +28,7 @@
           ,
           {
             "id": "BUG-015-FIX",
-            "status": "partial — RegisterForm 手动 PASS；ResetPasswordForm code verified only，待 Supabase email rate limit 恢复后补测",
+            "status": "verified",
             "required_by": "open-bugs.md",
             "affected_task": "Auth",
             "affected_task_title": "BUG-015 — 密码复杂度校验缺失",

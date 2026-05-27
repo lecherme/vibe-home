@@ -61,6 +61,17 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-015 — ResetPasswordForm / RegisterForm 缺少密码复杂度校验
+
+- **Fixed date:** 2026-05-27
+- **Verification:** tsc exit 0；RegisterForm 手动复测 PASS — 弱密码各分支均拦截，`Password1` 通过；ResetPasswordForm 手动复测 PASS — 弱密码拦截、强密码修改成功、跳 `/login`、新密码登录成功
+- **Fixing batch:** `.ai/fix-runs/2026-05-24-post-F9-followup` — BUG-015-FIX
+- **Fix:** 新建 `frontend/lib/auth/password-validation.ts` 导出 `validatePassword()`（长度 ≥ 8、小写、大写、数字）；RegisterForm 在 confirmPassword 校验前插入；ResetPasswordForm 替换原长度单一检查
+- **Original source:** [post-F9 smoke results § BUG-015](./../qa-runs/2026-05-18-post-F9-smoke/results.md)
+- **Fix report:** [fix-report-BUG-015-FIX](./../fix-runs/2026-05-24-post-F9-followup/fix-reports/fix-report-BUG-015-FIX.md)
+
+---
+
 ### BUG-016 — Root route / 显示 HealthPage 而非角色跳转
 
 - **Fixed date:** 2026-05-25
