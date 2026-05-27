@@ -39,7 +39,7 @@
 
 ### OBS-007 — 价格输入无 debounce，loading 期间阻断输入
 - **Severity:** UX · Backlog
-- **Status:** backlog — 待产品决策
+- **Status:** in_progress — OBS-007-FIX ticket 已创建
 - **Source:** SRCH 复测 2026-05-22
 - **Summary:** FilterPanel 每次 keystroke 立即触发搜索；loading 期间 disabled={isLoading} 锁死输入框。应改为 ~500ms debounce，loading 期间不阻断输入
 - **Affected files:** `frontend/components/features/search/filter-panel.tsx`, `frontend/app/(dashboard)/search/page.tsx`

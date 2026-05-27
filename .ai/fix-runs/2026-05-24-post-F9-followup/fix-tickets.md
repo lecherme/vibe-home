@@ -151,6 +151,27 @@ Source: `.ai/bugs/open-bugs.md`
 
 ---
 
+## OBS-007-FIX
+
+- **Bug:** OBS-007 — 价格输入无 debounce，loading 期间阻断输入
+- **Owner:** Codex
+- **Severity:** UX / Backlog
+- **Allowed files:**
+  1. `frontend/components/features/search/filter-panel.tsx`
+  2. `frontend/app/(dashboard)/search/page.tsx`
+- **Requirements:**
+  1. `filter-panel.tsx`：为 `min_price` / `max_price` 引入 local state（`localMinPrice: string`、`localMaxPrice: string`，初始值从 `filters.min_price` / `filters.max_price` 转字符串，空则 `""`）；price inputs 的 `value` 改用 local state，`onChange` 只更新 local state
+  2. `filter-panel.tsx`：用 `useRef` 持有 debounce timer；local price state 变化时 clear + 重设 500ms timeout，到期后调用父级 `onChange({ ...filters, min_price: localMinPrice ? Number(localMinPrice) : undefined, max_price: localMaxPrice ? Number(localMaxPrice) : undefined })`；`useEffect` cleanup 时 `clearTimeout`
+  3. `filter-panel.tsx`：父级 `filters.min_price` / `filters.max_price` 变化时（`useEffect` 依赖 `filters.min_price, filters.max_price`），同步更新 local state，支持 Clear Filters 和 browser back/forward
+  4. `filter-panel.tsx`：price inputs 去掉 `disabled={isLoading}`；`bedrooms` / `status` select 保持 `disabled={isLoading}` 和即时触发不变
+  5. `search/page.tsx`：全屏 loading overlay（`fixed inset-0 bg-white/50 ... z-50`）加 `pointer-events-none`，保留视觉效果但不阻断 filter panel 的鼠标/键盘输入
+  6. 不修改其他任何文件
+  7. tsc 通过
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
+- **Status:** pending
+
+---
+
 ## BUG-011-FIX
 
 - **Bug:** BUG-011 — Admin 房源列表无分页

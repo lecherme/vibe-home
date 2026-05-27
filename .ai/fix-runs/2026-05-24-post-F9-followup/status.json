@@ -100,6 +100,20 @@
             ]
           },
           {
+            "id": "OBS-007-FIX",
+            "status": "pending",
+            "required_by": "open-bugs.md",
+            "affected_task": "Search",
+            "affected_task_title": "OBS-007 — 价格输入无 debounce，loading 期间阻断输入",
+            "criterion": "OBS-007",
+            "description": "filter-panel.tsx: add local state for min_price/max_price; debounce onChange via useRef timer (500ms); sync local state from parent filters on change (Clear Filters support); remove disabled={isLoading} from price inputs only; keep select disabled={isLoading}. search/page.tsx: add pointer-events-none to full-screen loading overlay. No other files. tsc pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0",
+            "files": [
+              "frontend/components/features/search/filter-panel.tsx",
+              "frontend/app/(dashboard)/search/page.tsx"
+            ]
+          },
+          {
             "id": "BUG-016-FIX",
             "status": "verified",
             "required_by": "open-bugs.md",
