@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { validatePassword } from "@/lib/auth/password-validation";
 import { signUp } from "@/lib/auth/session";
 
 export default function RegisterForm() {
@@ -30,6 +31,13 @@ export default function RegisterForm() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
+      setIsLoading(false);
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");

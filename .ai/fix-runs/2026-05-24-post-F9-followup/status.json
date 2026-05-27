@@ -27,6 +27,21 @@
           }
           ,
           {
+            "id": "BUG-015-FIX",
+            "status": "partial — RegisterForm 手动 PASS；ResetPasswordForm code verified only，待 Supabase email rate limit 恢复后补测",
+            "required_by": "open-bugs.md",
+            "affected_task": "Auth",
+            "affected_task_title": "BUG-015 — 密码复杂度校验缺失",
+            "criterion": "BUG-015",
+            "description": "New file frontend/lib/auth/password-validation.ts exports validatePassword(password): string|null — checks length>=8, lowercase, uppercase, digit; returns null on pass or first failing message. ResetPasswordForm: replace length-only check with validatePassword. RegisterForm: add validatePassword call before confirmPassword check. No zod. No other files. tsc pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0",
+            "files": [
+              "frontend/lib/auth/password-validation.ts",
+              "frontend/components/features/auth/ResetPasswordForm.tsx",
+              "frontend/components/features/auth/RegisterForm.tsx"
+            ]
+          },
+          {
             "id": "BUG-014-FIX",
             "status": "verified",
             "required_by": "open-bugs.md",

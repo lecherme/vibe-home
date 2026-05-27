@@ -55,6 +55,34 @@ Source: `.ai/bugs/open-bugs.md`
 
 ---
 
+## BUG-015-FIX
+
+- **Bug:** BUG-015 — ResetPasswordForm 缺少密码复杂度校验（RegisterForm 同样缺失）
+- **Owner:** Codex
+- **Severity:** P3 / Low
+- **Allowed files:**
+  1. `frontend/lib/auth/password-validation.ts` ← 新建
+  2. `frontend/components/features/auth/ResetPasswordForm.tsx`
+  3. `frontend/components/features/auth/RegisterForm.tsx`
+- **Requirements:**
+  1. 新建 `frontend/lib/auth/password-validation.ts`，导出 `validatePassword(password: string): string | null`：
+     - 返回 `null` 表示校验通过
+     - 依次检查，返回第一个不满足条件的错误字符串：
+       - 长度 < 8 → `"Password must be at least 8 characters"`
+       - 无小写字母（`/[a-z]/`）→ `"Password must contain at least one lowercase letter"`
+       - 无大写字母（`/[A-Z]/`）→ `"Password must contain at least one uppercase letter"`
+       - 无数字（`/[0-9]/`）→ `"Password must contain at least one number"`
+     - 不强制特殊字符；允许任意字符
+     - 不引入任何外部依赖（纯手写函数，不用 zod）
+  2. `ResetPasswordForm.tsx`：将现有 `if (password.length < 8)` 替换为调用 `validatePassword(password)`，若返回非 null 则 `setError(result)` 并 `return`
+  3. `RegisterForm.tsx`：在 `password !== confirmPassword` 检查之前，增加调用 `validatePassword(password)`，若返回非 null 则 `setError(result)` 并 `return`
+  4. 不修改其他任何文件
+  5. tsc 通过
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
+- **Status:** partial — tsc PASS；RegisterForm 手动复测 PASS（2026-05-27）；ResetPasswordForm code verified only，因 Supabase email rate limit 无法获取 recovery link，待限流恢复后补测 reset 表单真实路径
+
+---
+
 ## BUG-014-FIX
 
 - **Bug:** BUG-014 — 注册成功后未引导用户登录

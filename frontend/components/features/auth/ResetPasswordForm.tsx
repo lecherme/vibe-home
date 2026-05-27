@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { validatePassword } from "@/lib/auth/password-validation";
 import { getSession, signOut, updateUserPassword } from "@/lib/auth/session";
 
 export default function ResetPasswordForm() {
@@ -51,8 +52,9 @@ export default function ResetPasswordForm() {
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
