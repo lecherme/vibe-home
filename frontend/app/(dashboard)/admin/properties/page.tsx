@@ -150,10 +150,10 @@ export default function AdminPropertiesPage() {
       ) : properties.length > 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200">
           <div className="overflow-x-auto">
-            <table className="w-full table-fixed divide-y divide-slate-200">
+            <table className="w-full min-w-[1024px] table-fixed divide-y divide-slate-200">
               <thead className="bg-slate-50">
                 <tr>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Property</th>
+                  <th scope="col" className="w-64 px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Property</th>
                   <th scope="col" className="w-52 px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Location</th>
                   <th scope="col" className="w-36 px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Price</th>
                   <th scope="col" className="w-28 px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
@@ -165,8 +165,8 @@ export default function AdminPropertiesPage() {
               <tbody className="bg-white divide-y divide-slate-200">
                 {properties.map((property) => (
                   <tr key={property.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
+                    <td className="px-6 py-4 max-w-0">
+                      <div className="flex items-center min-w-0">
                         <div className="h-10 w-10 flex-shrink-0">
                           {property.images && property.images.length > 0 ? (
                             <img className="h-10 w-10 rounded-md object-cover" src={property.images[0]} alt="" />
@@ -178,14 +178,14 @@ export default function AdminPropertiesPage() {
                             </div>
                           )}
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-semibold text-slate-900">{property.title}</div>
-                          <div className="text-xs text-slate-500 truncate max-w-[200px]">{property.description}</div>
+                        <div className="ml-4 min-w-0">
+                          <div className="text-sm font-semibold text-slate-900 truncate">{property.title}</div>
+                          <div className="text-xs text-slate-500 truncate">{property.description}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-slate-600">{property.location}</div>
+                    <td className="w-52 px-6 py-4 max-w-0">
+                      <div className="text-sm text-slate-600 truncate">{property.location}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-semibold text-slate-900">${property.price.toLocaleString()}</div>

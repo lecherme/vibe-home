@@ -101,7 +101,7 @@
           },
           {
             "id": "BUG-018-FIX",
-            "status": "pending",
+            "status": "verified",
             "required_by": "open-bugs.md",
             "affected_task": "Admin",
             "affected_task_title": "BUG-018 — Admin properties table overlaps on tablet/narrow viewport",

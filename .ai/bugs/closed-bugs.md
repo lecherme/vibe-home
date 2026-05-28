@@ -6,6 +6,17 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-018 — Admin properties table overlaps on tablet/narrow viewport
+
+- **Fixed date:** 2026-05-28
+- **Verification:** tsc exit 0；手动复测 iPad viewport PASS — 列不再重叠，窄屏横向滚动正常，title/location truncate 生效
+- **Fixing batch:** `.ai/fix-runs/2026-05-24-post-F9-followup` — BUG-018-FIX
+- **Fix:** table `min-w-[1024px]`；Property `<th>` `w-64`；Property/Location `<td>` 改用 `max-w-0` + `truncate`，去掉 `whitespace-nowrap`；`overflow-x-auto` 保留
+- **Original source:** PAGINATION-UX-FIX 手测 2026-05-28
+- **Fix report:** [fix-report-BUG-018-FIX](./../fix-runs/2026-05-24-post-F9-followup/fix-reports/fix-report-BUG-018-FIX.md)
+
+---
+
 ### BUG-017 / PAGINATION-UX — 全部列表页分页缺少直接跳页能力
 
 - **Fixed date:** 2026-05-28

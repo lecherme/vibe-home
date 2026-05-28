@@ -19,7 +19,7 @@ Source: `.ai/bugs/open-bugs.md`
   4. 不改变现有分页、删除、编辑逻辑；不修改其他列宽；不修改其他任何文件
   5. tsc 通过
 - **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
-- **Status:** pending
+- **Status:** verified — tsc PASS；手动复测 iPad viewport PASS（2026-05-28）
 
 ---
 

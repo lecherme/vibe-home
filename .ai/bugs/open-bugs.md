@@ -28,13 +28,4 @@
 
 ## Backlog / Observations
 
-### BUG-018 — Admin properties table overlaps on tablet/narrow viewport
-- **Severity:** P3 · Low
-- **Status:** in_progress — BUG-018-FIX ticket 已创建
-- **Source:** PAGINATION-UX-FIX 手测 2026-05-28
-- **Summary:** `/admin/properties` 表格在 iPad / 窄屏下 property title、location 过长时各列重叠，体验差
-- **Affected files:** `frontend/app/(dashboard)/admin/properties/page.tsx`
-- **Suggested next action:** 单独分析窄屏布局，选方案（横向滚动 / truncate / 响应式隐藏列 / card layout）后开 fix ticket
-
----
 
