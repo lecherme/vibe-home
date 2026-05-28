@@ -100,6 +100,23 @@
             ]
           },
           {
+            "id": "PAGINATION-UX-FIX",
+            "status": "pending",
+            "required_by": "open-bugs.md",
+            "affected_task": "Pagination",
+            "affected_task_title": "BUG-017 / PAGINATION-UX — 全部列表页分页缺少直接跳页能力",
+            "criterion": "BUG-017",
+            "description": "New PaginationControls component at frontend/components/features/common/PaginationControls.tsx. Props: page, totalPages, onPageChange(newPage), isLoading?, className?. Renders: Previous button, Page X of Y, Next button, Go-to-page input+button (clamp 1..totalPages, Enter or click, local state, no keystroke trigger). Returns null when totalPages<=1. All interactive elements disabled when isLoading. Replace existing Previous/Next pagination blocks in 4 pages (properties, search, favorites, admin/properties); URL sync logic in each page unchanged. No shadcn, no new deps, no PAGE_SIZE changes. tsc pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0",
+            "files": [
+              "frontend/components/features/common/PaginationControls.tsx",
+              "frontend/app/(dashboard)/properties/page.tsx",
+              "frontend/app/(dashboard)/search/page.tsx",
+              "frontend/app/(dashboard)/favorites/page.tsx",
+              "frontend/app/(dashboard)/admin/properties/page.tsx"
+            ]
+          },
+          {
             "id": "OBS-008-FIX",
             "status": "verified",
             "required_by": "open-bugs.md",

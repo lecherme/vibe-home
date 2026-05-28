@@ -26,12 +26,12 @@
 ## Skipped Tests
 
 
-### BUG-017 — Admin 分页无直接跳页输入
+### BUG-017 / PAGINATION-UX — 全部列表页分页缺少直接跳页能力
 - **Severity:** P3 · Low
-- **Status:** backlog
+- **Status:** in_progress — PAGINATION-UX-FIX ticket 已创建
 - **Source:** BUG-011-FIX 复测 2026-05-25
-- **Summary:** Admin 房源列表分页只有 Previous/Next，无法直接输入或点击具体页码跳转（如 "跳到第 5 页"）；数据量大时体验差
-- **Suggested next action:** 在分页区加页码输入框或页码按钮列表；产品确认 UI 风格后开 fix ticket
+- **Summary:** /properties、/search、/favorites、/admin/properties 均只有 Previous/Next；扩展为抽 PaginationControls 共享组件 + 加 Go-to-page 跳页输入，一次覆盖所有页面
+- **Suggested next action:** 执行 PAGINATION-UX-FIX worker
 
 ---
 

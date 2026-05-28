@@ -5,6 +5,45 @@ Source: `.ai/bugs/open-bugs.md`
 
 ---
 
+## PAGINATION-UX-FIX
+
+- **Bug:** BUG-017 / PAGINATION-UX — 全部列表页分页缺少直接跳页能力
+- **Owner:** Codex
+- **Severity:** P3 / Low
+- **Allowed files:**
+  1. `frontend/components/features/common/PaginationControls.tsx` ← 新建
+  2. `frontend/app/(dashboard)/properties/page.tsx`
+  3. `frontend/app/(dashboard)/search/page.tsx`
+  4. `frontend/app/(dashboard)/favorites/page.tsx`
+  5. `frontend/app/(dashboard)/admin/properties/page.tsx`
+- **Requirements:**
+  1. 新建 `frontend/components/features/common/PaginationControls.tsx`，导出 `PaginationControls`，Props 如下：
+     ```ts
+     interface PaginationControlsProps {
+       page: number;
+       totalPages: number;
+       onPageChange: (newPage: number) => void;
+       isLoading?: boolean;
+       className?: string;
+     }
+     ```
+  2. 组件渲染以下内容（从左到右）：
+     - Previous 按钮：`disabled={page <= 1 || isLoading}`，点击调用 `onPageChange(page - 1)`
+     - `Page {page} of {totalPages}` 文字
+     - Next 按钮：`disabled={page >= totalPages || isLoading}`，点击调用 `onPageChange(page + 1)`
+     - Go to page：一个 `type="number"` input（`min=1 max={totalPages}`）+ 一个 Go 按钮；input 按 Enter 或点 Go 按钮时跳转；提交时将输入值 clamp 到 `1..totalPages` 再调 `onPageChange`；`disabled={isLoading}`
+  3. `totalPages <= 1` 时整个组件返回 `null`，不渲染任何内容
+  4. Go to page input 只在 Enter / 按钮点击时触发跳转，不对每次 keystroke 触发；输入框 value 用 local state，与当前 page 无需实时同步
+  5. 4 个页面各自用 `<PaginationControls page={page} totalPages={totalPages} onPageChange={handlePageChange} isLoading={loading} />` 替换原来的 `{totalPages > 1 && <div>...Previous/Next...</div>}` 分页 UI 块；各页面的 URL sync 逻辑（`updateURL` / `setPageAndUrl` / `updatePage`）保持不变，只是 onPageChange 回调
+  6. 样式与现有分页 UI 基本一致（`flex items-center justify-center gap-4`，`rounded-md border` 按钮）；不强制完全对齐各页差异，保持可读性
+  7. 不引入 shadcn/ui 或任何新依赖；不修改 PAGE_SIZE；不改 API 调用
+  8. 不修改其他任何文件
+  9. tsc 通过
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
+- **Status:** pending
+
+---
+
 ## OBS-008-FIX
 
 - **Bug:** OBS-008 — Bathroom 筛选缺失
