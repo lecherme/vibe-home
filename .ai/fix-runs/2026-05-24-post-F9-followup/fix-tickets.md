@@ -5,6 +5,24 @@ Source: `.ai/bugs/open-bugs.md`
 
 ---
 
+## BUG-018-FIX
+
+- **Bug:** BUG-018 — Admin properties table overlaps on tablet/narrow viewport
+- **Owner:** Codex
+- **Severity:** P3 / Low
+- **Allowed files:**
+  1. `frontend/app/(dashboard)/admin/properties/page.tsx`
+- **Requirements:**
+  1. 保留现有外层 `overflow-x-auto` 容器不变
+  2. `<table>` 从 `w-full table-fixed` 改为 `min-w-[780px] w-full table-fixed`，使表格在窄于 780px 的视口下不再被压缩，由外层 `overflow-x-auto` 接管横向滚动
+  3. Property 列 `<th>` 增加 `min-w-[160px]`，防止固定列（Location w-52 + Price w-36 + Status w-28 + Actions w-40 = 624px）将 Property 列挤压到极窄
+  4. 不改变现有分页、删除、编辑逻辑；不修改其他列宽；不修改其他任何文件
+  5. tsc 通过
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
+- **Status:** pending
+
+---
+
 ## PAGINATION-UX-FIX
 
 - **Bug:** BUG-017 / PAGINATION-UX — 全部列表页分页缺少直接跳页能力

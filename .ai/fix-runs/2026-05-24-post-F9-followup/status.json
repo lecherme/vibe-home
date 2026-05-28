@@ -100,6 +100,19 @@
             ]
           },
           {
+            "id": "BUG-018-FIX",
+            "status": "pending",
+            "required_by": "open-bugs.md",
+            "affected_task": "Admin",
+            "affected_task_title": "BUG-018 — Admin properties table overlaps on tablet/narrow viewport",
+            "criterion": "BUG-018",
+            "description": "Fix admin/properties/page.tsx only. Add min-w-[780px] to table element alongside existing w-full table-fixed, so the table never shrinks below 780px and overflow-x-auto handles horizontal scroll on narrow viewports. Add min-w-[160px] to Property th to prevent extreme squishing. No logic changes. tsc pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0",
+            "files": [
+              "frontend/app/(dashboard)/admin/properties/page.tsx"
+            ]
+          },
+          {
             "id": "PAGINATION-UX-FIX",
             "status": "verified",
             "required_by": "open-bugs.md",
