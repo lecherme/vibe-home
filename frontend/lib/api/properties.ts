@@ -104,6 +104,10 @@ async function searchProperties(
     url.searchParams.set("bedrooms", String(filters.bedrooms));
   }
 
+  if (filters.bathrooms !== undefined) {
+    url.searchParams.set("bathrooms", String(filters.bathrooms));
+  }
+
   if (filters.status !== undefined) {
     url.searchParams.set("status", filters.status);
   }

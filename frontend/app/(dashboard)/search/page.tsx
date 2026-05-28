@@ -23,6 +23,7 @@ function SearchContent() {
     min_price: searchParams.get("min_price") ? Number(searchParams.get("min_price")) : undefined,
     max_price: searchParams.get("max_price") ? Number(searchParams.get("max_price")) : undefined,
     bedrooms: searchParams.get("bedrooms") ? Number(searchParams.get("bedrooms")) : undefined,
+    bathrooms: searchParams.get("bathrooms") ? Number(searchParams.get("bathrooms")) : undefined,
     status: (searchParams.get("status") as PropertyStatus) || undefined,
   });
 
@@ -68,6 +69,7 @@ function SearchContent() {
       min_price: searchParams.get("min_price") ? Number(searchParams.get("min_price")) : undefined,
       max_price: searchParams.get("max_price") ? Number(searchParams.get("max_price")) : undefined,
       bedrooms: searchParams.get("bedrooms") ? Number(searchParams.get("bedrooms")) : undefined,
+      bathrooms: searchParams.get("bathrooms") ? Number(searchParams.get("bathrooms")) : undefined,
       status: (searchParams.get("status") as PropertyStatus) || undefined,
     };
     const p = Number(searchParams.get("page")) || 1;
@@ -83,6 +85,7 @@ function SearchContent() {
     if (f.min_price) params.set("min_price", String(f.min_price));
     if (f.max_price) params.set("max_price", String(f.max_price));
     if (f.bedrooms) params.set("bedrooms", String(f.bedrooms));
+    if (f.bathrooms) params.set("bathrooms", String(f.bathrooms));
     if (f.status) params.set("status", f.status);
     if (p > 1) params.set("page", String(p));
     
@@ -108,6 +111,7 @@ function SearchContent() {
     filters.min_price !== undefined ||
     filters.max_price !== undefined ||
     filters.bedrooms !== undefined ||
+    filters.bathrooms !== undefined ||
     Boolean(filters.status);
 
   return (

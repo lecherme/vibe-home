@@ -32,6 +32,12 @@ def search(filters: SearchFilters, db_session: Any) -> list[str]:
         if filters.bedrooms is not None and property_item.bedrooms < filters.bedrooms:
             continue
 
+        if (
+            filters.bathrooms is not None
+            and property_item.bathrooms < filters.bathrooms
+        ):
+            continue
+
         if filter_status is not None and property_item.status.value != filter_status:
             continue
 

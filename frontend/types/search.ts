@@ -5,6 +5,7 @@ export interface SearchFilters {
   min_price?: number;
   max_price?: number;
   bedrooms?: number;
+  bathrooms?: number;
   status?: PropertyStatus;
 }
 

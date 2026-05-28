@@ -8,6 +8,7 @@ class SearchFilters(BaseModel):
     min_price: Optional[int] = None
     max_price: Optional[int] = None
     bedrooms: Optional[int] = None
+    bathrooms: Optional[int] = None
     status: Optional[str] = None
 
 

@@ -50,6 +50,7 @@ async def search_properties(
     min_price: Optional[int] = Query(default=None, ge=0),
     max_price: Optional[int] = Query(default=None, ge=0),
     bedrooms: Optional[int] = Query(default=None, ge=0),
+    bathrooms: Optional[int] = Query(default=None, ge=0),
     status_filter: Optional[PropertyStatus] = Query(default=None, alias="status"),
     page: int = Query(default=DEFAULT_PAGE, ge=1),
     page_size: int = Query(default=SEARCH_DEFAULT_PAGE_SIZE, ge=1),
@@ -62,6 +63,7 @@ async def search_properties(
         min_price=min_price,
         max_price=max_price,
         bedrooms=bedrooms,
+        bathrooms=bathrooms,
         status=status_filter.value if status_filter is not None else None,
     )
     matching_property_ids = search(filters, db_session=None)

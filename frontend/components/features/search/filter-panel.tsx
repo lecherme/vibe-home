@@ -76,7 +76,7 @@ export function FilterPanel({ filters, onChange, isLoading }: FilterPanelProps) 
       <h3 className="mb-4 text-sm font-semibold text-gray-900 uppercase tracking-wider">
         Filters
       </h3>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div>
           <label
             htmlFor="min_price"
@@ -158,6 +158,31 @@ export function FilterPanel({ filters, onChange, isLoading }: FilterPanelProps) 
             <option value="available">Available</option>
             <option value="sold">Sold</option>
             <option value="rented">Rented</option>
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor="bathrooms"
+            className="block text-xs font-medium text-gray-700 mb-1"
+          >
+            Min Bathrooms
+          </label>
+          <select
+            id="bathrooms"
+            value={filters.bathrooms ?? ""}
+            onChange={(e) =>
+              handleChange("bathrooms", e.target.value ? Number(e.target.value) : "")
+            }
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            disabled={isLoading}
+          >
+            <option value="">Any</option>
+            {[1, 2, 3, 4, 5].map((num) => (
+              <option key={num} value={num}>
+                {num}+ baths
+              </option>
+            ))}
           </select>
         </div>
       </div>
