@@ -6,6 +6,17 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-017 / PAGINATION-UX — 全部列表页分页缺少直接跳页能力
+
+- **Fixed date:** 2026-05-28
+- **Verification:** tsc exit 0；手动复测 PASS — PaginationControls 在 /properties、/search、/favorites、/admin/properties 均显示；Enter/Go 跳页行为一致；超范围 clamp 正确；URL sync 正常
+- **Fixing batch:** `.ai/fix-runs/2026-05-24-post-F9-followup` — PAGINATION-UX-FIX
+- **Fix:** 新建 `PaginationControls` 共享组件（Previous/Next/Go-to-page，noValidate + 手写 clamp）；替换 4 个页面的重复分页 JSX；各页面 URL sync 逻辑不变
+- **Original source:** BUG-011-FIX 复测 2026-05-25
+- **Fix report:** [fix-report-PAGINATION-UX-FIX](./../fix-runs/2026-05-24-post-F9-followup/fix-reports/fix-report-PAGINATION-UX-FIX.md)
+
+---
+
 ### BUG-013 — 生产环境 API URL 无 fallback，部署风险
 
 - **Fixed date:** 2026-05-24

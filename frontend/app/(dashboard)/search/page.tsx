@@ -10,6 +10,7 @@ import { SearchBar } from "@/components/features/search/search-bar";
 import { FilterPanel } from "@/components/features/search/filter-panel";
 import { PropertyCard } from "@/components/features/properties/PropertyCard";
 import { PropertyListSkeleton } from "@/components/features/properties/PropertyListSkeleton";
+import { PaginationControls } from "@/components/features/common/PaginationControls";
 
 const PAGE_SIZE = 9;
 
@@ -185,27 +186,13 @@ function SearchContent() {
             ))}
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 mt-8">
-              <button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page <= 1 || loading}
-                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <span className="text-sm text-gray-700">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page >= totalPages || loading}
-                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <PaginationControls
+            page={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            isLoading={loading}
+            className="mt-8"
+          />
         </>
       ) : (
         !loading && !error && (

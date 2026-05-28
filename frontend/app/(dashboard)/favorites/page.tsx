@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { favoritesApi } from "@/lib/api/favorites";
 import { PropertyCard } from "@/components/features/properties/PropertyCard";
 import { PropertyListSkeleton } from "@/components/features/properties/PropertyListSkeleton";
+import { PaginationControls } from "@/components/features/common/PaginationControls";
 import type { Property } from "@/types/property";
 
 const PAGE_SIZE = 12;
@@ -168,27 +169,13 @@ function FavoritesContent() {
             ))}
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 mt-8">
-              <button
-                onClick={() => setPageAndUrl(page - 1)}
-                disabled={page <= 1 || isLoading}
-                className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <span className="text-sm text-slate-700">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                onClick={() => setPageAndUrl(page + 1)}
-                disabled={page >= totalPages || isLoading}
-                className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <PaginationControls
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPageAndUrl}
+            isLoading={isLoading}
+            className="mt-8"
+          />
         </>
       )}
     </div>

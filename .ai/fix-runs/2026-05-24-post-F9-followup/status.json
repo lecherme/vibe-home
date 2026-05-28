@@ -101,7 +101,7 @@
           },
           {
             "id": "PAGINATION-UX-FIX",
-            "status": "pending",
+            "status": "verified",
             "required_by": "open-bugs.md",
             "affected_task": "Pagination",
             "affected_task_title": "BUG-017 / PAGINATION-UX — 全部列表页分页缺少直接跳页能力",

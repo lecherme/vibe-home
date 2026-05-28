@@ -7,6 +7,7 @@ import { favoritesApi } from "@/lib/api/favorites";
 import type { PropertyListResponse } from "@/types/property";
 import { PropertyCard } from "@/components/features/properties/PropertyCard";
 import { PropertyListSkeleton } from "@/components/features/properties/PropertyListSkeleton";
+import { PaginationControls } from "@/components/features/common/PaginationControls";
 
 function PropertyListContent() {
   const searchParams = useSearchParams();
@@ -126,27 +127,13 @@ function PropertyListContent() {
         ))}
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 py-4">
-          <button
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page <= 1}
-            className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
-          >
-            Previous
-          </button>
-          <span className="text-slate-600">
-            Page {page} of {totalPages}
-          </span>
-          <button
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page >= totalPages}
-            className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <PaginationControls
+        page={page}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        isLoading={isLoading}
+        className="py-4"
+      />
     </div>
   );
 }

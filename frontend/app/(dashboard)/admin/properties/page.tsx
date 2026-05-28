@@ -7,6 +7,7 @@ import { propertiesApi } from "@/lib/api/properties";
 import { adminApi } from "@/lib/api/admin";
 import type { Property } from "@/types/property";
 import { PropertyListSkeleton } from "@/components/features/properties/PropertyListSkeleton";
+import { PaginationControls } from "@/components/features/common/PaginationControls";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 20;
@@ -237,27 +238,13 @@ export default function AdminPropertiesPage() {
               </tbody>
             </table>
           </div>
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-4 px-6 py-4 border-t border-slate-200">
-              <button
-                onClick={() => updatePage(page - 1)}
-                disabled={page <= 1}
-                className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
-              >
-                Previous
-              </button>
-              <span className="text-slate-600">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                onClick={() => updatePage(page + 1)}
-                disabled={page >= totalPages}
-                className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <PaginationControls
+            page={page}
+            totalPages={totalPages}
+            onPageChange={updatePage}
+            isLoading={isLoading}
+            className="px-6 py-4 border-t border-slate-200"
+          />
         </div>
       ) : null}
     </div>
