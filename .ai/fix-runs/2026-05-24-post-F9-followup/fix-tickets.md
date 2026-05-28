@@ -5,6 +5,40 @@ Source: `.ai/bugs/open-bugs.md`
 
 ---
 
+## OBS-008-FIX
+
+- **Bug:** OBS-008 — Bathroom 筛选缺失
+- **Owner:** Codex
+- **Severity:** Feature gap / Low
+- **Allowed files:**
+  1. `backend/app/schemas/search.py`
+  2. `backend/app/api/v1/properties/router.py`
+  3. `backend/app/services/search/service.py`
+  4. `frontend/types/search.ts`
+  5. `frontend/lib/api/properties.ts`
+  6. `frontend/app/(dashboard)/search/page.tsx`
+  7. `frontend/components/features/search/filter-panel.tsx`
+- **Requirements:**
+  1. `backend/app/schemas/search.py`：在 `SearchFilters` 中增加 `bathrooms: Optional[int] = None`
+  2. `backend/app/api/v1/properties/router.py`：在搜索 endpoint 增加 query 参数 `bathrooms: Optional[int] = Query(default=None, ge=0)`，与 `bedrooms` 保持一致；传入 `SearchFilters`
+  3. `backend/app/services/search/service.py`：在过滤逻辑中增加 bathrooms 过滤——语义为 N+ bathrooms（`property_item.bathrooms < filters.bathrooms` 时跳过）；与 bedrooms 过滤逻辑完全对称
+  4. `frontend/types/search.ts`：`SearchFilters` 增加 `bathrooms?: number`
+  5. `frontend/lib/api/properties.ts`：构建 query string 时，若 `filters.bathrooms` 存在则写入 `bathrooms` 参数
+  6. `frontend/app/(dashboard)/search/page.tsx`：
+     - 初始化 `filters` 时从 URL `?bathrooms=` 读取（与 `bedrooms` 模式相同）
+     - `updateURL` 写入 `bathrooms`
+     - `hasActiveFilters` 包含 `filters.bathrooms !== undefined`
+     - `useEffect` 里同步 `filters` 时解析 `bathrooms`
+  7. `frontend/components/features/search/filter-panel.tsx`：
+     - 增加 Min Bathrooms `<select>`，label `Min Bathrooms`，选项 `[1,2,3,4,5]`，显示 `N+ baths`；空值为 `Any`
+     - 行为与 Min Bedrooms 完全一致：即时触发 `onChange`，`disabled={isLoading}`
+  8. 不修改其他任何文件；不改其他筛选逻辑
+  9. tsc 通过；`docker compose exec backend python -c "from app.services.search.service import search"` exit 0
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0；`docker compose exec backend python -c "from app.services.search.service import search"` exit 0
+- **Status:** pending
+
+---
+
 ## BUG-013-FIX
 
 - **Bug:** BUG-013 — 生产环境 API URL 无 fallback，部署风险

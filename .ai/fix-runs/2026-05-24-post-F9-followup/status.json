@@ -100,6 +100,25 @@
             ]
           },
           {
+            "id": "OBS-008-FIX",
+            "status": "pending",
+            "required_by": "open-bugs.md",
+            "affected_task": "Search",
+            "affected_task_title": "OBS-008 — Bathroom 筛选缺失",
+            "criterion": "OBS-008",
+            "description": "Add bathrooms filter to the full search stack. backend/app/schemas/search.py: add bathrooms: Optional[int] = None. router.py: add bathrooms query param (ge=0), pass to SearchFilters. service.py: filter N+ bathrooms (skip if property.bathrooms < filters.bathrooms). frontend/types/search.ts: add bathrooms?: number. properties.ts: include bathrooms in query string. search/page.tsx: read/write bathrooms URL param, include in hasActiveFilters, sync in useEffect. filter-panel.tsx: add Min Bathrooms select (1-5, N+ baths, Any, disabled={isLoading}, immediate onChange). No other files. tsc pass; backend import check pass.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0; docker compose exec backend python -c 'from app.services.search.service import search' exit 0",
+            "files": [
+              "backend/app/schemas/search.py",
+              "backend/app/api/v1/properties/router.py",
+              "backend/app/services/search/service.py",
+              "frontend/types/search.ts",
+              "frontend/lib/api/properties.ts",
+              "frontend/app/(dashboard)/search/page.tsx",
+              "frontend/components/features/search/filter-panel.tsx"
+            ]
+          },
+          {
             "id": "OBS-007-FIX",
             "status": "verified",
             "required_by": "open-bugs.md",
