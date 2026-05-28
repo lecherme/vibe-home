@@ -61,6 +61,17 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### OBS-008 — Bathroom 筛选缺失
+
+- **Fixed date:** 2026-05-28
+- **Verification:** tsc exit 0；backend import exit 0；手动复测 PASS — Min Bathrooms select 正确显示，N+ 语义过滤生效，URL param 同步，Clear Filters / back-forward 均正常，组合筛选正常
+- **Fixing batch:** `.ai/fix-runs/2026-05-24-post-F9-followup` — OBS-008-FIX
+- **Fix:** 全栈补全 bathrooms 筛选：backend schema/router/service（N+ 语义，ge=0）；frontend types/api/search-page/filter-panel（Min Bathrooms select，1–5，N+ baths）
+- **Original source:** [results.md § OBS-008](./../qa-runs/2026-05-18-post-F9-smoke/results.md)
+- **Fix report:** [fix-report-OBS-008-FIX](./../fix-runs/2026-05-24-post-F9-followup/fix-reports/fix-report-OBS-008-FIX.md)
+
+---
+
 ### OBS-007 — 价格输入无 debounce，loading 期间阻断输入
 
 - **Fixed date:** 2026-05-27

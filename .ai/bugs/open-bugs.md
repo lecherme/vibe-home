@@ -38,10 +38,3 @@
 ## Backlog / Observations
 
 
-### OBS-008 — Bathroom 筛选缺失
-- **Severity:** Feature gap · Low
-- **Status:** in_progress — OBS-008-FIX ticket 已创建
-- **Source:** SRCH 复测 2026-05-22
-- **Summary:** `Property` 类型有 `bathrooms` 字段，`SearchFilters` 接口和 FilterPanel 均未暴露；后端能否支持待确认
-- **Evidence:** [results.md § OBS-008](./../qa-runs/2026-05-18-post-F9-smoke/results.md)
-- **Suggested next action:** 确认后端搜索接口是否支持 bathrooms 参数，再决定是否加入 FilterPanel

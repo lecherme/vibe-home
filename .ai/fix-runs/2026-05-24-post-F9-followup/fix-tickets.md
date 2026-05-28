@@ -35,7 +35,7 @@ Source: `.ai/bugs/open-bugs.md`
   8. 不修改其他任何文件；不改其他筛选逻辑
   9. tsc 通过；`docker compose exec backend python -c "from app.services.search.service import search"` exit 0
 - **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0；`docker compose exec backend python -c "from app.services.search.service import search"` exit 0
-- **Status:** pending
+- **Status:** verified — tsc PASS；backend import PASS；手动复测全 PASS（2026-05-28）
 
 ---
 
