@@ -1,6 +1,6 @@
 # Release Readiness & Next Iteration
 
-**Last updated:** 2026-05-27
+**Last updated:** 2026-05-29
 
 This file tracks two categories:
 1. **Release checklist** — items that cannot be resolved purely with code, required before going live
@@ -12,8 +12,8 @@ Actionable fix items remain tracked in `open-bugs.md`.
 
 ## Release Checklist (must complete before go-live)
 
-- [ ] **Supabase Auth 自定义 SMTP 配置**
-  Default Supabase email service has low rate limits and poor deliverability. Configure a custom SMTP provider before real users register or reset passwords. See Supabase Dashboard → Auth → SMTP Settings.
+- [x] **Supabase Auth 自定义 SMTP 配置** ✓ 2026-05-29
+  Configured with Google SMTP (temporary). Verified: registration and password reset emails send successfully. TODO: switch to Resend or domain-based SMTP once production domain is ready.
 
 - [ ] **Supabase redirect URLs 检查**
   Verify that all auth redirect URLs (confirm email, password reset) in Supabase Dashboard → Auth → URL Configuration match the production domain. Dev `localhost:3000` entries should not be the only entries.
