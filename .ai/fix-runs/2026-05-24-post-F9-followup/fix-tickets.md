@@ -282,3 +282,21 @@ Source: `.ai/bugs/open-bugs.md`
   9. tsc 通过
 - **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
 - **Status:** verified — 手动复测全 PASS（2026-05-25）
+
+---
+
+## BUG-019-FIX
+
+- **Bug:** BUG-019 — /properties page 使用 getFavorites(1, 100) 而非 getAllFavoriteIds()，超过 50 条收藏时状态不完整
+- **Owner:** Claude (direct fix)
+- **Severity:** P2 / Medium
+- **Allowed files:**
+  1. `frontend/app/(dashboard)/properties/page.tsx`
+- **Requirements:**
+  1. 将 `favoritesApi.getFavorites(1, 100)` 替换为 `favoritesApi.getAllFavoriteIds()`
+  2. 失败时静默降级为 `new Set<string>()`（原来降级为空 items 数组）
+  3. `.then()` 中直接使用返回的 `Set<string>`，不再做 `.items.map(f => f.id)` 映射
+  4. 不改分页逻辑、不改 PropertyCard、不改后端
+  5. tsc 通过
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
+- **Status:** verified — tsc PASS（2026-05-31）

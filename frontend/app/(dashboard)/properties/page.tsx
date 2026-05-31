@@ -27,11 +27,11 @@ function PropertyListContent() {
 
     Promise.all([
       propertiesApi.list(page, pageSize),
-      favoritesApi.getFavorites(1, 100).catch(() => ({ items: [], total: 0, page: 1, page_size: 100 }))
+      favoritesApi.getAllFavoriteIds().catch(() => new Set<string>())
     ])
-      .then(([propertiesRes, favoritesRes]) => {
+      .then(([propertiesRes, favoriteIdsSet]) => {
         setData(propertiesRes);
-        setFavoriteIds(new Set(favoritesRes.items.map(f => f.id)));
+        setFavoriteIds(favoriteIdsSet);
         setIsLoading(false);
       })
       .catch((err: any) => {

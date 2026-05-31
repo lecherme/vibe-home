@@ -176,6 +176,19 @@
               "frontend/app/page.tsx",
               "frontend/app/health/page.tsx"
             ]
+          },
+          {
+            "id": "BUG-019-FIX",
+            "status": "verified",
+            "required_by": "open-bugs.md",
+            "affected_task": "Properties",
+            "affected_task_title": "BUG-019 — /properties page 收藏状态上限遗漏",
+            "criterion": "BUG-019",
+            "description": "Replace favoritesApi.getFavorites(1, 100) with favoritesApi.getAllFavoriteIds().catch(() => new Set<string>()) in properties/page.tsx. Use the returned Set directly in setFavoriteIds. No other files changed.",
+            "verification": "docker compose exec frontend npx tsc --noEmit, exit 0",
+            "files": [
+              "frontend/app/(dashboard)/properties/page.tsx"
+            ]
           }
         ]
       }

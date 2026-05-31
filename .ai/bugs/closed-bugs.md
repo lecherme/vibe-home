@@ -6,6 +6,16 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-019 — /properties page 收藏状态上限遗漏
+
+- **Fixed date:** 2026-05-31
+- **Verification:** tsc exit 0；直接修复，逻辑与 search/page.tsx 对齐
+- **Fixing batch:** `.ai/fix-runs/2026-05-24-post-F9-followup` — BUG-019-FIX
+- **Fix:** `properties/page.tsx` 将 `favoritesApi.getFavorites(1, 100)` 替换为 `favoritesApi.getAllFavoriteIds().catch(() => new Set<string>())`；`.then()` 直接使用返回的 Set，不再做 items 映射；超过 50 条收藏时状态完整
+- **Original source:** Gemini 二次审查发现（2026-05-31）
+
+---
+
 ### BUG-018 — Admin properties table overlaps on tablet/narrow viewport
 
 - **Fixed date:** 2026-05-28
