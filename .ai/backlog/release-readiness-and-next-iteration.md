@@ -24,8 +24,8 @@ Actionable fix items remain tracked in `open-bugs.md`.
 - [ ] **`/` 根路由和 `/health` 路由验收**
   Verify on production: unauthenticated → `/login`; user role → `/properties`; admin role → `/admin/properties`; `/health` shows backend status.
 
-- [ ] **清理测试房源数据**
-  Remove or archive properties with obvious test titles (e.g. containing "test", "测试", "mock", "demo"). Check via Admin → Properties list before launch.
+- [x] **清理测试房源数据** ✓ 2026-05-31
+  Deleted 3 test properties (test delete / Test multi-image url). Fixed title of prop-hk-016 (removed "test edit Title" suffix). 38 properties remain, no test keywords.
 
 - [ ] **图片外链稳定性检查**
   Audit image URLs currently in the database. External URLs may become unavailable. Replace with stable hosting or document known broken images before launch. Long-term fix is the image upload feature (see Next Iteration).
