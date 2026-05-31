@@ -27,8 +27,8 @@ Actionable fix items remain tracked in `open-bugs.md`.
 - [x] **清理测试房源数据** ✓ 2026-05-31
   Deleted 3 test properties (test delete / Test multi-image url). Fixed title of prop-hk-016 (removed "test edit Title" suffix). 38 properties remain, no test keywords.
 
-- [ ] **图片外链稳定性检查**
-  Audit image URLs currently in the database. External URLs may become unavailable. Replace with stable hosting or document known broken images before launch. Long-term fix is the image upload feature (see Next Iteration).
+- [x] **图片外链稳定性检查** ✓ 2026-05-31
+  Audited all 73 image URLs (38 properties). Found 1 broken URL (`https://baidu.com/image/6` on prop-hk-016) — replaced with `https://picsum.photos/seed/hk16b/800/600`. baidu.com count now 0. Remaining distribution: 65 picsum.photos (临时 demo 来源，可用，长期由图片上传 feature 替换), 8 Supabase Storage (stable, self-hosted).
 
 ---
 
