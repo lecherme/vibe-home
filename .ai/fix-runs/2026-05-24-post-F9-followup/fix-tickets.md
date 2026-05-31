@@ -299,4 +299,4 @@ Source: `.ai/bugs/open-bugs.md`
   4. 不改分页逻辑、不改 PropertyCard、不改后端
   5. tsc 通过
 - **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
-- **Status:** verified — tsc PASS（2026-05-31）
+- **Status:** verified — tsc PASS；手动复测 PASS（2026-05-31）— 列表加载正常，收藏/取消收藏 heart 状态正常，分页正常
