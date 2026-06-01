@@ -1,6 +1,6 @@
 # Release Readiness & Next Iteration
 
-**Last updated:** 2026-05-29
+**Last updated:** 2026-06-01
 
 This file tracks two categories:
 1. **Release checklist** — items that cannot be resolved purely with code, required before going live
@@ -46,8 +46,8 @@ Actionable fix items remain tracked in `open-bugs.md`.
 - [ ] **OBS-009 — Search error stale-results UX**
   When a search request fails, the page retains the last successful result list under the fetch error banner. After navigating to a detail page and returning, the stale list is gone and only the error state shows. Both behaviors are functional and retry works correctly. Decide UX policy in a later polish pass: either clear stale results on error, or keep them with a "Showing last successful results" label.
 
-- [ ] **OBS-010 — Search overlapping request guard**
-  `search/page.tsx` has no AbortController or request ID guard. If loading-period input is ever re-enabled (e.g., allowing the user to refine filters while a search is in flight), concurrent requests could cause a slower earlier response to overwrite a newer one. Fix: add a `searchIdRef` counter in `performSearch` — increment on each call, discard response if `searchIdRef.current` has moved on. Alternatively use AbortController (requires signal threading into `properties.ts` / `favorites.ts`). Not needed while `disabled={isLoading}` is in place; revisit if that constraint is relaxed.
+- [x] **OBS-010 — Search overlapping request guard** ✓ 2026-06-01
+  Added `searchIdRef` counter in `performSearch` (`search/page.tsx`). Each call increments the ref; responses from superseded requests are discarded before any state setter runs. tsc PASS. Not a current bug (inputs locked during loading), but guard is now in place if that constraint is ever relaxed.
 
 ---
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, Suspense } from "react";
+import React, { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { propertiesApi } from "@/lib/api/properties";
 import { favoritesApi } from "@/lib/api/favorites";
@@ -33,6 +33,7 @@ function SearchContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const searchIdRef = useRef(0);
 
   const page = Number(searchParams.get("page")) || 1;
 
@@ -41,6 +42,7 @@ function SearchContent() {
     f: SearchFilters,
     p: number
   ) => {
+    const currentId = ++searchIdRef.current;
     setLoading(true);
     setError(null);
     try {
@@ -48,18 +50,20 @@ function SearchContent() {
         ...f,
         location: loc || undefined,
       };
-      
+
       const [searchData, favoritesRes] = await Promise.all([
         propertiesApi.searchProperties(searchFilters, p, PAGE_SIZE),
         favoritesApi.getAllFavoriteIds().catch(() => new Set<string>())
       ]);
 
+      if (searchIdRef.current !== currentId) return;
       setResult(searchData);
       setFavoriteIds(favoritesRes);
     } catch (err: any) {
+      if (searchIdRef.current !== currentId) return;
       setError(err.message || "Failed to fetch properties");
     } finally {
-      setLoading(false);
+      if (searchIdRef.current === currentId) setLoading(false);
     }
   }, []);
 
