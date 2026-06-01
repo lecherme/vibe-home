@@ -43,8 +43,8 @@ Actionable fix items remain tracked in `open-bugs.md`.
 - [ ] **全站 UI 统一美化**
   Consistent spacing, typography, colour tokens, and mobile responsiveness across all pages. Scope TBD after shadcn/ui adoption.
 
-- [ ] **OBS-009 — Search error stale-results UX**
-  When a search request fails, the page retains the last successful result list under the fetch error banner. After navigating to a detail page and returning, the stale list is gone and only the error state shows. Both behaviors are functional and retry works correctly. Decide UX policy in a later polish pass: either clear stale results on error, or keep them with a "Showing last successful results" label.
+- [x] **OBS-009 — Search error stale-results UX** ✓ 2026-06-01
+  On error, `setResult(null)` clears stale results immediately. Error state is now consistent whether the error occurs in-session or after navigating back. Chose Option A (clear) over Option B (keep + label) because B would still be inconsistent after navigation without persistence.
 
 - [x] **OBS-010 — Search overlapping request guard** ✓ 2026-06-01
   Added `searchIdRef` counter in `performSearch` (`search/page.tsx`). Each call increments the ref; responses from superseded requests are discarded before any state setter runs. tsc PASS; 手动回归 PASS — 搜索/筛选/分页/Clear Filters/收藏状态/error retry 均正常。Race condition 本身无法通过普通 UI 直接触发（loading 期间输入锁住）。

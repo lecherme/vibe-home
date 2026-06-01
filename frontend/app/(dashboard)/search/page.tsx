@@ -61,6 +61,7 @@ function SearchContent() {
       setFavoriteIds(favoritesRes);
     } catch (err: any) {
       if (searchIdRef.current !== currentId) return;
+      setResult(null);
       setError(err.message || "Failed to fetch properties");
     } finally {
       if (searchIdRef.current === currentId) setLoading(false);
