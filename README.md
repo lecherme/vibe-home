@@ -189,13 +189,13 @@ docker compose -f docker-compose.yml up --build
 
 ```env
 SUPABASE_URL=https://<ref>.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=<service-role-key>   # used for admin DB operations
-SUPABASE_ANON_KEY=<anon-key>                   # used for client-facing queries
-SUPABASE_KEY=<anon-or-service-role-key>        # legacy fallback key alias
-SUPABASE_JWT_SECRET=<legacy-jwt-secret>        # retained for reference; verification uses JWKS (ES256)
-ALLOWED_ORIGINS=http://localhost:3000
-CORS_ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com
-RATE_LIMIT_AUTH=5/minute
+SUPABASE_KEY=<service-role-key>                # the key the backend client uses; set to service role key in production
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>   # reference only — documented for shared project parity
+SUPABASE_ANON_KEY=<anon-key>                   # reference only — documented for shared project parity
+SUPABASE_JWT_SECRET=<jwt-secret>               # optional; not used — JWT verification uses Supabase JWKS (ES256)
+CORS_ALLOWED_ORIGINS=https://yourdomain.com    # takes priority over ALLOWED_ORIGINS when set; recommended for production
+ALLOWED_ORIGINS=http://localhost:3000          # required; used as fallback when CORS_ALLOWED_ORIGINS is absent
+RATE_LIMIT_AUTH=5/minute                       # optional; default 5/minute; format: <count>/<second|minute|hour|day>
 ```
 
 ### Frontend
