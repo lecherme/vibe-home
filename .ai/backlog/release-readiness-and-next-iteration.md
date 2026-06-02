@@ -1,6 +1,6 @@
 # Release Readiness & Next Iteration
 
-**Last updated:** 2026-06-01
+**Last updated:** 2026-06-02
 
 This file tracks two categories:
 1. **Release checklist** — items that cannot be resolved purely with code, required before going live
@@ -15,14 +15,14 @@ Actionable fix items remain tracked in `open-bugs.md`.
 - [x] **Supabase Auth 自定义 SMTP 配置** ✓ 2026-05-29
   Configured with Google SMTP (temporary). Verified: registration and password reset emails send successfully. TODO: switch to Resend or domain-based SMTP once production domain is ready.
 
-- [ ] **Supabase redirect URLs 检查**
-  Verify that all auth redirect URLs (confirm email, password reset) in Supabase Dashboard → Auth → URL Configuration match the production domain. Dev `localhost:3000` entries should not be the only entries.
+- [ ] **Supabase redirect URLs 检查** ⏳ 待 Dashboard 恢复
+  Need to add production domain to Supabase Dashboard → Auth → URL Configuration (Site URL + Redirect URLs). Currently blocked: Dashboard login restricted/rate-limited. Required for registration email confirm and password reset links to point to `https://lecherme.cn` instead of localhost.
 
-- [ ] **`NEXT_PUBLIC_API_URL` 生产环境配置检查**
-  Confirm the env var is set correctly in the production deployment. `frontend/lib/api/config.ts` throws on missing value — a misconfigured deployment will break all API calls at runtime.
+- [x] **`NEXT_PUBLIC_API_URL` 生产环境配置检查** ✓ 2026-06-02
+  Set to `https://api.lecherme.cn` in Vercel environment variables. All API calls working in production.
 
-- [ ] **`/` 根路由和 `/health` 路由验收**
-  Verify on production: unauthenticated → `/login`; user role → `/properties`; admin role → `/admin/properties`; `/health` shows backend status.
+- [x] **`/` 根路由和 `/health` 路由验收** ✓ 2026-06-02
+  Production smoke test PASS (2026-06-02): admin login, property list/pagination/jump-page, add/edit property, /properties, search with all filters, favorites, detail page, page refresh login state, / root redirect all verified. https://api.lecherme.cn/health shows backend status. Blocked: registration email confirm and password reset (pending Supabase redirect URL config).
 
 - [x] **清理测试房源数据** ✓ 2026-05-31
   Deleted 3 test properties (test delete / Test multi-image url). Fixed title of prop-hk-016 (removed "test edit Title" suffix). 38 properties remain, no test keywords.
