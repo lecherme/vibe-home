@@ -15,8 +15,8 @@ Actionable fix items remain tracked in `open-bugs.md`.
 - [x] **Supabase Auth 自定义 SMTP 配置** ✓ 2026-05-29
   Configured with Google SMTP (temporary). Verified: registration and password reset emails send successfully. TODO: switch to Resend or domain-based SMTP once production domain is ready.
 
-- [ ] **Supabase redirect URLs 检查** ⏳ 待 Dashboard 恢复
-  Need to add production domain to Supabase Dashboard → Auth → URL Configuration (Site URL + Redirect URLs). Currently blocked: Dashboard login restricted/rate-limited. Required for registration email confirm and password reset links to point to `https://lecherme.cn` instead of localhost.
+- [x] **Supabase redirect URLs 检查** ✓ 2026-06-02
+  Added production domain to Supabase Dashboard → Auth → URL Configuration. Registration email confirm and password reset verified working on production.
 
 - [x] **`NEXT_PUBLIC_API_URL` 生产环境配置检查** ✓ 2026-06-02
   Set to `https://api.lecherme.cn` in Vercel environment variables. All API calls working in production.
