@@ -163,7 +163,7 @@ if [[ "${CODEX_BYPASS_SANDBOX:-0}" == "1" ]]; then
   CODEX_FLAGS+=(--dangerously-bypass-approvals-and-sandbox)
 fi
 
-codex exec "${CODEX_FLAGS[@]}" "$PROMPT" \
+codex exec "${CODEX_FLAGS[@]}" "$PROMPT" </dev/null \
   2> >(tee "$LOG_FILE" >&2) \
   | tee "$REVIEW_FILE"
 
