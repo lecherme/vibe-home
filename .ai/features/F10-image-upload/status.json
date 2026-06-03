@@ -129,6 +129,36 @@
       "timestamp": "2026-06-03T16:46:27Z",
       "event": "T03 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:50:35Z",
+      "event": "T03 failed \u2014 worker command failed",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:50:55Z",
+      "event": "T03 requeued \u2014 retry approved by Claude",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:51:32Z",
+      "event": "T03 failed \u2014 worker command failed",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:51:32Z",
+      "event": "T03 requeued \u2014 retry approved by Claude",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:51:32Z",
+      "event": "T03 started \u2014 Codex: review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:53:16Z",
+      "event": "T03 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
     }
   ]
 }
