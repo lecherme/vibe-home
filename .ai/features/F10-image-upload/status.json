@@ -1,9 +1,9 @@
 {
   "feature": "F10-image-upload",
-  "status": "failed",
+  "status": "in_progress",
   "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
+  "next_step": "Start T04 \u2014 Claude: acceptance",
   "last_review_failure": null,
   "tasks": [
     {
@@ -158,6 +158,26 @@
     {
       "timestamp": "2026-06-03T16:53:16Z",
       "event": "T03 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:56:03Z",
+      "event": "T03 failed \u2014 worker command failed",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:56:03Z",
+      "event": "T03 requeued \u2014 retry approved by Claude",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:56:03Z",
+      "event": "T03 started \u2014 Codex: review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:57:29Z",
+      "event": "T03 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]

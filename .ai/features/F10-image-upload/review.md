@@ -1,37 +1,36 @@
 # Review
 
 ## Verdict
-FAIL
+PASS
 
 ## Criteria Results
 | Criterion | Result | Notes |
 |-----------|--------|-------|
-| A1 — Backend endpoint exists and is admin-gated | PASS | [`backend/app/api/v1/admin/router.py:50`](/home/lecherme/workspace/vibe-home/backend/app/api/v1/admin/router.py:50) defines `POST /uploads/property-image` and gates it with `Depends(require_role("admin"))`. [`backend/app/main.py:58`](/home/lecherme/workspace/vibe-home/backend/app/main.py:58) mounts the router at `/api/v1/admin`. |
-| A2 — Valid image upload succeeds | PASS | Backend flow matches spec: multipart `UploadFile`, allowed MIME check, size check, upload to Supabase bucket `vibe_home`, then return `{"url": url}` from public storage URL. Not exercised end-to-end here. |
-| A3 — File type validation | PASS | Unsupported `file.content_type` raises HTTP 422 in [`backend/app/api/v1/admin/router.py:57`](/home/lecherme/workspace/vibe-home/backend/app/api/v1/admin/router.py:57). |
-| A4 — File size validation | PASS | Files larger than `5 * 1024 * 1024` raise HTTP 413 in [`backend/app/api/v1/admin/router.py:61`](/home/lecherme/workspace/vibe-home/backend/app/api/v1/admin/router.py:61). |
-| A5 — Storage path format | PASS | Storage path is built as `properties/{uuid4()}.{ext}` in [`backend/app/api/v1/admin/router.py:64`](/home/lecherme/workspace/vibe-home/backend/app/api/v1/admin/router.py:64). |
-| A6 — Frontend: Upload button present | PASS | Each image row renders an `Upload` button in [`frontend/components/features/admin/property-form.tsx:313`](/home/lecherme/workspace/vibe-home/frontend/components/features/admin/property-form.tsx:313). |
-| A7 — Frontend: Upload fills URL field | PASS | `handleFileChange` uploads, then writes the returned URL into the matching image slot via `handleImageChange(index, url)` in [`frontend/components/features/admin/property-form.tsx:42`](/home/lecherme/workspace/vibe-home/frontend/components/features/admin/property-form.tsx:42). |
-| A8 — Frontend: Upload error shown | PASS | Upload errors are surfaced via `setFormError(...)`, and the URL field is only updated on success in [`frontend/components/features/admin/property-form.tsx:49`](/home/lecherme/workspace/vibe-home/frontend/components/features/admin/property-form.tsx:49). |
-| A9 — Frontend: Upload disabled during flight | PASS | Upload buttons are disabled while `uploadingIndex !== null` and submit is also disabled on the same condition in [`frontend/components/features/admin/property-form.tsx:316`](/home/lecherme/workspace/vibe-home/frontend/components/features/admin/property-form.tsx:316) and [`frontend/components/features/admin/property-form.tsx:338`](/home/lecherme/workspace/vibe-home/frontend/components/features/admin/property-form.tsx:338). |
-| A10 — Frontend: URL input retained | PASS | The existing editable URL input remains in each row in [`frontend/components/features/admin/property-form.tsx:304`](/home/lecherme/workspace/vibe-home/frontend/components/features/admin/property-form.tsx:304). |
-| A11 — tsc passes | PASS | Verified directly with `docker compose exec frontend npx tsc --noEmit` exit 0. |
-| A12 — Backend import check | PASS | Verified directly with `docker compose exec backend python -c "from app.api.v1.admin.router import router"` exit 0. |
-| Frontend business logic boundary | PASS | The component contains UI state/orchestration only; upload transport stays in [`frontend/lib/api/admin.ts`](/home/lecherme/workspace/vibe-home/frontend/lib/api/admin.ts:114). No backend/business rules were moved into the component. |
-| `status.json` not modified by Codex or Gemini | PASS | `.ai/features/F10-image-upload/status.json` is modified in the working tree, but the diff and activity log attribute those orchestration changes to `claude`, not Codex or Gemini. |
-| All API types published to `frontend/types/` | FAIL | The new upload response type remains inline as `Promise<{ url: string }>` in [`frontend/lib/api/admin.ts:114`](/home/lecherme/workspace/vibe-home/frontend/lib/api/admin.ts:114) and [`frontend/lib/api/admin.ts:130`](/home/lecherme/workspace/vibe-home/frontend/lib/api/admin.ts:130). [`frontend/types/admin.ts`](/home/lecherme/workspace/vibe-home/frontend/types/admin.ts:1) was not updated with a published type for this API response. |
+| A1 — Backend endpoint exists and is admin-gated | PASS | `backend/app/api/v1/admin/router.py:50` defines `POST /uploads/property-image` with `Depends(require_role("admin"))`; `backend/app/main.py:65` mounts it at `/api/v1/admin`. |
+| A2 — Valid image upload succeeds | PASS | Code path reads multipart upload, validates MIME/size, uploads to Supabase Storage bucket `vibe_home`, and returns `{"url": url}`. |
+| A3 — File type validation | PASS | Unsupported MIME types raise HTTP 422 at `backend/app/api/v1/admin/router.py:57`. |
+| A4 — File size validation | PASS | Files over 5 MB raise HTTP 413 at `backend/app/api/v1/admin/router.py:61`. |
+| A5 — Storage path format | PASS | Storage key is built as `properties/{uuid4()}.{ext}` at `backend/app/api/v1/admin/router.py:65`. |
+| A6 — Frontend: Upload button present | PASS | Each image row renders an `Upload` button at `frontend/components/features/admin/property-form.tsx:313`. |
+| A7 — Frontend: Upload fills URL field | PASS | `handleFileChange` uploads the file and writes the returned URL into the matching image slot via `handleImageChange(index, url)` at `frontend/components/features/admin/property-form.tsx:42-57`. |
+| A8 — Frontend: Upload error shown | PASS | Upload failures call `setFormError(...)`, and the URL field is only updated on success. |
+| A9 — Frontend: Upload disabled during flight | PASS | All upload buttons are disabled while `uploadingIndex !== null`, and submit is disabled on the same condition at `frontend/components/features/admin/property-form.tsx:316` and `:338`. |
+| A10 — Frontend: URL input retained | PASS | The existing editable URL input remains in each image row at `frontend/components/features/admin/property-form.tsx:304`. |
+| A11 — tsc passes | PASS | Verified with `docker compose exec frontend npx tsc --noEmit` on 2026-06-03; exit 0. |
+| A12 — Backend import check | PASS | Verified with `docker compose exec backend python -c "from app.api.v1.admin.router import router; print('ok')"` on 2026-06-03; exit 0. |
+| Frontend business logic boundary | PASS | Transport logic is in `frontend/lib/api/admin.ts`; the component only handles UI state and orchestration. |
+| `status.json` not modified by Codex or Gemini | PASS | `.ai/features/F10-image-upload/status.json` is modified in the working tree, but the diff and activity log attribute that state change to `claude`, not Codex or Gemini. |
+| All API types published to `frontend/types/` | PASS | `frontend/types/admin.ts:14` publishes `PropertyImageUploadResponse`, and `frontend/lib/api/admin.ts` consumes it. |
 
 ## Issues Found
-- BLOCKER: The new upload API response shape is not published under `frontend/types/`. It is still encoded inline in [`frontend/lib/api/admin.ts:114`](/home/lecherme/workspace/vibe-home/frontend/lib/api/admin.ts:114) and [`frontend/lib/api/admin.ts:130`](/home/lecherme/workspace/vibe-home/frontend/lib/api/admin.ts:130), which violates the frontend API typing requirement.
-- WARNING: No automated backend or frontend tests were added for the new upload flow. The feature currently relies on typecheck/import verification and code inspection, so regressions around MIME validation, 413 handling, and upload UI behavior are unguarded.
+- WARNING: No automated tests were added for the new backend upload endpoint or the frontend upload flow. Acceptance is supported by code inspection plus the verified `tsc` and backend import checks, but MIME/size/error-path regressions remain untested.
 
 ## Required Fixes
-- Add a published frontend API type for the upload response under `frontend/types/` and consume that type from `frontend/lib/api/admin.ts` instead of using inline `Promise<{ url: string }>` annotations.
+- None.
 
 ## Approved Items
-- Backend endpoint path, admin gate, MIME whitelist, size limit, bucket name, and storage path format are implemented as specified.
-- Frontend upload transport correctly bypasses the JSON `request()` helper and sends `FormData` with auth headers only.
-- The property form keeps manual URL entry intact and adds per-row upload controls with in-flight state.
-- Submit and upload actions are disabled during upload, satisfying the concurrency constraint.
-- Both explicit verification commands required by A11 and A12 pass in the current environment.
+- Backend endpoint path, admin gating, MIME whitelist, size limit, bucket name, and storage path format match the spec.
+- Frontend upload uses `FormData` and bypasses the JSON `request()` helper as required.
+- The property form preserves manual URL entry and adds per-row upload controls with in-flight state.
+- Upload and submit actions are correctly disabled during an active upload.
+- Frontend API response typing is published under `frontend/types/`.
