@@ -162,6 +162,9 @@ CODEX_FLAGS=(--skip-git-repo-check)
 if [[ "${CODEX_BYPASS_SANDBOX:-0}" == "1" ]]; then
   CODEX_FLAGS+=(--dangerously-bypass-approvals-and-sandbox)
 fi
+if [[ -n "${CODEX_MODEL:-}" ]]; then
+  CODEX_FLAGS+=(-m "$CODEX_MODEL")
+fi
 
 codex exec "${CODEX_FLAGS[@]}" "$PROMPT" </dev/null \
   2> >(tee "$LOG_FILE" >&2) \
