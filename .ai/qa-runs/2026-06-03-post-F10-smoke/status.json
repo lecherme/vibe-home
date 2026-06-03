@@ -1,0 +1,12 @@
+{
+  "run": "2026-06-03-post-F10-smoke",
+  "status": "completed",
+  "result": "PASS",
+  "pass": 3,
+  "fail": 0,
+  "blocked": 0,
+  "skipped": 0,
+  "date": "2026-06-03",
+  "feature": "F10-image-upload",
+  "commit": "2f6c809"
+}
