@@ -1,9 +1,9 @@
 {
   "feature": "F10-image-upload",
   "status": "in_progress",
-  "current_stage": "T02_done",
+  "current_stage": "T03_pending",
   "current_owner": null,
-  "next_step": "Start T03 \u2014 Codex: review",
+  "next_step": "Re-run T03 — previous attempt stuck on stdin",
   "last_review_failure": null,
   "tasks": [
     {
@@ -38,7 +38,7 @@
         "T02"
       ],
       "status": "pending",
-      "retry_count": 0,
+      "retry_count": 1,
       "artifact": null
     },
     {
@@ -93,6 +93,16 @@
     {
       "timestamp": "2026-06-03T16:23:36Z",
       "event": "T02 done \u2014 frontend changes completed via Claude fallback; hidden file input added; git diff clean; tsc pass (per gemini-build-T02.md verification)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:31:28Z",
+      "event": "T03 started \u2014 Codex: review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:40:00Z",
+      "event": "T03 aborted \u2014 Codex stuck on stdin (0% CPU, 0-byte review.md, 5+ min no output); process killed; reset to pending",
       "by": "claude"
     }
   ]
