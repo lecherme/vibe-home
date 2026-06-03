@@ -3,6 +3,7 @@ import { getAccessToken } from "@/lib/auth/session";
 import type {
   AdminPropertyCreate,
   AdminPropertyUpdate,
+  PropertyImageUploadResponse,
 } from "@/types/admin";
 import type { Property as PropertyRead } from "@/types/property";
 
@@ -111,7 +112,7 @@ export async function deleteProperty(id: string): Promise<void> {
   });
 }
 
-export async function uploadPropertyImage(file: File): Promise<{ url: string }> {
+export async function uploadPropertyImage(file: File): Promise<PropertyImageUploadResponse> {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -127,7 +128,7 @@ export async function uploadPropertyImage(file: File): Promise<{ url: string }> 
     throw new AdminApiError(res.status, await getErrorMessage(res));
   }
 
-  return res.json() as Promise<{ url: string }>;
+  return res.json() as Promise<PropertyImageUploadResponse>;
 }
 
 export const adminApi = {

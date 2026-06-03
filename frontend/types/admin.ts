@@ -10,3 +10,7 @@ export interface AdminPropertyCreate {
 }
 
 export interface AdminPropertyUpdate extends Partial<AdminPropertyCreate> {}
+
+export interface PropertyImageUploadResponse {
+  url: string;
+}
