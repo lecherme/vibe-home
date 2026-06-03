@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, Response, status
+from uuid import uuid4
+
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
 
 from app.core.security import require_role
+from app.core.supabase import get_supabase_client
 from app.schemas.admin import PropertyCreate, PropertyUpdate
 from app.schemas.auth import UserRead
 from app.schemas.property import Property as PropertyRead
@@ -8,6 +11,11 @@ from app.services.admin import create_property, delete_property, update_property
 
 
 router = APIRouter()
+
+_ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
+_CONTENT_TYPE_TO_EXT = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
+_MAX_FILE_SIZE = 5 * 1024 * 1024
+_STORAGE_BUCKET = "vibe_home"
 
 
 @router.post("/properties", response_model=PropertyRead, status_code=status.HTTP_201_CREATED)
@@ -37,3 +45,29 @@ async def delete_admin_property(
     del current_user
     delete_property(property_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/uploads/property-image")
+async def upload_property_image(
+    file: UploadFile = File(...),
+    current_user: UserRead = Depends(require_role("admin")),
+) -> dict[str, str]:
+    del current_user
+
+    if file.content_type not in _ALLOWED_CONTENT_TYPES:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Unsupported file type")
+
+    data = await file.read()
+    if len(data) > _MAX_FILE_SIZE:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="File too large")
+
+    ext = _CONTENT_TYPE_TO_EXT[file.content_type]
+    path = f"properties/{uuid4()}.{ext}"
+    sb = get_supabase_client()
+    sb.storage.from_(_STORAGE_BUCKET).upload(
+        path=path,
+        file=data,
+        file_options={"content-type": file.content_type},
+    )
+    url = sb.storage.from_(_STORAGE_BUCKET).get_public_url(path)
+    return {"url": url}

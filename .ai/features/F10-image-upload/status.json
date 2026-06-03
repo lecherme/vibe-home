@@ -1,9 +1,9 @@
 {
   "feature": "F10-image-upload",
   "status": "in_progress",
-  "current_stage": "T01_pending",
-  "current_owner": "codex",
-  "next_step": "Run Codex worker for T01: backend upload endpoint",
+  "current_stage": "T01_done",
+  "current_owner": null,
+  "next_step": "Start T02 \u2014 Gemini: frontend upload UI",
   "last_review_failure": null,
   "tasks": [
     {
@@ -12,16 +12,18 @@
       "owner": "codex",
       "type": "build",
       "depends_on": [],
-      "status": "pending",
-      "retry_count": 0,
-      "artifact": null
+      "status": "done",
+      "retry_count": 1,
+      "artifact": "codex-build-T01.md"
     },
     {
       "id": "T02",
       "title": "Gemini: frontend upload UI",
       "owner": "gemini",
       "type": "build",
-      "depends_on": ["T01"],
+      "depends_on": [
+        "T01"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -31,7 +33,10 @@
       "title": "Codex: review",
       "owner": "codex",
       "type": "review",
-      "depends_on": ["T01", "T02"],
+      "depends_on": [
+        "T01",
+        "T02"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -41,7 +46,9 @@
       "title": "Claude: acceptance",
       "owner": "claude",
       "type": "acceptance",
-      "depends_on": ["T03"],
+      "depends_on": [
+        "T03"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -51,6 +58,26 @@
     {
       "timestamp": "2026-06-03T00:00:00Z",
       "event": "feature workspace initialized: spec/tasks/acceptance/status/owner/task_manifest created",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T15:19:59Z",
+      "event": "T01 started \u2014 Codex: backend upload endpoint",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T15:20:10Z",
+      "event": "T01 failed \u2014 run_task failed with exit code 1",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T15:28:05Z",
+      "event": "T01 started \u2014 Codex: backend upload endpoint",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T15:28:52Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
       "by": "claude"
     }
   ]
