@@ -1,0 +1,29 @@
+{
+  "feature": "F10-image-upload",
+  "tasks": {
+    "T01": {
+      "owner": "codex",
+      "allowed_files": [
+        "backend/app/api/v1/admin/router.py"
+      ]
+    },
+    "T02": {
+      "owner": "gemini",
+      "allowed_files": [
+        "frontend/lib/api/admin.ts",
+        "frontend/components/features/admin/property-form.tsx"
+      ]
+    },
+    "T03": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T04": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F10-image-upload/status.json",
+        ".ai/features/F10-image-upload/final-report.md"
+      ]
+    }
+  }
+}
