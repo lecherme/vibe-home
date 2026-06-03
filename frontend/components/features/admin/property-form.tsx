@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { AdminPropertyCreate, AdminPropertyUpdate } from "@/types/admin";
 import { cn } from "@/lib/utils";
+import { uploadPropertyImage } from "@/lib/api/admin";
 
 interface PropertyFormProps {
   initialValues?: AdminPropertyUpdate;
@@ -28,6 +29,32 @@ export function PropertyForm({
 
   const [errors, setErrors] = useState<Partial<Record<keyof AdminPropertyCreate, string>>>({});
   const [formError, setFormError] = useState<string | null>(null);
+
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingUploadIndexRef = useRef<number>(-1);
+
+  const triggerUpload = (index: number) => {
+    pendingUploadIndexRef.current = index;
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const index = pendingUploadIndexRef.current;
+    e.target.value = "";
+    if (!file || index < 0) return;
+
+    setUploadingIndex(index);
+    try {
+      const { url } = await uploadPropertyImage(file);
+      handleImageChange(index, url);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploadingIndex(null);
+    }
+  };
 
   useEffect(() => {
     if (initialValues) {
@@ -285,6 +312,14 @@ export function PropertyForm({
               />
               <button
                 type="button"
+                onClick={() => triggerUpload(index)}
+                disabled={isLoading || uploadingIndex !== null}
+                className="px-3 py-2 text-sm font-semibold text-slate-700 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {uploadingIndex === index ? "Uploading..." : "Upload"}
+              </button>
+              <button
+                type="button"
                 onClick={() => handleRemoveImage(index)}
                 disabled={isLoading || formData.images.length <= 1}
                 className="px-3 py-2 text-sm font-semibold text-slate-700 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -316,6 +351,13 @@ export function PropertyForm({
           )}
         </button>
       </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={handleFileChange}
+      />
     </form>
   );
 }

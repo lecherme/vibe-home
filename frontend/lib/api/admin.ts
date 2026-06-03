@@ -111,8 +111,28 @@ export async function deleteProperty(id: string): Promise<void> {
   });
 }
 
+export async function uploadPropertyImage(file: File): Promise<{ url: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const headers = await getAuthHeaders();
+
+  const res = await fetch(buildUrl("/api/v1/admin/uploads/property-image"), {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  if (!res.ok) {
+    throw new AdminApiError(res.status, await getErrorMessage(res));
+  }
+
+  return res.json() as Promise<{ url: string }>;
+}
+
 export const adminApi = {
   createProperty,
   updateProperty,
   deleteProperty,
+  uploadPropertyImage,
 };
