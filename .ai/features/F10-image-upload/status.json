@@ -1,9 +1,9 @@
 {
   "feature": "F10-image-upload",
-  "status": "in_progress",
-  "current_stage": "T03_pending",
+  "status": "failed",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Re-run T03 — previous attempt stuck on stdin",
+  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
   "last_review_failure": null,
   "tasks": [
     {
@@ -37,9 +37,9 @@
         "T01",
         "T02"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 1,
-      "artifact": null
+      "artifact": "review.md"
     },
     {
       "id": "T04",
@@ -103,6 +103,31 @@
     {
       "timestamp": "2026-06-03T16:40:00Z",
       "event": "T03 aborted \u2014 Codex stuck on stdin (0% CPU, 0-byte review.md, 5+ min no output); process killed; reset to pending",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:42:23Z",
+      "event": "T03 started \u2014 Codex: review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:42:31Z",
+      "event": "T03 failed \u2014 run_task failed with exit code 1",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:44:11Z",
+      "event": "T03 requeued \u2014 retry approved by Claude",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:44:58Z",
+      "event": "T03 started \u2014 Codex: review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-03T16:46:27Z",
+      "event": "T03 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
     }
   ]
