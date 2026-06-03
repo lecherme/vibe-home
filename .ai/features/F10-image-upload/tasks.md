@@ -9,10 +9,12 @@
 - **depends_on:** none
 - **allowed files:**
   - `backend/app/api/v1/admin/router.py`
+  - `backend/requirements.txt`
 
 **Requirements:**
 
-1. Add imports: `uuid4` from `uuid`; `File`, `HTTPException`, `UploadFile` from `fastapi`; `get_supabase_client` from `app.core.supabase`
+1. Add `python-multipart==0.0.20` to `backend/requirements.txt` (required by FastAPI `UploadFile`/`File`)
+2. Add imports: `uuid4` from `uuid`; `File`, `HTTPException`, `UploadFile` from `fastapi`; `get_supabase_client` from `app.core.supabase`
 2. Define module-level constants:
    - `_ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}`
    - `_CONTENT_TYPE_TO_EXT = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}`
@@ -30,7 +32,7 @@
    - `url = sb.storage.from_(_STORAGE_BUCKET).get_public_url(path)`
    - Return `{"url": url}`
 4. No other files modified
-5. `python -c "from app.api.v1.admin.router import router"` exit 0
+5. `docker compose exec backend python -c "from app.api.v1.admin.router import router"` exit 0 (requires rebuild after requirements.txt change)
 
 ---
 

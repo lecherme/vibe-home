@@ -4,7 +4,8 @@
     "T01": {
       "owner": "codex",
       "allowed_files": [
-        "backend/app/api/v1/admin/router.py"
+        "backend/app/api/v1/admin/router.py",
+        "backend/requirements.txt"
       ]
     },
     "T02": {
