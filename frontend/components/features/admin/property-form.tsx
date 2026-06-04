@@ -90,10 +90,7 @@ export function PropertyForm({
     setUploadingIndex(index);
     try {
       const { url } = await uploadPropertyImage(file);
-      const currentImages = form.getValues("images");
-      const newImages = [...currentImages];
-      newImages[index] = url;
-      form.setValue("images", newImages, { shouldValidate: true });
+      form.setValue(`images.${index}` as `images.${number}`, url, { shouldValidate: true });
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Upload failed");
     } finally {
