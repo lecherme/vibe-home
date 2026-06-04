@@ -1,9 +1,9 @@
 {
   "feature": "F11-shadcn-form-foundation",
   "status": "in_progress",
-  "current_stage": "T01_done",
+  "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Start T02 \u2014 Gemini: \u8fc1\u79fb property-form.tsx",
+  "next_step": "Start T03 \u2014 Codex: review",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,9 +24,9 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "gemini-build-T02.md"
     },
     {
       "id": "T03",
@@ -83,6 +83,16 @@
     {
       "timestamp": "2026-06-04T04:44:18Z",
       "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T04:49:36Z",
+      "event": "T02 started \u2014 Gemini: \u8fc1\u79fb property-form.tsx",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T04:51:53Z",
+      "event": "T02 done \u2014 artifact captured as gemini-build-T02.md",
       "by": "claude"
     }
   ]

@@ -1,9 +1,23 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { AdminPropertyCreate, AdminPropertyUpdate } from "@/types/admin";
-import { cn } from "@/lib/utils";
 import { uploadPropertyImage } from "@/lib/api/admin";
+import { propertySchema, type PropertyFormValues } from "@/lib/schemas/property";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Loader2, Plus, Trash2, Upload } from "lucide-react";
 
 interface PropertyFormProps {
   initialValues?: AdminPropertyUpdate;
@@ -16,23 +30,51 @@ export function PropertyForm({
   onSubmit,
   isLoading,
 }: PropertyFormProps) {
-  const [formData, setFormData] = useState<AdminPropertyCreate>({
-    title: "",
-    description: "",
-    price: 0,
-    location: "",
-    bedrooms: 0,
-    bathrooms: 0,
-    area: 0,
-    images: [""],
-  });
-
-  const [errors, setErrors] = useState<Partial<Record<keyof AdminPropertyCreate, string>>>({});
   const [formError, setFormError] = useState<string | null>(null);
-
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingUploadIndexRef = useRef<number>(-1);
+
+  const form = useForm<PropertyFormValues>({
+    resolver: zodResolver(propertySchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      price: 0,
+      location: "",
+      bedrooms: 0,
+      bathrooms: 0,
+      area: 0,
+      images: [""],
+    },
+  });
+
+  useEffect(() => {
+    if (initialValues) {
+      form.reset({
+        title: initialValues.title ?? "",
+        description: initialValues.description ?? "",
+        price: initialValues.price ?? 0,
+        location: initialValues.location ?? "",
+        bedrooms: initialValues.bedrooms ?? 0,
+        bathrooms: initialValues.bathrooms ?? 0,
+        area: initialValues.area ?? 0,
+        images: initialValues.images && initialValues.images.length > 0 ? initialValues.images : [""],
+      });
+    }
+  }, [initialValues, form]);
+
+  const onFormSubmit = async (values: PropertyFormValues) => {
+    setFormError(null);
+    try {
+      await onSubmit({
+        ...values,
+        images: values.images.map((img) => img.trim()).filter(Boolean),
+      });
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "An error occurred");
+    }
+  };
 
   const triggerUpload = (index: number) => {
     pendingUploadIndexRef.current = index;
@@ -48,7 +90,10 @@ export function PropertyForm({
     setUploadingIndex(index);
     try {
       const { url } = await uploadPropertyImage(file);
-      handleImageChange(index, url);
+      const currentImages = form.getValues("images");
+      const newImages = [...currentImages];
+      newImages[index] = url;
+      form.setValue("images", newImages, { shouldValidate: true });
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -56,308 +101,255 @@ export function PropertyForm({
     }
   };
 
-  useEffect(() => {
-    if (initialValues) {
-      setFormData({
-        title: initialValues.title ?? "",
-        description: initialValues.description ?? "",
-        price: initialValues.price ?? 0,
-        location: initialValues.location ?? "",
-        bedrooms: initialValues.bedrooms ?? 0,
-        bathrooms: initialValues.bathrooms ?? 0,
-        area: initialValues.area ?? 0,
-        images: initialValues.images && initialValues.images.length > 0 ? initialValues.images : [""],
-      });
-    }
-  }, [initialValues]);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "number" ? parseFloat(value) || 0 : value,
-    }));
-    // Clear error for this field
-    if (errors[name as keyof AdminPropertyCreate]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
-    }
-  };
-
-  const handleImageChange = (index: number, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      images:
-        index >= prev.images.length
-          ? [...prev.images, value]
-          : prev.images.map((image, imageIndex) =>
-              imageIndex === index ? value : image
-            ),
-    }));
-  };
-
   const handleAddImage = () => {
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.length < 5 ? [...prev.images, ""] : prev.images,
-    }));
+    const currentImages = form.getValues("images");
+    if (currentImages.length < 5) {
+      form.setValue("images", [...currentImages, ""], { shouldValidate: true });
+    }
   };
 
   const handleRemoveImage = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      images:
-        prev.images.length > 1
-          ? prev.images.filter((_, imageIndex) => imageIndex !== index)
-          : [""],
-    }));
+    const currentImages = form.getValues("images");
+    const newImages = currentImages.length > 1
+      ? currentImages.filter((_, i) => i !== index)
+      : [""];
+    form.setValue("images", newImages, { shouldValidate: true });
   };
-
-  const validate = (): boolean => {
-    const newErrors: Partial<Record<keyof AdminPropertyCreate, string>> = {};
-
-    if (!formData.title.trim()) newErrors.title = "Title is required";
-    if (!formData.description.trim()) newErrors.description = "Description is required";
-    if (formData.price <= 0) newErrors.price = "Price must be positive";
-    if (!formData.location.trim()) newErrors.location = "Location is required";
-    if (formData.bedrooms < 1) newErrors.bedrooms = "At least 1 bedroom is required";
-    if (formData.bathrooms < 1) newErrors.bathrooms = "At least 1 bathroom is required";
-    if (formData.area <= 0) newErrors.area = "Area must be positive";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
-
-    const newErrors: Partial<Record<keyof AdminPropertyCreate, string>> = {};
-
-    if (!formData.title.trim()) newErrors.title = "Title is required";
-    if (!formData.description.trim()) newErrors.description = "Description is required";
-    if (formData.price <= 0) newErrors.price = "Price must be positive";
-    if (!formData.location.trim()) newErrors.location = "Location is required";
-    if (formData.bedrooms < 1) newErrors.bedrooms = "At least 1 bedroom is required";
-    if (formData.bathrooms < 1) newErrors.bathrooms = "At least 1 bathroom is required";
-    if (formData.area <= 0) newErrors.area = "Area must be positive";
-
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) {
-      // Scroll to first error
-      const firstErrorField = Object.keys(newErrors)[0];
-      const element = document.getElementsByName(firstErrorField)[0];
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "center" });
-        (element as HTMLElement).focus();
-      }
-      return;
-    }
-
-    try {
-      await onSubmit({
-        ...formData,
-        images: formData.images.map((image) => image.trim()).filter(Boolean),
-      });
-    } catch (err) {
-      setFormError(err instanceof Error ? err.message : "An error occurred");
-    }
-  };
-
-  const inputClasses = (fieldName: keyof AdminPropertyCreate) =>
-    cn(
-      "w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors",
-      errors[fieldName] ? "border-red-500 bg-red-50" : "border-slate-300 bg-white"
-    );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {formError && (
-        <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
-          {formError}
-        </div>
-      )}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
+        {formError && (
+          <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+            {formError}
+          </div>
+        )}
 
-      <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-1">Title</label>
-        <input
-          type="text"
+        <FormField
+          control={form.control}
           name="title"
-          value={formData.title}
-          onChange={handleChange}
-          className={inputClasses("title")}
-          placeholder="e.g. Modern Apartment in Downtown"
-          disabled={isLoading}
-        />
-        {errors.title && <p className="mt-1 text-xs text-red-500 font-medium">{errors.title}</p>}
-      </div>
-
-      <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-1">Description</label>
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          className={cn(inputClasses("description"), "h-32 resize-none")}
-          placeholder="Detailed description of the property..."
-          disabled={isLoading}
-        />
-        {errors.description && <p className="mt-1 text-xs text-red-500 font-medium">{errors.description}</p>}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Price ($)</label>
-          <input
-            type="number"
-            name="price"
-            value={formData.price || ""}
-            onChange={handleChange}
-            className={inputClasses("price")}
-            min="0"
-            step="0.01"
-            placeholder="0.00"
-            disabled={isLoading}
-          />
-          {errors.price && <p className="mt-1 text-xs text-red-500 font-medium">{errors.price}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Location</label>
-          <input
-            type="text"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            className={inputClasses("location")}
-            placeholder="e.g. San Francisco, CA"
-            disabled={isLoading}
-          />
-          {errors.location && <p className="mt-1 text-xs text-red-500 font-medium">{errors.location}</p>}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Bedrooms</label>
-          <input
-            type="number"
-            name="bedrooms"
-            value={formData.bedrooms || ""}
-            onChange={handleChange}
-            className={inputClasses("bedrooms")}
-            min="1"
-            placeholder="1"
-            disabled={isLoading}
-          />
-          {errors.bedrooms && <p className="mt-1 text-xs text-red-500 font-medium">{errors.bedrooms}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Bathrooms</label>
-          <input
-            type="number"
-            name="bathrooms"
-            value={formData.bathrooms || ""}
-            onChange={handleChange}
-            className={inputClasses("bathrooms")}
-            min="1"
-            placeholder="1"
-            disabled={isLoading}
-          />
-          {errors.bathrooms && <p className="mt-1 text-xs text-red-500 font-medium">{errors.bathrooms}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Area (sqm)</label>
-          <input
-            type="number"
-            name="area"
-            value={formData.area || ""}
-            onChange={handleChange}
-            className={inputClasses("area")}
-            min="0"
-            placeholder="0"
-            disabled={isLoading}
-          />
-          {errors.area && <p className="mt-1 text-xs text-red-500 font-medium">{errors.area}</p>}
-        </div>
-      </div>
-
-      <div>
-        <div className="flex items-center justify-between gap-3 mb-1">
-          <label className="block text-sm font-semibold text-slate-700">Image URLs</label>
-          <button
-            type="button"
-            onClick={handleAddImage}
-            disabled={isLoading || formData.images.length >= 5}
-            className="px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Add
-          </button>
-        </div>
-        <div className="space-y-2">
-          {(formData.images.length > 0 ? formData.images : [""]).map((imageUrl, index) => (
-            <div key={index} className="flex gap-2">
-              <input
-                type="text"
-                name="images"
-                value={imageUrl}
-                onChange={(e) => handleImageChange(index, e.target.value)}
-                className={inputClasses("images")}
-                placeholder="https://images.unsplash.com/..."
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => triggerUpload(index)}
-                disabled={isLoading || uploadingIndex !== null}
-                className="px-3 py-2 text-sm font-semibold text-slate-700 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {uploadingIndex === index ? "Uploading..." : "Upload"}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRemoveImage(index)}
-                disabled={isLoading || formData.images.length <= 1}
-                className="px-3 py-2 text-sm font-semibold text-slate-700 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-        </div>
-        {errors.images && <p className="mt-1 text-xs text-red-500 font-medium">{errors.images}</p>}
-      </div>
-
-      <div className="flex justify-end pt-4">
-        <button
-          type="submit"
-          disabled={isLoading || uploadingIndex !== null}
-          className="px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-        >
-          {isLoading ? (
-            <span className="flex items-center">
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Processing...
-            </span>
-          ) : (
-            "Save Property"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. Modern Apartment in Downtown" {...field} disabled={isLoading} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </button>
-      </div>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        className="hidden"
-        onChange={handleFileChange}
-      />
-    </form>
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Detailed description of the property..."
+                  className="h-32 resize-none"
+                  {...field}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Price ($)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. San Francisco, CA" {...field} disabled={isLoading} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="bedrooms"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Bedrooms</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="1"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="bathrooms"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Bathrooms</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="1"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="area"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Area (sqm)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between gap-3 mb-1">
+            <FormLabel>Image URLs</FormLabel>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAddImage}
+              disabled={isLoading || form.watch("images").length >= 5}
+            >
+              <Plus className="h-4 w-4 mr-1" /> Add
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {form.watch("images").map((_, index) => (
+              <div key={index} className="flex gap-2">
+                <FormField
+                  control={form.control}
+                  name={`images.${index}`}
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Input
+                          placeholder="https://images.unsplash.com/..."
+                          {...field}
+                          disabled={isLoading}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => triggerUpload(index)}
+                  disabled={isLoading || uploadingIndex !== null}
+                >
+                  {uploadingIndex === index ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4" />
+                  )}
+                  <span className="ml-2 hidden sm:inline">
+                    {uploadingIndex === index ? "Uploading..." : "Upload"}
+                  </span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => handleRemoveImage(index)}
+                  disabled={isLoading || form.watch("images").length <= 1}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <FormField
+            control={form.control}
+            name="images"
+            render={() => (
+              <FormItem>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="flex justify-end pt-4">
+          <Button
+            type="submit"
+            disabled={form.formState.isSubmitting || uploadingIndex !== null}
+            className="px-8"
+          >
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Save Property"
+            )}
+          </Button>
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </form>
+    </Form>
   );
 }
