@@ -104,6 +104,41 @@
       "timestamp": "2026-06-04T04:56:46Z",
       "event": "T03 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T05:30:00Z",
+      "event": "fix loop: A4 \u2014 added .trim() to title/description/location in propertySchema",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T05:30:00Z",
+      "event": "fix loop: runtime \u2014 FormLabel outside FormField replaced with plain label (Image URLs section)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T05:30:00Z",
+      "event": "fix loop: UX \u2014 number inputs show empty instead of 0 (price/bedrooms/bathrooms/area)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T05:30:00Z",
+      "event": "fix loop: A5 \u2014 image URL after upload now uses form.setValue on specific index path for correct re-render",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T05:30:00Z",
+      "event": "fix loop: UX \u2014 Save button given explicit blue styling (globals.css lacks shadcn CSS vars)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T05:35:00Z",
+      "event": "A8 PASS \u2014 admin create property happy path manually verified by user in local environment",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T05:35:00Z",
+      "event": "A9 PASS \u2014 admin edit property happy path manually verified by user in local environment",
+      "by": "claude"
     }
   ]
 }
