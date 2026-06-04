@@ -1,9 +1,9 @@
 {
   "feature": "F11-shadcn-form-foundation",
-  "status": "in_progress",
-  "current_stage": "T03_done",
+  "status": "done",
+  "current_stage": "T04_done",
   "current_owner": null,
-  "next_step": "Start T04 \u2014 Claude: acceptance",
+  "next_step": "Feature complete \u2014 F12 auth forms next",
   "last_review_failure": null,
   "tasks": [
     {
@@ -49,9 +49,9 @@
       "depends_on": [
         "T03"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "final-report.md"
     }
   ],
   "activity_log": [
@@ -158,6 +158,11 @@
     {
       "timestamp": "2026-06-04T05:33:17Z",
       "event": "T03 done \u2014 artifact captured as review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T05:45:00Z",
+      "event": "T04 done \u2014 Claude acceptance ACCEPTED; final-report.md written; feature status set to done",
       "by": "claude"
     }
   ]
