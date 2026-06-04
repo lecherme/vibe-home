@@ -1,0 +1,57 @@
+{
+  "feature": "F12-auth-forms-shadcn",
+  "status": "in_progress",
+  "current_stage": "T01_pending",
+  "current_owner": "codex",
+  "next_step": "Run T01: CODEX_MODEL=gpt-5.4 CODEX_BYPASS_SANDBOX=1 bash tools/run_task.sh .ai/features/F12-auth-forms-shadcn T01",
+  "last_review_failure": null,
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Codex: 创建 auth Zod schemas",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "codex-build-T01.md"
+    },
+    {
+      "id": "T02",
+      "title": "Gemini: 迁移 4 个 auth 表单",
+      "owner": "gemini",
+      "type": "build",
+      "depends_on": ["T01"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "gemini-build-T02.md"
+    },
+    {
+      "id": "T03",
+      "title": "Codex: review",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": ["T01", "T02"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "review.md"
+    },
+    {
+      "id": "T04",
+      "title": "Claude: acceptance",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": ["T03"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "final-report.md"
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-06-04T00:00:00Z",
+      "event": "feature workspace initialized: spec/tasks/acceptance/owner/status/task_manifest created",
+      "by": "claude"
+    }
+  ]
+}

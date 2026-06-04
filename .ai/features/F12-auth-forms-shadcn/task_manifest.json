@@ -1,0 +1,31 @@
+{
+  "feature": "F12-auth-forms-shadcn",
+  "tasks": {
+    "T01": {
+      "owner": "codex",
+      "allowed_files": [
+        "frontend/lib/schemas/auth.ts"
+      ]
+    },
+    "T02": {
+      "owner": "gemini",
+      "allowed_files": [
+        "frontend/components/features/auth/LoginForm.tsx",
+        "frontend/components/features/auth/RegisterForm.tsx",
+        "frontend/components/features/auth/ForgotPasswordForm.tsx",
+        "frontend/components/features/auth/ResetPasswordForm.tsx"
+      ]
+    },
+    "T03": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T04": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F12-auth-forms-shadcn/status.json",
+        ".ai/features/F12-auth-forms-shadcn/final-report.md"
+      ]
+    }
+  }
+}
