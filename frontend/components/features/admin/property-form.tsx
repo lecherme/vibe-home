@@ -330,7 +330,7 @@ export function PropertyForm({
           <Button
             type="submit"
             disabled={form.formState.isSubmitting || uploadingIndex !== null}
-            className="px-8"
+            className="px-8 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
           >
             {form.formState.isSubmitting ? (
               <>
