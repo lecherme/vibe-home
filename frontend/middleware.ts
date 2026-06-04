@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getSession();
 
   const { pathname } = request.nextUrl;
-  if (pathname === "/reset-password") {
+  if (pathname === "/reset-password" || pathname === "/auth/callback") {
     return response;
   }
 
