@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetPasswordSchema, type ResetPasswordFormValues } from "@/lib/schemas/auth";
-import { getSession, signOut, updateUserPassword } from "@/lib/auth/session";
+import { exchangeCodeForSession, getSession, signOut, updateUserPassword } from "@/lib/auth/session";
 import {
   Form,
   FormControl,
@@ -36,25 +36,31 @@ export default function ResetPasswordForm() {
   useEffect(() => {
     let isMounted = true;
 
-    const checkSession = async () => {
+    const init = async () => {
       try {
-        const session = await getSession();
+        const code = new URLSearchParams(window.location.search).get("code");
 
-        if (isMounted) {
-          setHasValidSession(Boolean(session));
+        if (code) {
+          const url = new URL(window.location.href);
+          url.searchParams.delete("code");
+          window.history.replaceState({}, "", url.toString());
+          await exchangeCodeForSession(code);
+        } else {
+          const session = await getSession();
+          if (isMounted) setHasValidSession(Boolean(session));
+          if (isMounted) setIsCheckingSession(false);
+          return;
         }
+
+        if (isMounted) setHasValidSession(true);
       } catch {
-        if (isMounted) {
-          setHasValidSession(false);
-        }
+        if (isMounted) setHasValidSession(false);
       } finally {
-        if (isMounted) {
-          setIsCheckingSession(false);
-        }
+        if (isMounted) setIsCheckingSession(false);
       }
     };
 
-    checkSession();
+    init();
 
     return () => {
       isMounted = false;
