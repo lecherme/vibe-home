@@ -1,27 +1,29 @@
 {
   "feature": "F11-shadcn-form-foundation",
   "status": "in_progress",
-  "current_stage": "T01_pending",
+  "current_stage": "T01_done",
   "current_owner": null,
-  "next_step": "Start T01 — Codex: 安装依赖和 shadcn 组件",
+  "next_step": "Start T02 \u2014 Gemini: \u8fc1\u79fb property-form.tsx",
   "last_review_failure": null,
   "tasks": [
     {
       "id": "T01",
-      "title": "Codex: 安装依赖和 shadcn 组件",
+      "title": "Codex: \u5b89\u88c5\u4f9d\u8d56\u548c shadcn \u7ec4\u4ef6",
       "owner": "codex",
       "type": "build",
       "depends_on": [],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null
+      "artifact": "codex-build-T01.md"
     },
     {
       "id": "T02",
-      "title": "Gemini: 迁移 property-form.tsx",
+      "title": "Gemini: \u8fc1\u79fb property-form.tsx",
       "owner": "gemini",
       "type": "build",
-      "depends_on": ["T01"],
+      "depends_on": [
+        "T01"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -31,7 +33,10 @@
       "title": "Codex: review",
       "owner": "codex",
       "type": "review",
-      "depends_on": ["T01", "T02"],
+      "depends_on": [
+        "T01",
+        "T02"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -41,7 +46,9 @@
       "title": "Claude: acceptance",
       "owner": "claude",
       "type": "acceptance",
-      "depends_on": ["T03"],
+      "depends_on": [
+        "T03"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": null
@@ -51,6 +58,31 @@
     {
       "timestamp": "2026-06-04T00:00:00Z",
       "event": "feature workspace initialized: spec/tasks/acceptance/status/owner/task_manifest created",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T04:37:04Z",
+      "event": "T01 started \u2014 Codex: \u5b89\u88c5\u4f9d\u8d56\u548c shadcn \u7ec4\u4ef6",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T04:39:04Z",
+      "event": "T01 failed \u2014 run_task failed with exit code 1",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T04:41:03Z",
+      "event": "T01 requeued \u2014 retry approved by Claude",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T04:41:33Z",
+      "event": "T01 started \u2014 Codex: \u5b89\u88c5\u4f9d\u8d56\u548c shadcn \u7ec4\u4ef6",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-04T04:44:18Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
       "by": "claude"
     }
   ]
