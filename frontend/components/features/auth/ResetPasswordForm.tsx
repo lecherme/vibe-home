@@ -45,22 +45,42 @@ export default function ResetPasswordForm() {
       }
     });
 
-    getSession().then((session) => {
-      if (!isMounted) return;
-      if (session) {
-        setHasValidSession(true);
+    const code = new URLSearchParams(window.location.search).get("code");
+
+    if (code) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("code");
+      window.history.replaceState({}, "", url.toString());
+
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (!isMounted) return;
+        if (error) {
+          // detectSessionInUrl may have consumed the code first — check session
+          getSession().then((session) => {
+            if (!isMounted) return;
+            setHasValidSession(Boolean(session));
+            setIsCheckingSession(false);
+          }).catch(() => {
+            if (isMounted) {
+              setHasValidSession(false);
+              setIsCheckingSession(false);
+            }
+          });
+        }
+        // on success: onAuthStateChange fires PASSWORD_RECOVERY → handled above
+      });
+    } else {
+      getSession().then((session) => {
+        if (!isMounted) return;
+        setHasValidSession(Boolean(session));
         setIsCheckingSession(false);
-      } else if (!new URLSearchParams(window.location.search).get("code")) {
-        setHasValidSession(false);
-        setIsCheckingSession(false);
-      }
-      // if there's a ?code=, wait for onAuthStateChange to fire
-    }).catch(() => {
-      if (isMounted) {
-        setHasValidSession(false);
-        setIsCheckingSession(false);
-      }
-    });
+      }).catch(() => {
+        if (isMounted) {
+          setHasValidSession(false);
+          setIsCheckingSession(false);
+        }
+      });
+    }
 
     return () => {
       isMounted = false;
