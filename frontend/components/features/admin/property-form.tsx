@@ -171,6 +171,7 @@ export function PropertyForm({
                     step="0.01"
                     placeholder="0.00"
                     {...field}
+                    value={field.value || ""}
                     onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     disabled={isLoading}
                   />
@@ -207,6 +208,7 @@ export function PropertyForm({
                     type="number"
                     placeholder="1"
                     {...field}
+                    value={field.value || ""}
                     onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
                     disabled={isLoading}
                   />
@@ -227,6 +229,7 @@ export function PropertyForm({
                     type="number"
                     placeholder="1"
                     {...field}
+                    value={field.value || ""}
                     onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
                     disabled={isLoading}
                   />
@@ -247,6 +250,7 @@ export function PropertyForm({
                     type="number"
                     placeholder="0"
                     {...field}
+                    value={field.value || ""}
                     onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     disabled={isLoading}
                   />
