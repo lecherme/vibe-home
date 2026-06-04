@@ -1,0 +1,31 @@
+{
+  "feature": "F11-shadcn-form-foundation",
+  "tasks": {
+    "T01": {
+      "owner": "codex",
+      "allowed_files": [
+        "frontend/package.json",
+        "frontend/package-lock.json",
+        "frontend/components/ui/*"
+      ]
+    },
+    "T02": {
+      "owner": "gemini",
+      "allowed_files": [
+        "frontend/components/features/admin/property-form.tsx",
+        "frontend/lib/schemas/property.ts"
+      ]
+    },
+    "T03": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T04": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F11-shadcn-form-foundation/status.json",
+        ".ai/features/F11-shadcn-form-foundation/final-report.md"
+      ]
+    }
+  }
+}
