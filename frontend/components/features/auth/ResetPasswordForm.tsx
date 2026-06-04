@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetPasswordSchema, type ResetPasswordFormValues } from "@/lib/schemas/auth";
-import { getSession, signOut, updateUserPassword } from "@/lib/auth/session";
-import { supabase } from "@/lib/auth/supabase";
+import { getSession, signOut, updateUserPassword, verifyPasswordRecovery } from "@/lib/auth/session";
 import {
   Form,
   FormControl,
@@ -25,7 +24,6 @@ export default function ResetPasswordForm() {
   const [hasValidSession, setHasValidSession] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [debugError, setDebugError] = useState<string | null>(null);
 
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -38,55 +36,41 @@ export default function ResetPasswordForm() {
   useEffect(() => {
     let isMounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!isMounted) return;
-      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
-        setHasValidSession(true);
-        setIsCheckingSession(false);
-      }
-    });
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get("token_hash");
+    const type = params.get("type");
 
-    const code = new URLSearchParams(window.location.search).get("code");
-
-    if (code) {
-      const url = new URL(window.location.href);
-      url.searchParams.delete("code");
-      window.history.replaceState({}, "", url.toString());
-
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        if (!isMounted) return;
-        if (error) {
-          setDebugError(error.message);
-          // detectSessionInUrl may have consumed the code first — check session
-          getSession().then((session) => {
-            if (!isMounted) return;
+    const init = async () => {
+      try {
+        if (tokenHash && type === "recovery") {
+          const url = new URL(window.location.href);
+          url.searchParams.delete("token_hash");
+          url.searchParams.delete("type");
+          window.history.replaceState({}, "", url.toString());
+          await verifyPasswordRecovery(tokenHash);
+          if (isMounted) {
+            setHasValidSession(true);
+            setIsCheckingSession(false);
+          }
+        } else {
+          const session = await getSession();
+          if (isMounted) {
             setHasValidSession(Boolean(session));
             setIsCheckingSession(false);
-          }).catch(() => {
-            if (isMounted) {
-              setHasValidSession(false);
-              setIsCheckingSession(false);
-            }
-          });
+          }
         }
-        // on success: onAuthStateChange fires PASSWORD_RECOVERY → handled above
-      });
-    } else {
-      getSession().then((session) => {
-        if (!isMounted) return;
-        setHasValidSession(Boolean(session));
-        setIsCheckingSession(false);
-      }).catch(() => {
+      } catch {
         if (isMounted) {
           setHasValidSession(false);
           setIsCheckingSession(false);
         }
-      });
-    }
+      }
+    };
+
+    init();
 
     return () => {
       isMounted = false;
-      subscription.unsubscribe();
     };
   }, []);
 
@@ -123,7 +107,6 @@ export default function ResetPasswordForm() {
         </h2>
         <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
           This password reset link is invalid or has expired.
-          {debugError && <div className="mt-2 font-mono text-xs break-all">{debugError}</div>}
         </div>
         <div className="mt-6 text-center">
           <Link
