@@ -25,6 +25,7 @@ export default function ResetPasswordForm() {
   const [hasValidSession, setHasValidSession] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [debugError, setDebugError] = useState<string | null>(null);
 
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -55,6 +56,7 @@ export default function ResetPasswordForm() {
       supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
         if (!isMounted) return;
         if (error) {
+          setDebugError(error.message);
           // detectSessionInUrl may have consumed the code first — check session
           getSession().then((session) => {
             if (!isMounted) return;
@@ -121,6 +123,7 @@ export default function ResetPasswordForm() {
         </h2>
         <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
           This password reset link is invalid or has expired.
+          {debugError && <div className="mt-2 font-mono text-xs break-all">{debugError}</div>}
         </div>
         <div className="mt-6 text-center">
           <Link
