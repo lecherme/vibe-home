@@ -259,7 +259,7 @@ export function PropertyForm({
 
         <div>
           <div className="flex items-center justify-between gap-3 mb-1">
-            <FormLabel>Image URLs</FormLabel>
+            <label className="text-sm font-medium leading-none">Image URLs</label>
             <Button
               type="button"
               variant="outline"
