@@ -11,6 +11,7 @@
   - `frontend/package.json`
   - `frontend/package-lock.json`
   - `frontend/components/ui/*`
+  - `frontend/hooks/*`
 
 **Requirements:**
 
