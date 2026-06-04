@@ -34,7 +34,7 @@ export default function ForgotPasswordForm() {
     try {
       await resetPasswordForEmail(
         values.email,
-        `${window.location.origin}/reset-password`,
+        `${window.location.origin}/auth/callback?next=/reset-password`,
       );
       setIsSuccess(true);
     } catch (err: unknown) {
