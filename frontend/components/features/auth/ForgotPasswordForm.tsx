@@ -2,29 +2,43 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { forgotPasswordSchema, type ForgotPasswordFormValues } from "@/lib/schemas/auth";
 import { resetPasswordForEmail } from "@/lib/auth/session";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function ForgotPasswordForm() {
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const form = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const onSubmit = async (values: ForgotPasswordFormValues) => {
     setError(null);
 
     try {
       await resetPasswordForEmail(
-        email,
+        values.email,
         `${window.location.origin}/reset-password`,
       );
       setIsSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to send reset email");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -56,45 +70,45 @@ export default function ForgotPasswordForm() {
         Reset your password
       </h2>
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
-        {error && (
-          <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+      <Form {...form}>
+        <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+          {error && (
+            <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
+              {error}
+            </div>
+          )}
 
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Email address
-          </label>
-          <div className="mt-1">
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              disabled={isLoading}
-            />
-          </div>
-        </div>
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-gray-700">Email address</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="email"
+                    autoComplete="email"
+                    className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    disabled={form.formState.isSubmitting}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            {isLoading ? "Sending..." : "Send reset link"}
-          </button>
-        </div>
-      </form>
+          <div>
+            <Button
+              type="submit"
+              disabled={form.formState.isSubmitting}
+              className="w-full bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {form.formState.isSubmitting ? "Sending..." : "Send reset link"}
+            </Button>
+          </div>
+        </form>
+      </Form>
 
       <div className="mt-6 text-center">
         <Link

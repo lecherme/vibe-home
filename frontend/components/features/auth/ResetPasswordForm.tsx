@@ -3,17 +3,35 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { validatePassword } from "@/lib/auth/password-validation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { resetPasswordSchema, type ResetPasswordFormValues } from "@/lib/schemas/auth";
 import { getSession, signOut, updateUserPassword } from "@/lib/auth/session";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function ResetPasswordForm() {
   const router = useRouter();
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [hasValidSession, setHasValidSession] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const form = useForm<ResetPasswordFormValues>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -43,30 +61,12 @@ export default function ResetPasswordForm() {
     };
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: ResetPasswordFormValues) => {
     setError(null);
-
-    if (!password || !confirmPassword) {
-      setError("Password and confirmation are required");
-      return;
-    }
-
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      setError(passwordError);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      await updateUserPassword(password);
+      await updateUserPassword(values.password);
       await signOut();
       router.push("/login");
       router.refresh();
@@ -113,67 +113,65 @@ export default function ResetPasswordForm() {
         Create a new password
       </h2>
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
-        {error && (
-          <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+      <Form {...form}>
+        <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+          {error && (
+            <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
+              {error}
+            </div>
+          )}
 
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700"
-          >
-            New password
-          </label>
-          <div className="mt-1">
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-gray-700">New password</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="password"
+                    autoComplete="new-password"
+                    className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    disabled={isLoading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-gray-700">Confirm password</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="password"
+                    autoComplete="new-password"
+                    className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    disabled={isLoading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div>
+            <Button
+              type="submit"
               disabled={isLoading}
-            />
+              className="w-full bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {isLoading ? "Updating..." : "Update password"}
+            </Button>
           </div>
-        </div>
-
-        <div>
-          <label
-            htmlFor="confirm-password"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Confirm password
-          </label>
-          <div className="mt-1">
-            <input
-              id="confirm-password"
-              name="confirm-password"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              disabled={isLoading}
-            />
-          </div>
-        </div>
-
-        <div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            {isLoading ? "Updating..." : "Update password"}
-          </button>
-        </div>
-      </form>
+        </form>
+      </Form>
     </div>
   );
 }
