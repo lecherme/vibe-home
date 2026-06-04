@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetPasswordSchema, type ResetPasswordFormValues } from "@/lib/schemas/auth";
@@ -19,10 +18,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function ResetPasswordForm() {
-  const router = useRouter();
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [hasValidSession, setHasValidSession] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<ResetPasswordFormValues>({
@@ -81,8 +80,10 @@ export default function ResetPasswordForm() {
     try {
       await updateUserPassword(values.password);
       await signOut();
-      router.push("/login");
-      router.refresh();
+      setIsSuccess(true);
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1500);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to update password");
       setIsLoading(false);
@@ -115,6 +116,19 @@ export default function ResetPasswordForm() {
           >
             Back to Login
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="bg-white p-8 shadow sm:rounded-lg">
+        <h2 className="mb-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+          Password updated
+        </h2>
+        <div className="rounded-md bg-green-50 p-4 text-sm text-green-700">
+          Your password has been updated. Redirecting to login...
         </div>
       </div>
     );
