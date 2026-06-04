@@ -145,3 +145,14 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 - **Fix:** middleware 在 `if(session)` 块内加 `pathname === "/"` 跳转到 `getDefaultPage(role)`；`app/page.tsx` 改为 `redirect("/login")` 兜底；原 HealthPage 迁移到 `app/health/page.tsx`
 - **Original source:** [open-bugs.md § BUG-016](./../bugs/open-bugs.md)（已移除）
 - **Fix report:** [fix-report-BUG-016-FIX](./../fix-runs/2026-05-24-post-F9-followup/fix-reports/fix-report-BUG-016-FIX.md)
+
+---
+
+### BUG-017 — Password reset PKCE verifier 跨 browser 不可用
+
+- **Fixed date:** 2026-06-04
+- **Verification:** 手测 PASS — forgot password → 点邮件链接 → 进入 reset form → 填新密码 → 绿色提示 → 跳 /login → 新密码登录成功
+- **Fixing batch:** F12 验收过程中 hotfix（commits `596f290` `683231e` `619c131` `ff6caef`）
+- **Root cause:** Supabase PKCE flow 把 code verifier 存在发起请求的浏览器 cookie，邮件客户端 WebView 或不同 browser 打开时 verifier 不可用，导致 `exchangeCodeForSession` 报错。
+- **Fix:** 改用 `token_hash` + `verifyOtp` 方案，不依赖本地存储的 verifier，任何 browser 均可用：`session.ts` 加 `verifyPasswordRecovery(tokenHash)`；`ResetPasswordForm` 检测 `?token_hash=` 并调用；Supabase 邮件模板改为 `{{ .SiteURL }}/reset-password?token_hash={{ .TokenHash }}&type=recovery`
+- **Original source:** BUG-008 实现遗漏（无 auth callback route，PKCE verifier 跨 browser 不可用），F12 验收手测时首次发现
