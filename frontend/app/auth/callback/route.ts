@@ -32,7 +32,11 @@ export async function GET(request: NextRequest) {
     if (!error) {
       return NextResponse.redirect(new URL(next, origin));
     }
+
+    const errorUrl = new URL("/login", origin);
+    errorUrl.searchParams.set("error", error.message);
+    return NextResponse.redirect(errorUrl);
   }
 
-  return NextResponse.redirect(new URL("/login", origin));
+  return NextResponse.redirect(new URL("/login?error=no_code", origin));
 }
