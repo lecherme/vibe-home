@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetPasswordSchema, type ResetPasswordFormValues } from "@/lib/schemas/auth";
-import { exchangeCodeForSession, getSession, signOut, updateUserPassword } from "@/lib/auth/session";
+import { getSession, signOut, updateUserPassword } from "@/lib/auth/session";
+import { supabase } from "@/lib/auth/supabase";
 import {
   Form,
   FormControl,
@@ -36,34 +37,34 @@ export default function ResetPasswordForm() {
   useEffect(() => {
     let isMounted = true;
 
-    const init = async () => {
-      try {
-        const code = new URLSearchParams(window.location.search).get("code");
-
-        if (code) {
-          const url = new URL(window.location.href);
-          url.searchParams.delete("code");
-          window.history.replaceState({}, "", url.toString());
-          await exchangeCodeForSession(code);
-        } else {
-          const session = await getSession();
-          if (isMounted) setHasValidSession(Boolean(session));
-          if (isMounted) setIsCheckingSession(false);
-          return;
-        }
-
-        if (isMounted) setHasValidSession(true);
-      } catch {
-        if (isMounted) setHasValidSession(false);
-      } finally {
-        if (isMounted) setIsCheckingSession(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
+        setHasValidSession(true);
+        setIsCheckingSession(false);
       }
-    };
+    });
 
-    init();
+    getSession().then((session) => {
+      if (!isMounted) return;
+      if (session) {
+        setHasValidSession(true);
+        setIsCheckingSession(false);
+      } else if (!new URLSearchParams(window.location.search).get("code")) {
+        setHasValidSession(false);
+        setIsCheckingSession(false);
+      }
+      // if there's a ?code=, wait for onAuthStateChange to fire
+    }).catch(() => {
+      if (isMounted) {
+        setHasValidSession(false);
+        setIsCheckingSession(false);
+      }
+    });
 
     return () => {
       isMounted = false;
+      subscription.unsubscribe();
     };
   }, []);
 
