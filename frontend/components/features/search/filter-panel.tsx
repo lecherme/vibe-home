@@ -3,6 +3,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { SearchFilters } from "@/types/search";
 import type { PropertyStatus } from "@/types/property";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FilterPanelProps {
   filters: SearchFilters;
@@ -78,13 +87,13 @@ export function FilterPanel({ filters, onChange, isLoading }: FilterPanelProps) 
       </h3>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div>
-          <label
+          <Label
             htmlFor="min_price"
             className="block text-xs font-medium text-gray-700 mb-1"
           >
             Min Price
-          </label>
-          <input
+          </Label>
+          <Input
             type="number"
             id="min_price"
             value={localMinPrice}
@@ -96,13 +105,13 @@ export function FilterPanel({ filters, onChange, isLoading }: FilterPanelProps) 
         </div>
 
         <div>
-          <label
+          <Label
             htmlFor="max_price"
             className="block text-xs font-medium text-gray-700 mb-1"
           >
             Max Price
-          </label>
-          <input
+          </Label>
+          <Input
             type="number"
             id="max_price"
             value={localMaxPrice}
@@ -114,76 +123,82 @@ export function FilterPanel({ filters, onChange, isLoading }: FilterPanelProps) 
         </div>
 
         <div>
-          <label
+          <Label
             htmlFor="bedrooms"
             className="block text-xs font-medium text-gray-700 mb-1"
           >
             Min Bedrooms
-          </label>
-          <select
-            id="bedrooms"
-            value={filters.bedrooms ?? ""}
-            onChange={(e) =>
-              handleChange("bedrooms", e.target.value ? Number(e.target.value) : "")
+          </Label>
+          <Select
+            value={filters.bedrooms?.toString() ?? "any"}
+            onValueChange={(val) =>
+              handleChange("bedrooms", val === "any" ? undefined : Number(val))
             }
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            disabled={isLoading}
           >
-            <option value="">Any</option>
-            {[1, 2, 3, 4, 5].map((num) => (
-              <option key={num} value={num}>
-                {num}+ beds
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="bedrooms" disabled={isLoading} className="w-full">
+              <SelectValue placeholder="Any" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any</SelectItem>
+              {[1, 2, 3, 4, 5].map((num) => (
+                <SelectItem key={num} value={String(num)}>
+                  {num}+ beds
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
-          <label
+          <Label
             htmlFor="status"
             className="block text-xs font-medium text-gray-700 mb-1"
           >
             Status
-          </label>
-          <select
-            id="status"
-            value={filters.status ?? ""}
-            onChange={(e) =>
-              handleChange("status", e.target.value as PropertyStatus | "")
+          </Label>
+          <Select
+            value={filters.status ?? "any"}
+            onValueChange={(val) =>
+              handleChange("status", val === "any" ? undefined : (val as PropertyStatus))
             }
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            disabled={isLoading}
           >
-            <option value="">Any Status</option>
-            <option value="available">Available</option>
-            <option value="sold">Sold</option>
-            <option value="rented">Rented</option>
-          </select>
+            <SelectTrigger id="status" disabled={isLoading} className="w-full">
+              <SelectValue placeholder="Any Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any Status</SelectItem>
+              <SelectItem value="available">Available</SelectItem>
+              <SelectItem value="sold">Sold</SelectItem>
+              <SelectItem value="rented">Rented</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
-          <label
+          <Label
             htmlFor="bathrooms"
             className="block text-xs font-medium text-gray-700 mb-1"
           >
             Min Bathrooms
-          </label>
-          <select
-            id="bathrooms"
-            value={filters.bathrooms ?? ""}
-            onChange={(e) =>
-              handleChange("bathrooms", e.target.value ? Number(e.target.value) : "")
+          </Label>
+          <Select
+            value={filters.bathrooms?.toString() ?? "any"}
+            onValueChange={(val) =>
+              handleChange("bathrooms", val === "any" ? undefined : Number(val))
             }
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            disabled={isLoading}
           >
-            <option value="">Any</option>
-            {[1, 2, 3, 4, 5].map((num) => (
-              <option key={num} value={num}>
-                {num}+ baths
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="bathrooms" disabled={isLoading} className="w-full">
+              <SelectValue placeholder="Any" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any</SelectItem>
+              {[1, 2, 3, 4, 5].map((num) => (
+                <SelectItem key={num} value={String(num)}>
+                  {num}+ baths
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>

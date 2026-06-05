@@ -1,0 +1,23 @@
+{
+  "feature": "F13-search-shadcn",
+  "tasks": {
+    "T01": {
+      "owner": "gemini",
+      "allowed_files": [
+        "frontend/components/features/search/filter-panel.tsx",
+        "frontend/components/features/search/search-bar.tsx"
+      ]
+    },
+    "T02": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T03": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F13-search-shadcn/status.json",
+        ".ai/features/F13-search-shadcn/final-report.md"
+      ]
+    }
+  }
+}

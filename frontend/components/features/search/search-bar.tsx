@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface SearchBarProps {
   value: string;
@@ -34,7 +36,7 @@ export function SearchBar({ value, onChange, onSearch, isLoading }: SearchBarPro
             />
           </svg>
         </div>
-        <input
+        <Input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -44,13 +46,13 @@ export function SearchBar({ value, onChange, onSearch, isLoading }: SearchBarPro
           disabled={isLoading}
         />
       </div>
-      <button
+      <Button
         onClick={onSearch}
         disabled={isLoading}
-        className="inline-flex w-28 shrink-0 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+        className="bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 w-28 shrink-0"
       >
         {isLoading ? "Searching..." : "Search"}
-      </button>
+      </Button>
     </div>
   );
 }
