@@ -1,6 +1,9 @@
 "use client";
 
 import { FormEvent, KeyboardEvent, useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type PaginationControlsProps = {
   page: number;
@@ -51,30 +54,30 @@ export function PaginationControls({
 
   return (
     <div className={`flex flex-wrap justify-center items-center gap-4 ${className}`}>
-      <button
+      <Button
         type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1 || isLoading}
         className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
       >
         Previous
-      </button>
+      </Button>
       <span className="text-sm text-slate-700">
         Page {page} of {totalPages}
       </span>
-      <button
+      <Button
         type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages || isLoading}
         className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
       >
         Next
-      </button>
+      </Button>
       <form onSubmit={handleSubmit} noValidate className="flex items-center gap-2">
-        <label htmlFor="go-to-page" className="sr-only">
+        <Label htmlFor="go-to-page" className="sr-only">
           Go to page
-        </label>
-        <input
+        </Label>
+        <Input
           id="go-to-page"
           type="number"
           value={pageInput}
@@ -83,13 +86,13 @@ export function PaginationControls({
           disabled={isLoading}
           className="w-20 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
         />
-        <button
+        <Button
           type="submit"
           disabled={isLoading}
           className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
         >
           Go
-        </button>
+        </Button>
       </form>
     </div>
   );

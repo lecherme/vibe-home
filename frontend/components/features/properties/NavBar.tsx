@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { AppRole } from "@/lib/auth/roles";
 import { signOut } from "@/lib/auth/session";
+import { Button } from "@/components/ui/button";
 
 interface NavBarProps {
   role: AppRole;
@@ -50,12 +51,12 @@ export function NavBar({ role }: NavBarProps) {
                 {link.label}
               </Link>
             ))}
-            <button
+            <Button
               onClick={handleSignOut}
               className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900"
             >
               Sign out
-            </button>
+            </Button>
           </div>
         </div>
       </div>

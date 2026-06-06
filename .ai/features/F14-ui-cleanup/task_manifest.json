@@ -1,0 +1,23 @@
+{
+  "feature": "F14-ui-cleanup",
+  "tasks": {
+    "T01": {
+      "owner": "gemini",
+      "allowed_files": [
+        "frontend/components/features/common/PaginationControls.tsx",
+        "frontend/components/features/properties/NavBar.tsx"
+      ]
+    },
+    "T02": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T03": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F14-ui-cleanup/status.json",
+        ".ai/features/F14-ui-cleanup/final-report.md"
+      ]
+    }
+  }
+}
