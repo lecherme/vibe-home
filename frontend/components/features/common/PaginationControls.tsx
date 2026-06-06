@@ -58,7 +58,7 @@ export function PaginationControls({
         type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1 || isLoading}
-        className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
+        className="bg-white text-slate-700 h-auto px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
       >
         Previous
       </Button>
@@ -69,7 +69,7 @@ export function PaginationControls({
         type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages || isLoading}
-        className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
+        className="bg-white text-slate-700 h-auto px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
       >
         Next
       </Button>
@@ -89,7 +89,7 @@ export function PaginationControls({
         <Button
           type="submit"
           disabled={isLoading}
-          className="px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
+          className="bg-white text-slate-700 h-auto px-4 py-2 border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
         >
           Go
         </Button>

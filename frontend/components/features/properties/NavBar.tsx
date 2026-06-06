@@ -53,7 +53,7 @@ export function NavBar({ role }: NavBarProps) {
             ))}
             <Button
               onClick={handleSignOut}
-              className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900"
+              className="bg-transparent h-auto rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900"
             >
               Sign out
             </Button>
