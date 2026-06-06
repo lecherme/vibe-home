@@ -1,9 +1,9 @@
 {
   "feature": "F14-ui-cleanup",
   "status": "in_progress",
-  "current_stage": "T01_done",
+  "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Start T02 \u2014 Codex: review",
+  "next_step": "Start T03 \u2014 Claude: acceptance",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,7 +24,7 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 1,
       "artifact": "review.md"
     },
@@ -75,6 +75,16 @@
     {
       "timestamp": "2026-06-06T17:23:18Z",
       "event": "T01 done \u2014 artifact captured as gemini-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-06T17:26:30Z",
+      "event": "T02 started \u2014 Codex: review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-06T17:29:03Z",
+      "event": "T02 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]
