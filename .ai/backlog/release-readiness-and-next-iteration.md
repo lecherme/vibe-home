@@ -1,6 +1,6 @@
 # Release Readiness & Next Iteration
 
-**Last updated:** 2026-06-02
+**Last updated:** 2026-06-06
 
 This file tracks two categories:
 1. **Release checklist** — items that cannot be resolved purely with code, required before going live
@@ -34,14 +34,14 @@ Actionable fix items remain tracked in `open-bugs.md`.
 
 ## Next Iteration
 
-- [ ] **图片上传 feature**
-  Replace external image URL input with Supabase Storage upload: drag-and-drop or file picker, preview, delete/replace. Requires Supabase Storage bucket setup. Scope includes `property-form.tsx`, backend storage integration, and potentially Zod validation.
+- [x] **图片上传 feature** ✓ 2026-06-03
+  Completed as F10. Backend `POST /api/v1/admin/uploads/property-image` (admin-gated, multipart, Supabase Storage). Frontend: Upload button + hidden file input + in-flight state in `property-form.tsx`. ACCEPTED.
 
-- [ ] **shadcn/ui + Zod/form refactor**
-  Standardise UI components across the app using shadcn/ui. Migrate form validation from hand-written checks to Zod schemas. Deferred from BUG-015-FIX; natural companion to the image upload feature.
+- [x] **shadcn/ui + Zod/form refactor** ✓ 2026-06-06
+  Completed as F11–F14. property-form (F11), auth forms (F12), search/filter (F13), PaginationControls/NavBar (F14). All ACCEPTED.
 
 - [ ] **全站 UI 统一美化**
-  Consistent spacing, typography, colour tokens, and mobile responsiveness across all pages. Scope TBD after shadcn/ui adoption.
+  Consistent spacing, typography, colour tokens, and mobile responsiveness across all pages. Lower priority — display components (PropertyCard, PropertyDetail) audited in F14 planning; no interactive primitives remain. Scope TBD.
 
 - [x] **OBS-009 — Search error stale-results UX** ✓ 2026-06-01
   On error, `setResult(null)` clears stale results immediately. Error state is now consistent whether the error occurs in-session or after navigating back. Chose Option A (clear) over Option B (keep + label) because B would still be inconsistent after navigation without persistence. 手动复测 PASS — 后端断开后旧列表消失，只显示 error banner；Retry 后端恢复后结果正常。
