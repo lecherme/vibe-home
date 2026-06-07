@@ -1,0 +1,44 @@
+{
+  "feature": "F15-hybrid-ai-search",
+  "tasks": {
+    "T01": {
+      "owner": "codex",
+      "allowed_files": [
+        "backend/requirements.txt",
+        "backend/app/core/config.py",
+        "backend/app/schemas/ai_search.py",
+        "backend/app/services/embeddings/__init__.py",
+        "backend/app/services/embeddings/service.py",
+        "backend/app/services/ai_search/__init__.py",
+        "backend/app/services/ai_search/service.py",
+        "backend/app/api/v1/ai_search/__init__.py",
+        "backend/app/api/v1/ai_search/router.py",
+        "backend/app/main.py",
+        "backend/app/services/admin/service.py",
+        "backend/app/api/v1/admin/router.py",
+        "backend/migrations/"
+      ]
+    },
+    "T02": {
+      "owner": "gemini",
+      "allowed_files": [
+        "frontend/types/search.ts",
+        "frontend/lib/api/ai-search.ts",
+        "frontend/components/features/search/ai-search-bar.tsx",
+        "frontend/components/features/search/ai-parsed-filters-card.tsx",
+        "frontend/app/(dashboard)/search/page.tsx"
+      ]
+    },
+    "T03": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T04": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F15-hybrid-ai-search/status.json",
+        ".ai/features/F15-hybrid-ai-search/final-report.md"
+      ]
+    }
+  }
+}
