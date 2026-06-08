@@ -25,18 +25,20 @@
 ### Config
 
 `backend/app/core/config.py` Settings 类增加以下字段：
-- `OPENAI_API_KEY`（可选，用于 embeddings，不复用于 LLM 调用）
+- `EMBEDDING_API_KEY`（可选，embedding 调用凭证）
+- `EMBEDDING_MODEL`（默认 `"embedding-3"`）
+- `EMBEDDING_BASE_URL`（可选，默认 `"https://open.bigmodel.cn/api/paas/v4/"`）
 - `LLM_PROVIDER`（默认 `"anthropic"`，可选值：`anthropic` | `openai` | `openai_compatible`）
 - `LLM_API_KEY`（可选，LLM 调用凭证）
 - `LLM_MODEL`（有默认值，使用轻量 Claude 型号）
-- `LLM_BASE_URL`（可选，仅 `openai_compatible` provider 需要，如 DeepSeek `https://api.deepseek.com`）
+- `LLM_BASE_URL`（可选，仅 `openai_compatible` provider 需要）
 
-移除原有的 `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` 字段。
+移除原有的 `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` 字段。
 
 ### Embedding service
 
 新建 `backend/app/services/embeddings/service.py`，需提供：
-- `embed_text(text: str) -> list[float]`：调用 OpenAI `text-embedding-3-small`，返回 1536-dim 向量
+- `embed_text(text: str) -> list[float]`：用 OpenAI SDK + `EMBEDDING_API_KEY` / `EMBEDDING_MODEL` / `EMBEDDING_BASE_URL` 调用 embedding endpoint，返回向量
 - `try_upsert_property_embedding(property_id, title, description, location) -> None`：best-effort，内部 try/except，失败只 log warning，绝不抛异常
 - `semantic_search(query_embedding, match_count=50) -> list[str]`：调用 `match_property_embeddings` RPC，返回 property_id 列表
 
@@ -57,7 +59,7 @@
 新建 `backend/app/services/ai_search/service.py`，提供 `ai_search(query, page, page_size) -> AiSearchResult`：
 
 **行为要求：**
-1. `OPENAI_API_KEY` 或 `LLM_API_KEY` 任一缺失时抛 `HTTPException(503)`
+1. `EMBEDDING_API_KEY` 或 `LLM_API_KEY` 任一缺失时抛 `HTTPException(503)`
 2. 调用 LLM service（`complete()`）从 query 解析结构化 filters（location/min_price/max_price/bedrooms/bathrooms/status），失败时返回空 filters，`query_parsed=False`
 3. 调用 OpenAI embed query → pgvector `semantic_search`，失败时跳过语义步骤
 4. Hybrid merge：语义候选 ∩ 结构化 filters；若结果 < 5 条，用纯 filter search 补充（union，去重）

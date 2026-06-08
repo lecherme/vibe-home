@@ -27,7 +27,7 @@ This is a static ownership map. Runtime state comes from `status.json`.
 
 **强制约束：**
 - embedding upsert 必须 try/except，失败只 log warning，不能影响 create_property / update_property 主流程
-- AI search endpoint 在 `OPENAI_API_KEY` / `LLM_API_KEY` 缺失时返回 HTTP 503
+- AI search endpoint 在 `EMBEDDING_API_KEY` / `LLM_API_KEY` 缺失时返回 HTTP 503
 - 不修改现有 `/api/v1/properties/search` endpoint 或其 service
 
 ---

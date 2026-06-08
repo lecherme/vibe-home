@@ -34,7 +34,7 @@ Frontend: parsed filters card + result grid + summary
 
 **SIMPLE slot**：query parsing、summary generation 等低复杂度任务，走 `LLM_PROVIDER` / `LLM_MODEL` / `LLM_API_KEY` 配置。
 
-**Embeddings**：始终使用 OpenAI `text-embedding-3-small`，通过 `OPENAI_API_KEY` 独立配置（不复用 LLM slot）。
+**Embeddings**：使用 OpenAI-compatible embedding endpoint，通过 `EMBEDDING_API_KEY` / `EMBEDDING_MODEL` / `EMBEDDING_BASE_URL` 独立配置（不复用 LLM slot）。默认配置：智谱 `embedding-3`（2048 dims）。
 
 ## Scope
 
@@ -55,7 +55,7 @@ Frontend: parsed filters card + result grid + summary
 
 ## Key Tech Decisions
 
-- **Embeddings model**: `text-embedding-3-small`（1536 dims），始终 OpenAI，单独 `OPENAI_API_KEY`
+- **Embeddings model**: `embedding-3`（2048 dims），OpenAI-compatible provider（默认智谱），通过 `EMBEDDING_API_KEY` / `EMBEDDING_MODEL` / `EMBEDDING_BASE_URL` 独立配置
 - **Embedding text**: `"{title}. {description}. Located in {location}."` per property
 - **LLM provider**: 通过 env 配置，默认 `anthropic`；支持 `openai`、`openai_compatible`（DeepSeek 等）
 - **LLM model**: 通过 `LLM_MODEL` 配置，默认轻量 Claude model（query parsing 不需要 Opus）
@@ -67,7 +67,7 @@ Frontend: parsed filters card + result grid + summary
 
 - `tsc --noEmit` 通过
 - `python -c "import app.main"` 通过
-- AI search endpoint 在 `OPENAI_API_KEY` / `LLM_API_KEY` 缺失时返回 HTTP 503
+- AI search endpoint 在 `EMBEDDING_API_KEY` / `LLM_API_KEY` 缺失时返回 HTTP 503
 - create_property / update_property embedding 失败时记 warning log，不抛异常
 - 不修改现有 `/api/v1/properties/search` endpoint 行为
 - migration 文件需人工在 Supabase Dashboard 执行（T01 产出 SQL，不自动执行）

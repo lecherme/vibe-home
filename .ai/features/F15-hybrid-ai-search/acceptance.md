@@ -6,12 +6,12 @@
 |----|-----------|
 | A1 | migration SQL 文件存在，包含 vector extension、property_embeddings 表、match_property_embeddings RPC |
 | A2 | `openai` 和 `anthropic` 在 requirements.txt |
-| A3 | config.py 有 OPENAI_API_KEY / LLM_PROVIDER / LLM_API_KEY / LLM_MODEL / LLM_BASE_URL 字段；无 ANTHROPIC_API_KEY / ANTHROPIC_MODEL |
+| A3 | config.py 有 EMBEDDING_API_KEY / EMBEDDING_MODEL / EMBEDDING_BASE_URL / LLM_PROVIDER / LLM_API_KEY / LLM_MODEL / LLM_BASE_URL 字段；无 OPENAI_API_KEY / ANTHROPIC_API_KEY / ANTHROPIC_MODEL |
 | A4 | embedding service：embed_text / try_upsert_property_embedding / semantic_search 均存在 |
 | A4b | llm service：complete(prompt, max_tokens, temperature) 存在；支持 anthropic / openai / openai_compatible provider |
 | A5 | try_upsert_property_embedding 有 try/except，失败只 log warning |
-| A6 | ai_search service 在 OPENAI_API_KEY 或 LLM_API_KEY 缺失时返回 HTTP 503 |
-| A7 | ai_search 的 Claude query parsing 失败时 query_parsed=False，不抛异常 |
+| A6 | ai_search service 在 EMBEDDING_API_KEY 或 LLM_API_KEY 缺失时返回 HTTP 503 |
+| A7 | ai_search 的 LLM query parsing 失败时 query_parsed=False，不抛异常 |
 | A8 | ai_search 的 semantic_search 失败时退回纯 filter 搜索 |
 | A9 | POST /api/v1/search/ai 端点存在，需登录 |
 | A10 | POST /api/v1/admin/embeddings/sync 端点存在，admin-gated |

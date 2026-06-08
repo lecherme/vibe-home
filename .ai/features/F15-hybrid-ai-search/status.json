@@ -1,9 +1,9 @@
 {
   "feature": "F15-hybrid-ai-search",
   "status": "in_progress",
-  "current_stage": "T03_done",
+  "current_stage": "T01_done",
   "current_owner": null,
-  "next_step": "Start T04 \u2014 Claude: acceptance",
+  "next_step": "Start T02 \u2014 Gemini: frontend AI Search UI",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,9 +24,13 @@
       "depends_on": [
         "T01"
       ],
-      "status": "done",
+      "status": "pending",
       "retry_count": 0,
-      "artifact": "gemini-build-T02.md"
+      "artifact": null,
+      "retry": {
+        "type": "task_retry",
+        "reason": "upstream T01 fixup \u2014 no frontend changes"
+      }
     },
     {
       "id": "T03",
@@ -37,9 +41,13 @@
         "T01",
         "T02"
       ],
-      "status": "done",
+      "status": "pending",
       "retry_count": 0,
-      "artifact": "review.md"
+      "artifact": null,
+      "retry": {
+        "type": "review_rerun",
+        "reason": "re-review after embedding provider abstraction"
+      }
     },
     {
       "id": "T04",
@@ -193,6 +201,31 @@
     {
       "timestamp": "2026-06-08T05:54:41Z",
       "event": "T03 done \u2014 artifact captured as review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T14:32:02Z",
+      "event": "T01 prepared for direct_fixup \u2014 embedding provider abstraction: EMBEDDING_API_KEY/MODEL/BASE_URL; remove OPENAI_API_KEY",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T14:32:21Z",
+      "event": "T02 prepared for task_retry \u2014 upstream T01 fixup \u2014 no frontend changes",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T14:32:39Z",
+      "event": "T03 prepared for review_rerun \u2014 re-review after embedding provider abstraction",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T14:33:19Z",
+      "event": "T01 started \u2014 Codex: backend pgvector + embeddings + AI search endpoint [direct_fixup]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T14:37:08Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
       "by": "claude"
     }
   ]

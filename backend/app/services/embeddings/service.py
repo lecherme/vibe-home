@@ -13,17 +13,19 @@ except ImportError:  # pragma: no cover
 
 logger = logging.getLogger(__name__)
 
-_EMBEDDING_MODEL = "text-embedding-3-small"
 _EMBEDDING_DIMENSION = 1536
 
 
 def _get_openai_client() -> Any:
     settings = get_settings()
-    if not settings.openai_api_key:
-        raise RuntimeError("OPENAI_API_KEY is not configured")
+    if not settings.embedding_api_key:
+        raise RuntimeError("EMBEDDING_API_KEY is not configured")
     if OpenAI is None:
         raise RuntimeError("openai package is not installed")
-    return OpenAI(api_key=settings.openai_api_key)
+    return OpenAI(
+        api_key=settings.embedding_api_key,
+        base_url=settings.embedding_base_url,
+    )
 
 
 def _build_embedding_text(title: str, description: str, location: str) -> str:
@@ -31,8 +33,9 @@ def _build_embedding_text(title: str, description: str, location: str) -> str:
 
 
 def embed_text(text: str) -> list[float]:
+    settings = get_settings()
     response = _get_openai_client().embeddings.create(
-        model=_EMBEDDING_MODEL,
+        model=settings.embedding_model,
         input=text,
     )
     embedding = list(response.data[0].embedding)

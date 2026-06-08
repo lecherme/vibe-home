@@ -15,7 +15,12 @@ class Settings(BaseSettings):
     supabase_url: str = Field(..., alias="SUPABASE_URL")
     supabase_key: str = Field(..., alias="SUPABASE_KEY")
     supabase_jwt_secret: Optional[str] = Field(default=None, alias="SUPABASE_JWT_SECRET")
-    openai_api_key: Optional[str] = Field(default=None, alias="OPENAI_API_KEY")
+    embedding_api_key: Optional[str] = Field(default=None, alias="EMBEDDING_API_KEY")
+    embedding_model: str = Field(default="embedding-3", alias="EMBEDDING_MODEL")
+    embedding_base_url: str = Field(
+        default="https://open.bigmodel.cn/api/paas/v4/",
+        alias="EMBEDDING_BASE_URL",
+    )
     llm_provider: Literal["anthropic", "openai", "openai_compatible"] = Field(
         default="anthropic",
         alias="LLM_PROVIDER",

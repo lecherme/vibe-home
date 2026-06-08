@@ -185,7 +185,7 @@ def _resolve_result_ids(
 
 def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
     settings = get_settings()
-    if not settings.openai_api_key or not settings.llm_api_key:
+    if not settings.embedding_api_key or not settings.llm_api_key:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="AI search is unavailable",
