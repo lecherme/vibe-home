@@ -73,10 +73,11 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
     prompt = (
         "Extract structured real-estate search filters from the user's query. "
         "Return JSON only with keys location, min_price, max_price, bedrooms, bathrooms, status. "
-        "Use null when a value is not present. status must be one of available, sold, rented or null.\n"
+        "Use null when a value is not present. status must be one of available, sold, rented or null. "
+        "For 'more than X bedrooms/bathrooms', return X+1 as an integer.\n"
         f"Query: {query}"
     )
-    response_text = complete(prompt=prompt, max_tokens=200, temperature=0)
+    response_text = complete(prompt=prompt, max_tokens=200, temperature=0, json_mode=True)
     parsed_payload = json.loads(_sanitize_json_payload(response_text))
     if not isinstance(parsed_payload, dict):
         raise ValueError("LLM returned a non-object JSON payload")

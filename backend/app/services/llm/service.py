@@ -61,6 +61,7 @@ def _complete_with_openai(
     temperature: float,
     *,
     base_url: str | None = None,
+    json_mode: bool = False,
 ) -> str:
     settings = get_settings()
     if not settings.llm_api_key:
@@ -69,23 +70,26 @@ def _complete_with_openai(
         raise RuntimeError("openai package is not installed")
 
     client = OpenAI(api_key=settings.llm_api_key, base_url=base_url)
-    response = client.chat.completions.create(
-        model=settings.llm_model,
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=max_tokens,
-        temperature=temperature,
-    )
+    kwargs: dict[str, Any] = {
+        "model": settings.llm_model,
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+    }
+    if json_mode:
+        kwargs["response_format"] = {"type": "json_object"}
+    response = client.chat.completions.create(**kwargs)
     return _extract_openai_content(response)
 
 
-def complete(prompt: str, max_tokens: int, temperature: float) -> str:
+def complete(prompt: str, max_tokens: int, temperature: float, *, json_mode: bool = False) -> str:
     settings = get_settings()
 
     if settings.llm_provider == "anthropic":
         return _complete_with_anthropic(prompt, max_tokens, temperature)
 
     if settings.llm_provider == "openai":
-        return _complete_with_openai(prompt, max_tokens, temperature)
+        return _complete_with_openai(prompt, max_tokens, temperature, json_mode=json_mode)
 
     if settings.llm_provider == "openai_compatible":
         if not settings.llm_base_url:
@@ -95,6 +99,7 @@ def complete(prompt: str, max_tokens: int, temperature: float) -> str:
             max_tokens,
             temperature,
             base_url=settings.llm_base_url,
+            json_mode=json_mode,
         )
 
     raise RuntimeError(f"Unsupported LLM provider: {settings.llm_provider}")
