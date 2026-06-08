@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.admin.router import router as admin_router
+from app.api.v1.ai_search.router import router as ai_search_router
 from app.api.v1.auth.router import auth_rate_limiter, router as auth_router
 from app.api.v1.favorites.router import router as favorites_router
 from app.api.v1.properties.router import router as properties_router
@@ -65,3 +66,4 @@ app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(admin_router, prefix="/api/v1/admin", tags=["admin"])
 app.include_router(favorites_router, prefix="/api/v1/favorites", tags=["favorites"])
 app.include_router(properties_router, prefix="/api/v1/properties", tags=["properties"])
+app.include_router(ai_search_router, prefix="/api/v1/search/ai", tags=["search"])

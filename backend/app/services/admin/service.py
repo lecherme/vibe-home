@@ -8,6 +8,7 @@ from app.data.properties import get_by_id
 from app.schemas.admin import PropertyCreate, PropertyUpdate
 from app.schemas.property import Property as PropertyRead
 from app.schemas.property import PropertyStatus
+from app.services.embeddings.service import try_upsert_property_embedding
 
 
 def create_property(data: PropertyCreate) -> PropertyRead:
@@ -29,6 +30,12 @@ def create_property(data: PropertyCreate) -> PropertyRead:
         created_at=datetime.now(timezone.utc),
     )
     get_supabase_client().table("properties").insert(property_item.model_dump(mode="json")).execute()
+    try_upsert_property_embedding(
+        property_id=property_item.id,
+        title=property_item.title,
+        description=property_item.description,
+        location=property_item.location,
+    )
     return property_item.model_copy(deep=True)
 
 
@@ -67,6 +74,12 @@ def update_property(property_id: str, data: PropertyUpdate) -> PropertyRead:
         .update(updated_property.model_dump(mode="json"))
         .eq("id", property_id)
         .execute()
+    )
+    try_upsert_property_embedding(
+        property_id=updated_property.id,
+        title=updated_property.title,
+        description=updated_property.description,
+        location=updated_property.location,
     )
     return updated_property.model_copy(deep=True)
 

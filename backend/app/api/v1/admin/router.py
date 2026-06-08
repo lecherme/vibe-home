@@ -4,10 +4,12 @@ from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFil
 
 from app.core.security import require_role
 from app.core.supabase import get_supabase_client
+from app.data.properties import get_all
 from app.schemas.admin import PropertyCreate, PropertyUpdate
 from app.schemas.auth import UserRead
 from app.schemas.property import Property as PropertyRead
 from app.services.admin import create_property, delete_property, update_property
+from app.services.embeddings.service import try_upsert_property_embedding
 
 
 router = APIRouter()
@@ -35,6 +37,24 @@ async def update_admin_property(
 ) -> PropertyRead:
     del current_user
     return update_property(property_id, data)
+
+
+@router.post("/embeddings/sync", status_code=status.HTTP_202_ACCEPTED)
+async def sync_property_embeddings(
+    current_user: UserRead = Depends(require_role("admin")),
+) -> dict[str, int]:
+    del current_user
+
+    properties = get_all()
+    for property_item in properties:
+        try_upsert_property_embedding(
+            property_id=property_item.id,
+            title=property_item.title,
+            description=property_item.description,
+            location=property_item.location,
+        )
+
+    return {"synced": len(properties)}
 
 
 @router.delete("/properties/{property_id}", status_code=status.HTTP_204_NO_CONTENT)
