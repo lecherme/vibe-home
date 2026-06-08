@@ -16,7 +16,7 @@
         "backend/app/main.py",
         "backend/app/services/admin/service.py",
         "backend/app/api/v1/admin/router.py",
-        "backend/migrations/"
+        "backend/migrations/*"
       ]
     },
     "T02": {
