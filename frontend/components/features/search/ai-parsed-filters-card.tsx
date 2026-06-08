@@ -42,7 +42,7 @@ export function AiParsedFiltersCard({
     if (parsedFilters.bedrooms != null) {
       chips.push(
         <span key="beds" className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
-          🛏️ {parsedFilters.bedrooms} Beds
+          🛏️ ≥{parsedFilters.bedrooms} Beds
         </span>
       );
     }
@@ -50,7 +50,7 @@ export function AiParsedFiltersCard({
     if (parsedFilters.bathrooms != null) {
       chips.push(
         <span key="baths" className="inline-flex items-center rounded-full bg-cyan-100 px-2.5 py-0.5 text-xs font-medium text-cyan-800">
-          🚿 {parsedFilters.bathrooms} Baths
+          🚿 ≥{parsedFilters.bathrooms} Baths
         </span>
       );
     }
