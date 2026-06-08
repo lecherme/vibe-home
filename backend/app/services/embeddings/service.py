@@ -37,6 +37,7 @@ def embed_text(text: str) -> list[float]:
     response = _get_openai_client().embeddings.create(
         model=settings.embedding_model,
         input=text,
+        dimensions=_EMBEDDING_DIMENSION,
     )
     embedding = list(response.data[0].embedding)
     if len(embedding) != _EMBEDDING_DIMENSION:
