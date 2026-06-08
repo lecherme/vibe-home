@@ -1,9 +1,9 @@
 {
   "feature": "F15-hybrid-ai-search",
   "status": "in_progress",
-  "current_stage": "T01_done",
+  "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Start T02 \u2014 Gemini: frontend AI Search UI",
+  "next_step": "Start T03 \u2014 Codex: review",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,13 +24,9 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null,
-      "retry": {
-        "type": "task_retry",
-        "reason": "upstream T01 retry \u2014 no frontend changes needed, re-verify tsc only"
-      }
+      "artifact": "gemini-build-T02.md"
     },
     {
       "id": "T03",
@@ -102,6 +98,16 @@
     {
       "timestamp": "2026-06-08T05:12:18Z",
       "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T05:14:30Z",
+      "event": "T02 started \u2014 Gemini: frontend AI Search UI [task_retry]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T05:18:39Z",
+      "event": "T02 done \u2014 artifact captured as gemini-build-T02.md",
       "by": "claude"
     }
   ]
