@@ -6,44 +6,44 @@ FAIL
 ## Criteria Results
 | Criterion | Result | Notes |
 |-----------|--------|-------|
-| A1 | PASS | `backend/migrations/003_create_property_embeddings.sql` contains `vector` extension, `property_embeddings`, and `match_property_embeddings`. |
-| A2 | PASS | `backend/requirements.txt` includes `openai` and `anthropic`. |
-| A3 | PASS | `backend/app/core/config.py` has `OPENAI_API_KEY`, `LLM_PROVIDER`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_BASE_URL`; no `ANTHROPIC_*` fields remain. |
-| A4 | PASS | `embed_text`, `try_upsert_property_embedding`, and `semantic_search` exist in `backend/app/services/embeddings/service.py`. |
-| A4b | PASS | `complete(prompt, max_tokens, temperature)` exists and branches for `anthropic`, `openai`, `openai_compatible` in `backend/app/services/llm/service.py`. |
-| A5 | PASS | `try_upsert_property_embedding` wraps embed/upsert in `try/except` and logs `warning` only. |
-| A6 | PASS | `backend/app/services/ai_search/service.py` returns HTTP 503 when `OPENAI_API_KEY` or `LLM_API_KEY` is missing. |
-| A7 | PASS | Query parsing failure is caught and returns `query_parsed=False` without surfacing the exception. |
-| A8 | FAIL | On semantic failure with empty parsed filters, `_resolve_result_ids()` falls back to keyword search, not pure filter search (`backend/app/services/ai_search/service.py:159-178`). Reproduced via inline docker exec patching. |
-| A9 | PASS | `POST /api/v1/search/ai` exists, depends on `get_current_user`, and is registered in `app.main`. |
-| A10 | PASS | `POST /api/v1/admin/embeddings/sync` exists, is admin-gated via `require_role("admin")`, and is registered. |
-| A11 | PASS | `create_property` and `update_property` call `try_upsert_property_embedding` before returning. |
-| A12 | PASS | `docker compose exec backend python -c "import app.main; print('OK')"` returned `OK` on 2026-06-08. |
-| A13 | PASS | `AiSearchRequest` and `AiSearchResult` are published in `frontend/types/search.ts`. |
-| A14 | PASS | `frontend/lib/api/ai-search.ts` exports `aiSearch()` and `AiSearchApiError` carries `status`. |
-| A15 | PASS | `AiSearchBar` has input + button, Enter triggers search, loading disables input/button, and button classes are explicit Tailwind colors. |
-| A16 | PASS | `AiParsedFiltersCard` shows fallback copy when `queryParsed=false`, otherwise renders chips and summary. |
-| A17 | PASS | `/search` includes `"Filter Search"` and `"✨ AI Search"` tabs and preserves both modes. |
-| A18 | PASS | AI mode renders an error banner on failure in `frontend/app/(dashboard)/search/page.tsx`. |
-| A19 | PASS | AI mode shows a no-results empty state when there are no items. |
-| A20 | PASS | Existing filter-search flow remains in place; standard search UI/API path is still present and `/api/v1/properties/search` was not touched. |
-| A21 | PASS | `npx tsc --noEmit` exited 0 in `frontend/` on 2026-06-08. |
-| A22 | PASS | Static review supports tab switching and retained filter mode; manual exercise remains for T04. |
-| A23 | PASS | Static review shows end-to-end NL query wiring for results, parsed filters card, and summary; manual exercise remains for T04. |
-| A24 | PASS | Static review shows missing-key 503 path in backend and AI error banner handling in frontend; manual exercise remains for T04. |
+| A1 | PASS | [backend/migrations/003_create_property_embeddings.sql](/home/lecherme/workspace/vibe-home/backend/migrations/003_create_property_embeddings.sql:1) contains the vector extension, `property_embeddings`, and `match_property_embeddings`. |
+| A2 | PASS | `openai` and `anthropic` are present in [backend/requirements.txt](/home/lecherme/workspace/vibe-home/backend/requirements.txt:11). |
+| A3 | PASS | New `LLM_*` and `OPENAI_API_KEY` fields exist in [backend/app/core/config.py](/home/lecherme/workspace/vibe-home/backend/app/core/config.py:18); `ANTHROPIC_*` fields are absent. |
+| A4 | PASS | `embed_text`, `try_upsert_property_embedding`, and `semantic_search` exist in [backend/app/services/embeddings/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/embeddings/service.py:33). |
+| A4b | PASS | `complete(prompt, max_tokens, temperature)` exists and branches for `anthropic`, `openai`, and `openai_compatible` in [backend/app/services/llm/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/llm/service.py:81). |
+| A5 | PASS | `try_upsert_property_embedding` wraps failures in `try/except` and logs warnings only in [backend/app/services/embeddings/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/embeddings/service.py:46). |
+| A6 | PASS | Missing `OPENAI_API_KEY` or `LLM_API_KEY` returns HTTP 503 in [backend/app/services/ai_search/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/ai_search/service.py:186). |
+| A7 | PASS | Query parsing failures are caught and set `query_parsed=False` in [backend/app/services/ai_search/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/ai_search/service.py:194). |
+| A8 | PASS | Semantic-search failures fall back to pure filter search in [backend/app/services/ai_search/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/ai_search/service.py:158). |
+| A9 | PASS | Authenticated `POST /api/v1/search/ai` exists in [backend/app/api/v1/ai_search/router.py](/home/lecherme/workspace/vibe-home/backend/app/api/v1/ai_search/router.py:12). |
+| A10 | PASS | Admin-gated `POST /api/v1/admin/embeddings/sync` exists in [backend/app/api/v1/admin/router.py](/home/lecherme/workspace/vibe-home/backend/app/api/v1/admin/router.py:42). |
+| A11 | PASS | `create_property` and `update_property` call `try_upsert_property_embedding` in [backend/app/services/admin/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/admin/service.py:14). |
+| A12 | PASS | `docker compose exec backend python -c "import app.main; print('OK')"` returned `OK`. |
+| A13 | FAIL | Types are published in [frontend/types/search.ts](/home/lecherme/workspace/vibe-home/frontend/types/search.ts:19), but the contract is wrong: backend serializes `parsed_filters` fields as `null`, while frontend types model them as optional/`undefined` only. |
+| A14 | PASS | `aiSearch()` and status-carrying `AiSearchApiError` exist in [frontend/lib/api/ai-search.ts](/home/lecherme/workspace/vibe-home/frontend/lib/api/ai-search.ts:5). |
+| A15 | PASS | `AiSearchBar` has input + button, Enter trigger, loading disable, and explicit Tailwind button colors in [frontend/components/features/search/ai-search-bar.tsx](/home/lecherme/workspace/vibe-home/frontend/components/features/search/ai-search-bar.tsx:11). |
+| A16 | FAIL | [frontend/components/features/search/ai-parsed-filters-card.tsx](/home/lecherme/workspace/vibe-home/frontend/components/features/search/ai-parsed-filters-card.tsx:15) treats `null` as a real value, so it can render chips like `$null - $null` / `null Beds` instead of correct parsed-filter output. |
+| A17 | PASS | `/search` has both `"Filter Search"` and `"✨ AI Search"` modes in [frontend/app/(dashboard)/search/page.tsx](/home/lecherme/workspace/vibe-home/frontend/app/(dashboard)/search/page.tsx:175). |
+| A18 | PASS | AI-mode error banner exists in [frontend/app/(dashboard)/search/page.tsx](/home/lecherme/workspace/vibe-home/frontend/app/(dashboard)/search/page.tsx:262). |
+| A19 | PASS | AI-mode empty state exists in [frontend/app/(dashboard)/search/page.tsx](/home/lecherme/workspace/vibe-home/frontend/app/(dashboard)/search/page.tsx:355). |
+| A20 | PASS | Existing filter-search path remains present; no source diff was found in the existing backend `/api/v1/properties/search` implementation. |
+| A21 | PASS | `cd frontend && npx tsc --noEmit` exited 0. |
+| A22 | PASS | Static review shows tab switching is implemented and filter mode remains intact; manual confirmation is deferred to T04. |
+| A23 | FAIL | The AI result path is wired, but the parsed-filters card can display bogus filter chips when backend returns `null` fields, so the rendered parsed-filter output is not reliable. |
+| A24 | PASS | Static review supports the error-banner path: backend returns 503 without keys and frontend surfaces API errors in AI mode. |
+| Scope: `status.json` ownership | PASS | `status.json` is currently modified, but the diff/activity log attributes those state transitions to `claude`; no evidence shows Codex or Gemini edited it. |
 
 ## Issues Found
-- BLOCKER: `backend/app/services/ai_search/service.py:159-178` violates A8. If semantic search fails and parsed filters are empty, the code returns keyword fallback instead of pure filter-search results.
-- WARNING: `backend/app/services/ai_search/service.py:205-209` continues to call the LLM for summary generation even after query parsing failure set `query_parsed=False`. That does not fully match the spec fallback contract of degrading cleanly after AI failure.
-- WARNING: `backend/app/api/v1/admin/router.py:48-57` returns `{"synced": len(properties)}` even though failed embedding upserts are skipped and only logged, so the reported count is attempted, not successful.
-- WARNING: No automated tests were added for the new AI search and embeddings paths; the missed A8 edge case is exactly the kind of regression this left uncovered.
-- MINOR: `status.json` is modified in the working tree, but the diff is Claude runtime bookkeeping for T03 start; I found no evidence of Codex or Gemini modifying it.
+- BLOCKER: `parsed_filters` nullability is inconsistent across backend and frontend. Backend responses serialize missing filter fields as `null`, but [frontend/types/search.ts](/home/lecherme/workspace/vibe-home/frontend/types/search.ts:3) and [frontend/components/features/search/ai-parsed-filters-card.tsx](/home/lecherme/workspace/vibe-home/frontend/components/features/search/ai-parsed-filters-card.tsx:26) assume `undefined`, causing bogus chips such as `$null - $null`, `null Beds`, and `null Baths`.
+- WARNING: `POST /api/v1/admin/embeddings/sync` always returns `{"synced": len(properties)}` in [backend/app/api/v1/admin/router.py](/home/lecherme/workspace/vibe-home/backend/app/api/v1/admin/router.py:48), even when `try_upsert_property_embedding` logs failures, so the reported sync count is not a true success count.
+- WARNING: There is no automated coverage for the new AI search paths. No backend tests for AI parsing/semantic fallback or frontend tests for parsed-filter rendering/error states were added.
 
 ## Required Fixes
-- Change AI search fallback so a semantic-step failure returns pure filter-search results, including the empty-filter case, instead of keyword fallback.
+- Align the frontend AI search types with the backend wire format for `parsed_filters` and update `AiParsedFiltersCard` to ignore `null` values, not just `undefined`.
+- Re-verify the AI parsed-filters UI with an empty/partial `parsed_filters` payload so it renders only real chips and the fallback copy remains correct.
 
 ## Approved Items
-- Backend migration, config, embedding service, LLM abstraction, AI search router, and admin sync endpoint are all present and wired.
-- Frontend request/response API types are published under `frontend/types/search.ts`.
-- The new frontend leaf components are presentational; the API-calling/search orchestration remains outside them.
-- `/api/v1/properties/search` behavior was not modified.
+- Backend AI search, embeddings service, LLM abstraction, migration, router registration, and admin sync endpoint are present and wired.
+- Required verifications passed for backend import and frontend `tsc --noEmit`.
+- No boundary violation was found in the existing `/api/v1/properties/search` path.
+- AI-specific business logic remains backend-side; the frontend additions are UI/API orchestration rather than domain logic.

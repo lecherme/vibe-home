@@ -1,9 +1,9 @@
 {
   "feature": "F15-hybrid-ai-search",
-  "status": "in_progress",
-  "current_stage": "T02_done",
+  "status": "failed",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Start T03 \u2014 Codex: review",
+  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
   "last_review_failure": null,
   "tasks": [
     {
@@ -37,13 +37,9 @@
         "T01",
         "T02"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null,
-      "retry": {
-        "type": "review_rerun",
-        "reason": "re-review after A8 direct fixup in T01"
-      }
+      "artifact": "review.md"
     },
     {
       "id": "T04",
@@ -157,6 +153,16 @@
     {
       "timestamp": "2026-06-08T05:39:14Z",
       "event": "T02 done \u2014 artifact captured as gemini-build-T02.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T05:40:08Z",
+      "event": "T03 started \u2014 Codex: review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T05:44:47Z",
+      "event": "T03 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
     }
   ]
