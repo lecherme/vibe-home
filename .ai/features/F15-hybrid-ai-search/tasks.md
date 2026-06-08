@@ -24,10 +24,14 @@
 
 ### Config
 
-`backend/app/core/config.py` Settings 类增加三个可选字段：
-- `OPENAI_API_KEY`
-- `ANTHROPIC_API_KEY`
-- `ANTHROPIC_MODEL`（有默认值，使用轻量 Claude 型号）
+`backend/app/core/config.py` Settings 类增加以下字段：
+- `OPENAI_API_KEY`（可选，用于 embeddings，不复用于 LLM 调用）
+- `LLM_PROVIDER`（默认 `"anthropic"`，可选值：`anthropic` | `openai` | `openai_compatible`）
+- `LLM_API_KEY`（可选，LLM 调用凭证）
+- `LLM_MODEL`（有默认值，使用轻量 Claude 型号）
+- `LLM_BASE_URL`（可选，仅 `openai_compatible` provider 需要，如 DeepSeek `https://api.deepseek.com`）
+
+移除原有的 `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` 字段。
 
 ### Embedding service
 
@@ -36,17 +40,29 @@
 - `try_upsert_property_embedding(property_id, title, description, location) -> None`：best-effort，内部 try/except，失败只 log warning，绝不抛异常
 - `semantic_search(query_embedding, match_count=50) -> list[str]`：调用 `match_property_embeddings` RPC，返回 property_id 列表
 
+### LLM service
+
+新建 `backend/app/services/llm/service.py`，提供 `complete(prompt: str, max_tokens: int, temperature: float) -> str`：
+
+**行为要求：**
+- 读取 `settings.llm_provider`，按以下路径分发：
+  - `anthropic` → 使用 Anthropic SDK，`api_key=settings.llm_api_key`
+  - `openai` → 使用 OpenAI SDK，`api_key=settings.llm_api_key`
+  - `openai_compatible` → 使用 OpenAI SDK，`api_key=settings.llm_api_key`，`base_url=settings.llm_base_url`
+  - 未知 provider → 抛 `RuntimeError`
+- 返回纯字符串（stripped），不返回 SDK 原始对象
+
 ### AI search service
 
 新建 `backend/app/services/ai_search/service.py`，提供 `ai_search(query, page, page_size) -> AiSearchResult`：
 
 **行为要求：**
-1. `OPENAI_API_KEY` 或 `ANTHROPIC_API_KEY` 任一缺失时抛 `HTTPException(503)`
-2. 调用 Claude 从 query 解析结构化 filters（location/min_price/max_price/bedrooms/bathrooms/status），失败时返回空 filters，`query_parsed=False`
+1. `OPENAI_API_KEY` 或 `LLM_API_KEY` 任一缺失时抛 `HTTPException(503)`
+2. 调用 LLM service（`complete()`）从 query 解析结构化 filters（location/min_price/max_price/bedrooms/bathrooms/status），失败时返回空 filters，`query_parsed=False`
 3. 调用 OpenAI embed query → pgvector `semantic_search`，失败时跳过语义步骤
 4. Hybrid merge：语义候选 ∩ 结构化 filters；若结果 < 5 条，用纯 filter search 补充（union，去重）
 5. 若无语义结果且 filters 为空，用 query 做关键词 fallback（title/location 包含）
-6. 分页后调用 Claude 生成一句 summary，失败时用 `"Found {total} properties matching your search."` 替代
+6. 分页后调用 LLM service（`complete()`）生成一句 summary，失败时用 `"Found {total} properties matching your search."` 替代
 7. 返回 `AiSearchResult`
 
 ### Schemas

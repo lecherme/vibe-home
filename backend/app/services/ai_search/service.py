@@ -12,12 +12,8 @@ from app.schemas.property import Property as PropertyRead
 from app.schemas.property import PropertyStatus
 from app.schemas.search import SearchFilters
 from app.services.embeddings.service import embed_text, semantic_search
+from app.services.llm import complete
 from app.services.search import search
-
-try:
-    from anthropic import Anthropic
-except ImportError:  # pragma: no cover
-    Anthropic = None  # type: ignore[assignment]
 
 
 logger = logging.getLogger(__name__)
@@ -38,21 +34,6 @@ def _sanitize_json_payload(text: str) -> str:
         cleaned = re.sub(r"\s*```$", "", cleaned)
     match = re.search(r"\{.*\}", cleaned, re.DOTALL)
     return match.group(0) if match is not None else cleaned
-
-
-def _get_anthropic_client() -> Any:
-    settings = get_settings()
-    if not settings.anthropic_api_key:
-        raise RuntimeError("ANTHROPIC_API_KEY is not configured")
-    if Anthropic is None:
-        raise RuntimeError("anthropic package is not installed")
-    return Anthropic(api_key=settings.anthropic_api_key)
-
-
-def _anthropic_message_text(message: Any) -> str:
-    blocks = getattr(message, "content", [])
-    texts = [block.text for block in blocks if hasattr(block, "text") and block.text]
-    return "\n".join(texts).strip()
 
 
 def _normalize_filters(raw_filters: dict[str, Any]) -> SearchFilters:
@@ -89,23 +70,16 @@ def _normalize_filters(raw_filters: dict[str, Any]) -> SearchFilters:
 
 
 def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
-    settings = get_settings()
     prompt = (
         "Extract structured real-estate search filters from the user's query. "
         "Return JSON only with keys location, min_price, max_price, bedrooms, bathrooms, status. "
         "Use null when a value is not present. status must be one of available, sold, rented or null.\n"
         f"Query: {query}"
     )
-    message = _get_anthropic_client().messages.create(
-        model=settings.anthropic_model,
-        max_tokens=200,
-        temperature=0,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    response_text = _anthropic_message_text(message)
+    response_text = complete(prompt=prompt, max_tokens=200, temperature=0)
     parsed_payload = json.loads(_sanitize_json_payload(response_text))
     if not isinstance(parsed_payload, dict):
-        raise ValueError("Claude returned a non-object JSON payload")
+        raise ValueError("LLM returned a non-object JSON payload")
     return _normalize_filters(parsed_payload), True
 
 
@@ -145,7 +119,6 @@ def _generate_summary(
     total: int,
     items: list[PropertyRead],
 ) -> str:
-    settings = get_settings()
     properties_summary = [
         {
             "title": item.title,
@@ -163,19 +136,21 @@ def _generate_summary(
         f"Total matches: {total}\n"
         f"Current page results: {json.dumps(properties_summary)}"
     )
-    message = _get_anthropic_client().messages.create(
-        model=settings.anthropic_model,
-        max_tokens=80,
-        temperature=0.2,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    summary = _anthropic_message_text(message)
+    summary = complete(prompt=prompt, max_tokens=80, temperature=0.2)
     if not summary:
-        raise ValueError("Claude returned an empty summary")
+        raise ValueError("LLM returned an empty summary")
     return summary
 
 
-def _resolve_result_ids(query: str, parsed_filters: SearchFilters) -> list[str]:
+def _resolve_result_ids(
+    query: str,
+    parsed_filters: SearchFilters,
+    *,
+    query_parsed: bool,
+) -> list[str]:
+    if not query_parsed:
+        return _keyword_fallback_search(query)
+
     filter_ids = search(parsed_filters, db_session=None)
     if not query.strip():
         return filter_ids
@@ -205,7 +180,7 @@ def _resolve_result_ids(query: str, parsed_filters: SearchFilters) -> list[str]:
 
 def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
     settings = get_settings()
-    if not settings.openai_api_key or not settings.anthropic_api_key:
+    if not settings.openai_api_key or not settings.llm_api_key:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="AI search is unavailable",
@@ -220,7 +195,11 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
 
     resolved_page = max(page, 1)
     resolved_page_size = min(max(page_size, 1), _SEARCH_MAX_PAGE_SIZE)
-    result_ids = _resolve_result_ids(query, parsed_filters)
+    result_ids = _resolve_result_ids(
+        query,
+        parsed_filters,
+        query_parsed=query_parsed,
+    )
     items, total = _collect_items(result_ids, resolved_page, resolved_page_size)
 
     try:

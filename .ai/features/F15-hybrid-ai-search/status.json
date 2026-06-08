@@ -1,9 +1,9 @@
 {
   "feature": "F15-hybrid-ai-search",
   "status": "in_progress",
-  "current_stage": "T02_done",
+  "current_stage": "T01_done",
   "current_owner": null,
-  "next_step": "Start T03 \u2014 Codex: review",
+  "next_step": "Start T02 \u2014 Gemini: frontend AI Search UI",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,9 +24,13 @@
       "depends_on": [
         "T01"
       ],
-      "status": "done",
+      "status": "pending",
       "retry_count": 0,
-      "artifact": "gemini-build-T02.md"
+      "artifact": null,
+      "retry": {
+        "type": "task_retry",
+        "reason": "upstream T01 retry \u2014 no frontend changes needed, re-verify tsc only"
+      }
     },
     {
       "id": "T03",
@@ -78,6 +82,26 @@
     {
       "timestamp": "2026-06-08T04:39:20Z",
       "event": "T02 done \u2014 artifact captured as gemini-build-T02.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T05:05:47Z",
+      "event": "T01 prepared for task_retry \u2014 multi-provider LLM abstraction: add llm service, update config to LLM_*, update ai_search to use llm.complete()",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T05:07:41Z",
+      "event": "T02 prepared for task_retry \u2014 upstream T01 retry \u2014 no frontend changes needed, re-verify tsc only",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T05:08:32Z",
+      "event": "T01 started \u2014 Codex: backend pgvector + embeddings + AI search endpoint [task_retry]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-08T05:12:18Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
       "by": "claude"
     }
   ]

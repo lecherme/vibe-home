@@ -12,7 +12,7 @@
 ```
 User NL query
     ↓
-Claude (query parsing) → structured filters (location/price/beds/baths/status)
+LLM service (SIMPLE slot) → query parsing → structured filters (location/price/beds/baths/status)
     ↓ (parallel)
 OpenAI embedding → pgvector similarity search → top-N semantic candidates
     ↓
@@ -20,10 +20,21 @@ Hybrid merge: semantic candidates ∩ structured filters
     ↓ (fallback if <threshold)
 Supplement with pure filter search on all properties
     ↓
-Paginate → Claude summary (one sentence)
+Paginate → LLM service (SIMPLE slot) → summary (one sentence)
     ↓
 Frontend: parsed filters card + result grid + summary
 ```
+
+### LLM Provider Abstraction
+
+后端抽象一个 LLM service 层，支持三种 provider：
+- `anthropic` — 通过 Anthropic SDK（默认）
+- `openai` — 通过 OpenAI SDK
+- `openai_compatible` — 通过 OpenAI SDK + 自定义 `LLM_BASE_URL`（DeepSeek 等兼容 OpenAI API 的模型）
+
+**SIMPLE slot**：query parsing、summary generation 等低复杂度任务，走 `LLM_PROVIDER` / `LLM_MODEL` / `LLM_API_KEY` 配置。
+
+**Embeddings**：始终使用 OpenAI `text-embedding-3-small`，通过 `OPENAI_API_KEY` 独立配置（不复用 LLM slot）。
 
 ## Scope
 
@@ -44,9 +55,11 @@ Frontend: parsed filters card + result grid + summary
 
 ## Key Tech Decisions
 
-- **Embeddings model**: `text-embedding-3-small`（1536 dims）
+- **Embeddings model**: `text-embedding-3-small`（1536 dims），始终 OpenAI，单独 `OPENAI_API_KEY`
 - **Embedding text**: `"{title}. {description}. Located in {location}."` per property
-- **Claude model**: 通过 env `ANTHROPIC_MODEL` 配置，默认用轻量 Claude model（query parsing 不需要 Opus）
+- **LLM provider**: 通过 env 配置，默认 `anthropic`；支持 `openai`、`openai_compatible`（DeepSeek 等）
+- **LLM model**: 通过 `LLM_MODEL` 配置，默认轻量 Claude model（query parsing 不需要 Opus）
+- **LLM base_url**: `LLM_BASE_URL` 可选，仅 `openai_compatible` provider 需要（如 DeepSeek API endpoint）
 - **Vector search**: Supabase pgvector RPC `match_property_embeddings`，返回 top-50 candidates
 - **Hybrid threshold**: 若语义候选经 filter 后 < 5 条，补充纯 filter 结果（union）
 
@@ -54,7 +67,7 @@ Frontend: parsed filters card + result grid + summary
 
 - `tsc --noEmit` 通过
 - `python -c "import app.main"` 通过
-- AI search endpoint 在 `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` 缺失时返回 HTTP 503
+- AI search endpoint 在 `OPENAI_API_KEY` / `LLM_API_KEY` 缺失时返回 HTTP 503
 - create_property / update_property embedding 失败时记 warning log，不抛异常
 - 不修改现有 `/api/v1/properties/search` endpoint 行为
 - migration 文件需人工在 Supabase Dashboard 执行（T01 产出 SQL，不自动执行）
