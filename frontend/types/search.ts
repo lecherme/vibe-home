@@ -15,3 +15,15 @@ export interface SearchResult {
   page: number;
   page_size: number;
 }
+
+export interface AiSearchRequest {
+  query: string;
+  page?: number;
+  page_size?: number;
+}
+
+export interface AiSearchResult extends SearchResult {
+  parsed_filters: SearchFilters;
+  ai_summary: string;
+  query_parsed: boolean;
+}
