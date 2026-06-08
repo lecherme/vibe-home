@@ -156,9 +156,11 @@ def _resolve_result_ids(
         return filter_ids
 
     semantic_ids: list[str] = []
+    semantic_search_failed = False
     try:
         semantic_ids = semantic_search(embed_text(query))
     except Exception:
+        semantic_search_failed = True
         logger.warning("Semantic search failed", extra={"query": query}, exc_info=True)
 
     if semantic_ids:
@@ -171,6 +173,9 @@ def _resolve_result_ids(
                     merged_ids.append(property_id)
                     seen_ids.add(property_id)
         return merged_ids
+
+    if semantic_search_failed:
+        return filter_ids
 
     if _has_filters(parsed_filters):
         return filter_ids

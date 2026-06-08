@@ -4,18 +4,14 @@
 - T01
 
 ## Files Changed
-- `backend/app/core/config.py`
 - `backend/app/services/ai_search/service.py`
-- `backend/app/services/llm/__init__.py`
-- `backend/app/services/llm/service.py`
 
 ## API Types Published
 - None
 
 ## Tests Written
-- None (`backend/tests/*` is outside the allowed T01 file scope)
+- None
 
 ## Open Issues
-- Service-layer tests were not added because the T01 ownership boundary does not permit modifying or creating files under `backend/tests/`.
-- Verification passed with `docker compose exec backend python -c "import app.main; print('OK')"`.
-
+- Service-layer tests were not added because `backend/tests/*` is outside the T01 allowed file scope.
+- Verified the required import check via `docker compose exec backend python -c "import app.main; print('OK')"` because the host `python` environment was not usable for this repo.
