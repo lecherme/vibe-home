@@ -23,13 +23,13 @@ export function AiParsedFiltersCard({
       );
     }
     
-    if (parsedFilters.min_price !== undefined || parsedFilters.max_price !== undefined) {
+    if (parsedFilters.min_price != null || parsedFilters.max_price != null) {
       let priceStr = "";
-      if (parsedFilters.min_price !== undefined && parsedFilters.max_price !== undefined) {
+      if (parsedFilters.min_price != null && parsedFilters.max_price != null) {
         priceStr = `$${parsedFilters.min_price} - $${parsedFilters.max_price}`;
-      } else if (parsedFilters.min_price !== undefined) {
+      } else if (parsedFilters.min_price != null) {
         priceStr = `> $${parsedFilters.min_price}`;
-      } else if (parsedFilters.max_price !== undefined) {
+      } else if (parsedFilters.max_price != null) {
         priceStr = `< $${parsedFilters.max_price}`;
       }
       chips.push(
@@ -39,7 +39,7 @@ export function AiParsedFiltersCard({
       );
     }
 
-    if (parsedFilters.bedrooms !== undefined) {
+    if (parsedFilters.bedrooms != null) {
       chips.push(
         <span key="beds" className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
           🛏️ {parsedFilters.bedrooms} Beds
@@ -47,7 +47,7 @@ export function AiParsedFiltersCard({
       );
     }
 
-    if (parsedFilters.bathrooms !== undefined) {
+    if (parsedFilters.bathrooms != null) {
       chips.push(
         <span key="baths" className="inline-flex items-center rounded-full bg-cyan-100 px-2.5 py-0.5 text-xs font-medium text-cyan-800">
           🚿 {parsedFilters.bathrooms} Baths
