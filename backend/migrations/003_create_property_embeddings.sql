@@ -16,11 +16,11 @@ RETURNS TABLE (
 )
 LANGUAGE sql
 STABLE
-AS $$
+AS $func$
     SELECT
         property_embeddings.property_id,
         1 - (property_embeddings.embedding <=> query_embedding) AS similarity
     FROM public.property_embeddings
     ORDER BY property_embeddings.embedding <=> query_embedding
     LIMIT COALESCE(match_count, 50);
-$$;
+$func$;
