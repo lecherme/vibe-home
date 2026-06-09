@@ -29,12 +29,27 @@ def search(filters: SearchFilters, db_session: Any) -> list[str]:
         if filters.max_price is not None and property_item.price > filters.max_price:
             continue
 
-        if filters.bedrooms is not None and property_item.bedrooms < filters.bedrooms:
+        if (
+            filters.bedrooms_min is not None
+            and property_item.bedrooms < filters.bedrooms_min
+        ):
             continue
 
         if (
-            filters.bathrooms is not None
-            and property_item.bathrooms < filters.bathrooms
+            filters.bedrooms_max is not None
+            and property_item.bedrooms > filters.bedrooms_max
+        ):
+            continue
+
+        if (
+            filters.bathrooms_min is not None
+            and property_item.bathrooms < filters.bathrooms_min
+        ):
+            continue
+
+        if (
+            filters.bathrooms_max is not None
+            and property_item.bathrooms > filters.bathrooms_max
         ):
             continue
 

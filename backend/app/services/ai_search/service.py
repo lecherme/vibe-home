@@ -21,6 +21,15 @@ logger = logging.getLogger(__name__)
 _SEARCH_MAX_PAGE_SIZE = 100
 _HYBRID_MIN_RESULTS = 5
 _ALLOWED_STATUS_VALUES = {status.value for status in PropertyStatus}
+_PRICE_UNIT_PATTERN = re.compile(r"(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>w|万)", re.IGNORECASE)
+_PRICE_SUFFIX_PATTERN = r"(?:\s*(?:hkd|hk\$))?"
+_BEDROOM_PATTERN = r"(?:卧室|房间|bedrooms?|beds?)"
+_BATHROOM_PATTERN = r"(?:浴室|bathrooms?|baths?)"
+_ROOM_SUFFIX_BLOCKER = rf"(?!\s*(?:个)?\s*(?:{_BEDROOM_PATTERN}|{_BATHROOM_PATTERN}))"
+_MIN_COMPARATORS = {"以上", "至少", "最少", "at least", "or more", "or above"}
+_GREATER_THAN_COMPARATORS = {"more than", "greater than", "超过"}
+_MAX_COMPARATORS = {"以下", "at most", "不超过", "or below"}
+_LESS_THAN_COMPARATORS = {"less than", "fewer than", "少于"}
 
 
 def _has_filters(filters: SearchFilters) -> bool:
@@ -34,6 +43,102 @@ def _sanitize_json_payload(text: str) -> str:
         cleaned = re.sub(r"\s*```$", "", cleaned)
     match = re.search(r"\{.*\}", cleaned, re.DOTALL)
     return match.group(0) if match is not None else cleaned
+
+
+def _normalize_query(query: str) -> dict[str, Any]:
+    normalized_query = _PRICE_UNIT_PATTERN.sub(
+        lambda match: str(int(float(match.group("value")) * 10000)),
+        query,
+    )
+    extracted: dict[str, int | None] = {
+        "min_price": None,
+        "max_price": None,
+        "bedrooms_min": None,
+        "bedrooms_max": None,
+        "bathrooms_min": None,
+        "bathrooms_max": None,
+    }
+
+    def _update_min(key: str, value: int) -> None:
+        current = extracted.get(key)
+        extracted[key] = value if current is None else max(current, value)
+
+    def _update_max(key: str, value: int) -> None:
+        if value < 0:
+            return
+        current = extracted.get(key)
+        extracted[key] = value if current is None else min(current, value)
+
+    remaining_query = normalized_query
+
+    def _extract_prices(pattern: str, field_name: str) -> None:
+        nonlocal remaining_query
+
+        def _replace(match: re.Match[str]) -> str:
+            price = int(float(match.group("price")))
+            if field_name == "min_price":
+                _update_min(field_name, price)
+            else:
+                _update_max(field_name, price)
+            return " "
+
+        remaining_query = re.sub(pattern, _replace, remaining_query, flags=re.IGNORECASE)
+
+    _extract_prices(
+        rf"(?:预算|budget|不超过|under|below)\s*(?P<price>\d+(?:\.\d+)?){_PRICE_SUFFIX_PATTERN}{_ROOM_SUFFIX_BLOCKER}",
+        "max_price",
+    )
+    _extract_prices(
+        rf"(?P<price>\d+(?:\.\d+)?){_PRICE_SUFFIX_PATTERN}{_ROOM_SUFFIX_BLOCKER}\s*(?:以内|以下|预算|budget)",
+        "max_price",
+    )
+    _extract_prices(
+        rf"(?:至少|最少|at\s+least)\s*(?P<price>\d+(?:\.\d+)?){_PRICE_SUFFIX_PATTERN}{_ROOM_SUFFIX_BLOCKER}",
+        "min_price",
+    )
+
+    def _extract_room_bounds(noun_pattern: str, min_key: str, max_key: str) -> None:
+        nonlocal remaining_query
+
+        def _apply_comparator(raw_comparator: str, count: int) -> None:
+            comparator = " ".join(raw_comparator.lower().split())
+            if comparator in _MIN_COMPARATORS:
+                _update_min(min_key, count)
+            elif comparator in _GREATER_THAN_COMPARATORS:
+                _update_min(min_key, count + 1)
+            elif comparator in _MAX_COMPARATORS:
+                _update_max(max_key, count)
+            elif comparator in _LESS_THAN_COMPARATORS:
+                _update_max(max_key, count - 1)
+
+        def _replace(match: re.Match[str]) -> str:
+            _apply_comparator(match.group("comparator"), int(match.group("count")))
+            return " "
+
+        remaining_query = re.sub(
+            rf"(?P<comparator>至少|最少|at\s+least|or\s+more|or\s+above|more\s+than|greater\s+than|"
+            rf"at\s+most|不超过|or\s+below|less\s+than|fewer\s+than|超过|少于)\s*"
+            rf"(?P<count>\d+)\s*(?:个)?\s*{noun_pattern}",
+            _replace,
+            remaining_query,
+            flags=re.IGNORECASE,
+        )
+        remaining_query = re.sub(
+            rf"(?P<count>\d+)\s*(?:个)?\s*{noun_pattern}\s*"
+            rf"(?P<comparator>以上|至少|最少|at\s+least|or\s+more|or\s+above|more\s+than|greater\s+than|"
+            rf"以下|at\s+most|不超过|or\s+below|less\s+than|fewer\s+than|超过|少于)",
+            _replace,
+            remaining_query,
+            flags=re.IGNORECASE,
+        )
+
+    _extract_room_bounds(_BEDROOM_PATTERN, "bedrooms_min", "bedrooms_max")
+    _extract_room_bounds(_BATHROOM_PATTERN, "bathrooms_min", "bathrooms_max")
+
+    return {
+        **extracted,
+        "remaining_query": re.sub(r"\s+", " ", remaining_query).strip(" ,，;；"),
+    }
 
 
 def _normalize_filters(raw_filters: dict[str, Any]) -> SearchFilters:
@@ -63,21 +168,36 @@ def _normalize_filters(raw_filters: dict[str, Any]) -> SearchFilters:
         location=normalized_location,
         min_price=_to_int(raw_filters.get("min_price")),
         max_price=_to_int(raw_filters.get("max_price")),
-        bedrooms=_to_int(raw_filters.get("bedrooms")),
-        bathrooms=_to_int(raw_filters.get("bathrooms")),
+        bedrooms_min=_to_int(raw_filters.get("bedrooms_min", raw_filters.get("bedrooms"))),
+        bedrooms_max=_to_int(raw_filters.get("bedrooms_max")),
+        bathrooms_min=_to_int(raw_filters.get("bathrooms_min", raw_filters.get("bathrooms"))),
+        bathrooms_max=_to_int(raw_filters.get("bathrooms_max")),
         status=normalized_status,
     )
 
 
 def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
+    if not query.strip():
+        return SearchFilters(), True
+
+    normalized_query = _normalize_query(query)
+    deterministic_filters = {
+        key: value
+        for key, value in normalized_query.items()
+        if key != "remaining_query" and value is not None
+    }
+    remaining_query = normalized_query.get("remaining_query", "")
+    if not remaining_query:
+        return _normalize_filters(deterministic_filters), bool(deterministic_filters)
+
     prompt = (
-        "Extract structured real-estate search filters from the user's query. "
-        "All prices are in HKD (Hong Kong Dollars). "
-        "In Chinese, '万' or 'w' means ×10000; convert to full integers (e.g. '2500w' or '2500万' = 25000000). "
-        "Return JSON only with keys location, min_price, max_price, bedrooms, bathrooms, status. "
-        "Use null when a value is not present. status must be one of available, sold, rented or null. "
-        "For 'more than X bedrooms/bathrooms', return X+1 as an integer.\n"
-        f"Query: {query}"
+        "Extract only unresolved real-estate filters from the remaining query text. "
+        "Price, bedroom, and bathroom fields were already parsed deterministically, so do not return or infer them. "
+        "Return JSON only with keys location, status, remainder. "
+        "Use null when a value is not present. status must be one of available, sold, rented or null.\n"
+        f"Original query: {query}\n"
+        f"Resolved numeric filters: {json.dumps(deterministic_filters, ensure_ascii=False)}\n"
+        f"Remaining query: {remaining_query}"
     )
     last_exc: Exception = RuntimeError("no attempts made")
     for _ in range(2):
@@ -86,9 +206,11 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
             parsed_payload = json.loads(_sanitize_json_payload(response_text))
             if not isinstance(parsed_payload, dict):
                 raise ValueError("LLM returned a non-object JSON payload")
-            return _normalize_filters(parsed_payload), True
+            return _normalize_filters({**parsed_payload, **deterministic_filters}), True
         except Exception as exc:
             last_exc = exc
+    if deterministic_filters:
+        return _normalize_filters(deterministic_filters), True
     raise last_exc
 
 

@@ -1,0 +1,185 @@
+[
+  {
+    "query": "2个卧室以上 预算2000万",
+    "expected": {
+      "bedrooms_min": 2,
+      "max_price": 20000000
+    }
+  },
+  {
+    "query": "more than 2 bedrooms under 8000000 hkd",
+    "expected": {
+      "bedrooms_min": 3,
+      "max_price": 8000000
+    }
+  },
+  {
+    "query": "3个房间以下",
+    "expected": {
+      "bedrooms_max": 3
+    }
+  },
+  {
+    "query": "少于4个卧室",
+    "expected": {
+      "bedrooms_max": 3
+    }
+  },
+  {
+    "query": "at least 2 bedrooms",
+    "expected": {
+      "bedrooms_min": 2
+    }
+  },
+  {
+    "query": "3 beds or above",
+    "expected": {
+      "bedrooms_min": 3
+    }
+  },
+  {
+    "query": "greater than 1 bed",
+    "expected": {
+      "bedrooms_min": 2
+    }
+  },
+  {
+    "query": "fewer than 5 bedrooms",
+    "expected": {
+      "bedrooms_max": 4
+    }
+  },
+  {
+    "query": "at most 2 baths",
+    "expected": {
+      "bathrooms_max": 2
+    }
+  },
+  {
+    "query": "2个浴室以上",
+    "expected": {
+      "bathrooms_min": 2
+    }
+  },
+  {
+    "query": "超过2个浴室",
+    "expected": {
+      "bathrooms_min": 3
+    }
+  },
+  {
+    "query": "少于3个浴室",
+    "expected": {
+      "bathrooms_max": 2
+    }
+  },
+  {
+    "query": "budget 2500w",
+    "expected": {
+      "max_price": 25000000
+    }
+  },
+  {
+    "query": "2500万预算",
+    "expected": {
+      "max_price": 25000000
+    }
+  },
+  {
+    "query": "below 9000000 hkd",
+    "expected": {
+      "max_price": 9000000
+    }
+  },
+  {
+    "query": "不超过1200万",
+    "expected": {
+      "max_price": 12000000
+    }
+  },
+  {
+    "query": "至少1500万",
+    "expected": {
+      "min_price": 15000000
+    }
+  },
+  {
+    "query": "at least 7000000 hkd",
+    "expected": {
+      "min_price": 7000000
+    }
+  },
+  {
+    "query": "budget 8000000 hkd with at least 3 bedrooms",
+    "expected": {
+      "max_price": 8000000,
+      "bedrooms_min": 3
+    }
+  },
+  {
+    "query": "预算900w 少于2个浴室",
+    "expected": {
+      "max_price": 9000000,
+      "bathrooms_max": 1
+    }
+  },
+  {
+    "query": "under 6000000 hkd and more than 1 bathroom",
+    "expected": {
+      "max_price": 6000000,
+      "bathrooms_min": 2
+    }
+  },
+  {
+    "query": "不超过2个卧室",
+    "expected": {
+      "bedrooms_max": 2
+    }
+  },
+  {
+    "query": "至少2个卧室",
+    "expected": {
+      "bedrooms_min": 2
+    }
+  },
+  {
+    "query": "Sheung Wan",
+    "expected": {}
+  },
+  {
+    "query": "available in Central",
+    "expected": {}
+  },
+  {
+    "query": "西营盘 near mtr",
+    "expected": {}
+  },
+  {
+    "query": "2 beds or below budget 600w",
+    "expected": {
+      "bedrooms_max": 2,
+      "max_price": 6000000
+    }
+  },
+  {
+    "query": "3 bedrooms or more 2 bathrooms or above",
+    "expected": {
+      "bedrooms_min": 3,
+      "bathrooms_min": 2
+    }
+  },
+  {
+    "query": "or below 4 beds and below 10000000 hkd",
+    "expected": {
+      "bedrooms_max": 4,
+      "max_price": 10000000
+    }
+  },
+  {
+    "query": "at most 3 bathrooms budget 1200w",
+    "expected": {
+      "bathrooms_max": 3,
+      "max_price": 12000000
+    }
+  }
+]

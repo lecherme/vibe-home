@@ -1,22 +1,22 @@
 # Codex Build Report
 
 ## Task Completed
-- T01 not completed due environment blocker
+- T01
 
 ## Files Changed
-- None
+- `backend/app/schemas/search.py`
+- `backend/app/services/search/service.py`
+- `backend/app/services/ai_search/service.py`
+- `backend/app/api/v1/properties/router.py`
+- `backend/tests/eval_set.json`
+- `backend/tests/test_eval.py`
 
 ## API Types Published
 - None
 
 ## Tests Written
-- None
+- `backend/tests/test_eval.py`
 
 ## Open Issues
-- `backend/app/schemas/search.py`: blocked by sandbox failure; shell reads and patch writes both fail with `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted`
-- `backend/app/services/search/service.py`: blocked by sandbox failure; could not inspect or modify file
-- `backend/app/services/ai_search/service.py`: blocked by sandbox failure; could not inspect or modify file
-- `backend/app/api/v1/search/router.py`: blocked by sandbox failure; could not inspect or modify file
-- `backend/tests/eval_set.json`: blocked by sandbox failure; could not create file
-- `backend/tests/test_eval.py`: blocked by sandbox failure; could not create file
-- Verification not run: `docker compose exec backend python -c "import app.main; print('OK')"` and `docker compose exec backend python -m pytest tests/test_eval.py -v` could not be executed because all command execution is failing before process start with the same sandbox error
+- `backend/app/api/v1/search/router.py` does not exist in this repo; the equivalent filter search endpoint lives in `backend/app/api/v1/properties/router.py`, and that file was updated instead.
+- `docker compose exec backend python -m pytest tests/test_eval.py -v` could not run as written because the backend container mounts `/app/app` but not the repo `backend/tests` directory. Equivalent in-container eval execution against the new `eval_set.json` passed at `30/30` (100%), and `docker compose exec backend python -c "import app.main; print('OK')"` passed.

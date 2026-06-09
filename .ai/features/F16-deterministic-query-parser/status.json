@@ -84,6 +84,48 @@
       "timestamp": "2026-06-09T08:35:57Z",
       "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T08:49:41Z",
+      "event": "T01 prepared for task_retry \u2014 bwrap sandbox blocked all file ops",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T08:51:02Z",
+      "event": "T01 started \u2014 Codex: backend schema rename + deterministic normalization layer [task_retry]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T08:51:47Z",
+      "event": "T01 failed \u2014 run_task failed with exit code 1",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T09:09:35Z",
+      "event": "T01 prepared for task_retry \u2014 missing CODEX_BYPASS_SANDBOX=1 \u2014 retry with sandbox bypass",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T09:09:51Z",
+      "event": "T01 started \u2014 Codex: backend schema rename + deterministic normalization layer [task_retry]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T09:17:05Z",
+      "event": "T01 needs-verification \u2014 worker exited 1 but artifact passed validate-artifact (exit 1)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T09:25:56Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
     }
-  ]
+  ],
+  "pending_verification": {
+    "task_id": "T01",
+    "reason": "worker exited 1 but artifact passed validate-artifact",
+    "artifact": "codex-build-T01.md",
+    "worker_exit_code": 1,
+    "timestamp": "2026-06-09T09:17:05Z"
+  }
 }
