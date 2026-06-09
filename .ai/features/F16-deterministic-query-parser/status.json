@@ -1,9 +1,9 @@
 {
   "feature": "F16-deterministic-query-parser",
-  "status": "in_progress",
-  "current_stage": "T03_done",
+  "status": "done",
+  "current_stage": "T04_done",
   "current_owner": null,
-  "next_step": "Start T04 \u2014 Claude: acceptance",
+  "next_step": "F16-deterministic-query-parser complete",
   "last_review_failure": null,
   "tasks": [
     {
@@ -49,7 +49,7 @@
       "depends_on": [
         "T03"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "final-report.md"
     }
@@ -198,6 +198,31 @@
     {
       "timestamp": "2026-06-09T10:26:44Z",
       "event": "T03 done \u2014 artifact captured as review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T15:53:15Z",
+      "event": "T04 started \u2014 Claude: acceptance",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T15:53:40Z",
+      "event": "T04 done \u2014 final acceptance artifact captured as final-report.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T16:00:09Z",
+      "event": "T04 prepared for task_retry \u2014 disposition format fix \u2014 ACCEPTED on same line as Disposition",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T16:00:27Z",
+      "event": "T04 started \u2014 Claude: acceptance [task_retry]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T16:00:50Z",
+      "event": "T04 done \u2014 final acceptance artifact captured as final-report.md",
       "by": "claude"
     }
   ]
