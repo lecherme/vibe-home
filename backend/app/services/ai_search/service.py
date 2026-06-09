@@ -72,6 +72,7 @@ def _normalize_filters(raw_filters: dict[str, Any]) -> SearchFilters:
 def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
     prompt = (
         "Extract structured real-estate search filters from the user's query. "
+        "All prices are in HKD (Hong Kong Dollars). "
         "Return JSON only with keys location, min_price, max_price, bedrooms, bathrooms, status. "
         "Use null when a value is not present. status must be one of available, sold, rented or null. "
         "For 'more than X bedrooms/bathrooms', return X+1 as an integer.\n"
