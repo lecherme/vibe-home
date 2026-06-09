@@ -11,6 +11,7 @@
 - `backend/app/api/v1/search/router.py`（query params 更名）
 - `backend/tests/eval_set.json`（新建）
 - `backend/tests/test_eval.py`（新建）
+- `backend/tests/test_search.py`（更新旧字段引用）
 
 **不得修改：** `frontend/`、`backend/app/schemas/ai_search.py`（除非 SearchFilters 引用需要同步）、`status.json`
 

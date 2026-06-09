@@ -9,7 +9,8 @@
         "backend/app/services/ai_search/service.py",
         "backend/app/api/v1/properties/router.py",
         "backend/tests/eval_set.json",
-        "backend/tests/test_eval.py"
+        "backend/tests/test_eval.py",
+        "backend/tests/test_search.py"
       ]
     },
     "T02": {

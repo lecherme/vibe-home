@@ -169,6 +169,21 @@
       "timestamp": "2026-06-09T10:12:46Z",
       "event": "T03 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T10:14:46Z",
+      "event": "T03 prepared for review_rerun \u2014 authorized backend/tests/test_search.py in T01 scope \u2014 scope doc omission not code problem",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T10:15:06Z",
+      "event": "T03 started \u2014 Codex: review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T10:19:12Z",
+      "event": "T03 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
     }
   ]
 }
