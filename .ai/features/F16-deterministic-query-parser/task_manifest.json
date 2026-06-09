@@ -1,0 +1,36 @@
+{
+  "feature": "F16-deterministic-query-parser",
+  "tasks": {
+    "T01": {
+      "owner": "codex",
+      "allowed_files": [
+        "backend/app/schemas/search.py",
+        "backend/app/services/search/service.py",
+        "backend/app/services/ai_search/service.py",
+        "backend/app/api/v1/search/router.py",
+        "backend/tests/eval_set.json",
+        "backend/tests/test_eval.py"
+      ]
+    },
+    "T02": {
+      "owner": "gemini",
+      "allowed_files": [
+        "frontend/types/search.ts",
+        "frontend/components/features/search/ai-parsed-filters-card.tsx",
+        "frontend/lib/api/search.ts",
+        "frontend/app/(dashboard)/search/page.tsx"
+      ]
+    },
+    "T03": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T04": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F16-deterministic-query-parser/status.json",
+        ".ai/features/F16-deterministic-query-parser/final-report.md"
+      ]
+    }
+  }
+}

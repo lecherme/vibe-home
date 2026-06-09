@@ -1,0 +1,57 @@
+{
+  "feature": "F16-deterministic-query-parser",
+  "status": "pending",
+  "current_stage": "ready",
+  "current_owner": null,
+  "next_step": "Start T01 — Codex: backend schema rename + normalization layer",
+  "last_review_failure": null,
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Codex: backend schema rename + deterministic normalization layer",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "codex-build-T01.md"
+    },
+    {
+      "id": "T02",
+      "title": "Gemini: frontend type + chip updates",
+      "owner": "gemini",
+      "type": "build",
+      "depends_on": ["T01"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "gemini-build-T02.md"
+    },
+    {
+      "id": "T03",
+      "title": "Codex: review",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": ["T01", "T02"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "review.md"
+    },
+    {
+      "id": "T04",
+      "title": "Claude: acceptance",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": ["T03"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "final-report.md"
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-06-09T06:00:00Z",
+      "event": "F16 workspace initialized: spec/tasks/acceptance/owner/status/task_manifest created",
+      "by": "claude"
+    }
+  ]
+}
