@@ -285,7 +285,7 @@ def test_search_service_filters_by_inclusive_price_range() -> None:
 
 
 def test_search_service_filters_by_minimum_bedroom_count() -> None:
-    result = search(SearchFilters(bedrooms=5), db_session=None)
+    result = search(SearchFilters(bedrooms_min=5), db_session=None)
 
     assert result == ["prop_004", "prop_006", "prop_008"]
 

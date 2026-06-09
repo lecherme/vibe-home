@@ -168,9 +168,9 @@ def _normalize_filters(raw_filters: dict[str, Any]) -> SearchFilters:
         location=normalized_location,
         min_price=_to_int(raw_filters.get("min_price")),
         max_price=_to_int(raw_filters.get("max_price")),
-        bedrooms_min=_to_int(raw_filters.get("bedrooms_min", raw_filters.get("bedrooms"))),
+        bedrooms_min=_to_int(raw_filters.get("bedrooms_min")),
         bedrooms_max=_to_int(raw_filters.get("bedrooms_max")),
-        bathrooms_min=_to_int(raw_filters.get("bathrooms_min", raw_filters.get("bathrooms"))),
+        bathrooms_min=_to_int(raw_filters.get("bathrooms_min")),
         bathrooms_max=_to_int(raw_filters.get("bathrooms_max")),
         status=normalized_status,
     )

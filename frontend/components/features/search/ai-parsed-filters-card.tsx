@@ -48,9 +48,9 @@ export function AiParsedFiltersCard({
           bedsStr = `${parsedFilters.bedrooms_min}–${parsedFilters.bedrooms_max} Beds`;
         }
       } else if (parsedFilters.bedrooms_min != null) {
-        bedsStr = `≥${parsedFilters.bedrooms_min} Beds`;
+        bedsStr = `>= ${parsedFilters.bedrooms_min} Beds`;
       } else if (parsedFilters.bedrooms_max != null) {
-        bedsStr = `≤${parsedFilters.bedrooms_max} Beds`;
+        bedsStr = `<= ${parsedFilters.bedrooms_max} Beds`;
       }
       chips.push(
         <span key="beds" className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
@@ -68,9 +68,9 @@ export function AiParsedFiltersCard({
           bathsStr = `${parsedFilters.bathrooms_min}–${parsedFilters.bathrooms_max} Baths`;
         }
       } else if (parsedFilters.bathrooms_min != null) {
-        bathsStr = `≥${parsedFilters.bathrooms_min} Baths`;
+        bathsStr = `>= ${parsedFilters.bathrooms_min} Baths`;
       } else if (parsedFilters.bathrooms_max != null) {
-        bathsStr = `≤${parsedFilters.bathrooms_max} Baths`;
+        bathsStr = `<= ${parsedFilters.bathrooms_max} Baths`;
       }
       chips.push(
         <span key="baths" className="inline-flex items-center rounded-full bg-cyan-100 px-2.5 py-0.5 text-xs font-medium text-cyan-800">

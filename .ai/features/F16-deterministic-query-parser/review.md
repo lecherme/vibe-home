@@ -6,37 +6,33 @@ FAIL
 ## Criteria Results
 | Criterion | Result | Notes |
 |-----------|--------|-------|
-| A1 | FAIL | `SearchFilters` has the new min/max fields, but legacy `bedrooms`/`bathrooms` are still accepted via aliases in [backend/app/schemas/search.py](/home/lecherme/workspace/vibe-home/backend/app/schemas/search.py:11) and fallback normalization in [backend/app/services/ai_search/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/ai_search/service.py:171). |
-| A2 | PASS | `search()` applies `< bedrooms_min`, `> bedrooms_max`, `< bathrooms_min`, and `> bathrooms_max` correctly in [backend/app/services/search/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/search/service.py:32). |
-| A3 | PASS | `_normalize_query()` exists and deterministically handles `万/w`, budget/price bounds, and room comparator semantics in [backend/app/services/ai_search/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/ai_search/service.py:48). |
-| A4 | PASS | `_parse_filters()` calls `_normalize_query()` first and merges deterministic fields over LLM output in [backend/app/services/ai_search/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/ai_search/service.py:179). |
-| A5 | PASS | The LLM prompt only asks for `location`, `status`, and `remainder`, and explicitly says not to infer price/bed/bath fields in [backend/app/services/ai_search/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/ai_search/service.py:193). |
-| A6 | PASS | [backend/tests/eval_set.json](/home/lecherme/workspace/vibe-home/backend/tests/eval_set.json:1) contains 30 queries, and the build artifact records equivalent in-container eval passing 30/30. |
-| A7 | FAIL | The renamed params were added, but the old ambiguous API params still exist as hidden inputs in [backend/app/api/v1/properties/router.py](/home/lecherme/workspace/vibe-home/backend/app/api/v1/properties/router.py:52), so the rename is not complete. |
-| A8 | PASS | `docker compose exec backend python -c "import app.main; print('OK')"` passed. |
-| A9 | PASS | Frontend `SearchFilters` uses only `bedrooms_min/max` and `bathrooms_min/max` in [frontend/types/search.ts](/home/lecherme/workspace/vibe-home/frontend/types/search.ts:3). |
-| A10 | FAIL | `AiParsedFiltersCard` renders `≥` / `≤` instead of required `>=` / `<=` in [frontend/components/features/search/ai-parsed-filters-card.tsx](/home/lecherme/workspace/vibe-home/frontend/components/features/search/ai-parsed-filters-card.tsx:42). |
-| A11 | PASS | Filter search wiring uses the new field names in [frontend/lib/api/properties.ts](/home/lecherme/workspace/vibe-home/frontend/lib/api/properties.ts:84) and [frontend/app/(dashboard)/search/page.tsx](/home/lecherme/workspace/vibe-home/frontend/app/(dashboard)/search/page.tsx:32). |
-| A12 | PASS | `cd frontend && npx tsc --noEmit` exited 0. |
-| A13 | FAIL | Backend normalization produces `bedrooms_min=2` and `max_price=20000000`, but the chip would render `≥ 2 Beds`, not required `>= 2 Beds`, due to [frontend/components/features/search/ai-parsed-filters-card.tsx](/home/lecherme/workspace/vibe-home/frontend/components/features/search/ai-parsed-filters-card.tsx:50). |
-| A14 | FAIL | Backend normalization produces `bedrooms_min=3` and `max_price=8000000`, but the chip would render `≥ 3 Beds`, not required `>= 3 Beds`, due to [frontend/components/features/search/ai-parsed-filters-card.tsx](/home/lecherme/workspace/vibe-home/frontend/components/features/search/ai-parsed-filters-card.tsx:50). |
-| A15 | FAIL | Backend normalization produces `bedrooms_max=3`, but the chip would render `≤ 3 Beds`, not required `<= 3 Beds`, due to [frontend/components/features/search/ai-parsed-filters-card.tsx](/home/lecherme/workspace/vibe-home/frontend/components/features/search/ai-parsed-filters-card.tsx:52). |
-| A16 | PASS | By code inspection, filter search still uses the updated params consistently and compiles cleanly; no direct regression was found in [frontend/app/(dashboard)/search/page.tsx](/home/lecherme/workspace/vibe-home/frontend/app/(dashboard)/search/page.tsx:57). |
+| A1 | PASS | `backend/app/schemas/search.py:7-15` contains `bedrooms_min`, `bedrooms_max`, `bathrooms_min`, `bathrooms_max`; legacy `bedrooms`/`bathrooms` fields are gone. |
+| A2 | PASS | `backend/app/services/search/service.py:32-54` applies `>=` semantics for `_min` and `<=` semantics for `_max` by skipping `< min` and `> max`. |
+| A3 | PASS | `_normalize_query` exists at `backend/app/services/ai_search/service.py:48-141` and implements `万/w` expansion, price min/max extraction, and bedroom/bathroom comparator handling including `more than -> +1` and `less than -> -1`. |
+| A4 | PASS | `_parse_filters` calls `_normalize_query` first at `backend/app/services/ai_search/service.py:183-190`, builds `deterministic_filters`, and merges them over LLM output at `:209`. |
+| A5 | PASS | The LLM prompt at `backend/app/services/ai_search/service.py:193-200` only asks for `location`, `status`, and `remainder`, and explicitly forbids price/bedroom/bathroom extraction. |
+| A6 | PASS | `backend/tests/eval_set.json` contains 30 queries. Replaying current `_normalize_query` against that eval set returned `30/30` passes (100%). `backend/tests/test_eval.py:14-45` enforces `>=25` cases and `>=80%` pass rate. |
+| A7 | PASS | The regular search endpoint in `backend/app/api/v1/properties/router.py:47-72` now accepts `bedrooms_min`, `bedrooms_max`, `bathrooms_min`, `bathrooms_max` and no longer accepts legacy aliases. |
+| A8 | PASS | `docker compose exec backend python -c "import app.main; print('OK')"` returned `OK`. |
+| A9 | PASS | `frontend/types/search.ts:3-11` matches the backend schema and no longer exposes `bedrooms`/`bathrooms` on `SearchFilters`. |
+| A10 | PASS | `frontend/components/features/search/ai-parsed-filters-card.tsx:42-79` renders `>= X Beds`, `<= X Beds`, `X–Y Beds`, and the same bathroom variants. |
+| A11 | PASS | The filter UI and API wiring use the renamed fields: `frontend/lib/api/properties.ts:84-126`, `frontend/components/features/search/filter-panel.tsx:125-202`, and `frontend/app/(dashboard)/search/page.tsx:32-39,93-119`. |
+| A12 | PASS | `cd frontend && npx tsc --noEmit` exited `0`. |
+| A13 | PASS | Inferred from code: `_normalize_query` maps `"2个卧室以上 预算2000万"` to `bedrooms_min=2`, `max_price=20000000`, and the chip renderer shows `>= 2 Beds` plus `< $20000000`. Not manually exercised. |
+| A14 | PASS | Inferred from code: `_normalize_query` maps `"more than 2 bedrooms under 8000000 hkd"` to `bedrooms_min=3`, `max_price=8000000`, and the chip renderer shows `>= 3 Beds` plus `< $8000000`. Not manually exercised. |
+| A15 | PASS | Inferred from code: `_normalize_query` maps `"less than 4 bedrooms"` to `bedrooms_max=3`, and the chip renderer shows `<= 3 Beds`. Not manually exercised. |
+| A16 | PASS | Inferred from code: filter search still deserializes URL params, rebuilds them, and calls the regular search API with the renamed fields. Not manually exercised. |
 
 ## Issues Found
-- BLOCKER: Legacy ambiguous `bedrooms`/`bathrooms` inputs remain accepted in production code via schema aliases, AI normalization fallback, and hidden router params in [backend/app/schemas/search.py](/home/lecherme/workspace/vibe-home/backend/app/schemas/search.py:11), [backend/app/services/ai_search/service.py](/home/lecherme/workspace/vibe-home/backend/app/services/ai_search/service.py:171), and [backend/app/api/v1/properties/router.py](/home/lecherme/workspace/vibe-home/backend/app/api/v1/properties/router.py:56).
-- BLOCKER: AI parsed filter chips do not match the required output format because they render Unicode `≥` / `≤` instead of literal `>=` / `<=` in [frontend/components/features/search/ai-parsed-filters-card.tsx](/home/lecherme/workspace/vibe-home/frontend/components/features/search/ai-parsed-filters-card.tsx:50).
-- WARNING: Backend regression coverage still depends on the deprecated alias: [backend/tests/test_search.py](/home/lecherme/workspace/vibe-home/backend/tests/test_search.py:287) uses `SearchFilters(bedrooms=5)`, and there are no direct tests for `bedrooms_max`, `bathrooms_min/max`, or renamed endpoint params.
-- MINOR: The exact documented container command `python -m pytest tests/test_eval.py` is not runnable as written in this environment because that path is not mounted in the backend container; verification currently relies on equivalent in-container execution instead.
+- BLOCKER: `backend/tests/test_search.py:287-290` is modified even though it is outside T01’s authorized file set, is not covered by Fix Loop Authorized Files, and has no Activity Log revert entry. The change is logically correct, but it is still a scope/boundary violation.
+- WARNING: The documented backend verification command `docker compose exec backend python -m pytest tests/test_eval.py -v` still fails in the current compose setup with `ERROR: file or directory not found: tests/test_eval.py` because the backend container does not mount the repo `backend/tests` directory.
+- WARNING: Regression coverage for regular search is thin. `backend/tests/test_search.py` only updates the existing min-bedroom case; there is still no automated coverage for `bedrooms_max`, `bathrooms_min`, `bathrooms_max`, or the `/api/v1/properties/search` query-param wiring.
 
 ## Required Fixes
-- Remove legacy `bedrooms`/`bathrooms` acceptance from the backend schema, normalization layer, router, and tests so only `bedrooms_min/max` and `bathrooms_min/max` remain in the runtime contract.
-- Update `AiParsedFiltersCard` to render the required comparator strings exactly: `>= X Beds`, `<= X Beds`, `>= X Baths`, `<= X Baths`.
+- Revert `backend/tests/test_search.py` or formally authorize that file in scope before acceptance.
 
 ## Approved Items
-- `search()` correctly enforces min/max bedroom and bathroom bounds.
-- `_normalize_query()` is deterministic and correctly parses the required price and comparator patterns.
-- `_parse_filters()` normalizes before the LLM call and keeps numeric extraction out of the prompt.
-- API types are published in [frontend/types/search.ts](/home/lecherme/workspace/vibe-home/frontend/types/search.ts:3) and used by the frontend.
-- `status.json` is modified in the working tree, but its embedded activity log attributes those lifecycle edits to `claude`, not Codex or Gemini.
-- Backend import verification passed, and frontend TypeScript verification passed.
+- `status.json` shows Claude-owned workflow bookkeeping only; the current rerun entries in the Activity Log are recorded with `"by": "claude"`, and I found no evidence of a Codex or Gemini edit to that file.
+- The backend schema, AI parser, and regular search API now share the same `SearchFilters` shape using `bedrooms_min/max` and `bathrooms_min/max`.
+- Deterministic numeric parsing remains in backend service code; no property-search business logic was moved into frontend components.
+- The published frontend API types in `frontend/types/search.ts` match the backend schema and are used by the frontend search client/UI.

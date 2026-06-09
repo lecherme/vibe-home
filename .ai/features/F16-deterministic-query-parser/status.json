@@ -154,6 +154,21 @@
       "timestamp": "2026-06-09T09:56:43Z",
       "event": "T03 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T10:07:11Z",
+      "event": "T03 prepared for review_rerun \u2014 T01/T02 direct fixup: removed bedrooms/bathrooms aliases, chips changed to >= / <=",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T10:07:29Z",
+      "event": "T03 started \u2014 Codex: review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T10:12:46Z",
+      "event": "T03 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
     }
   ]
 }
