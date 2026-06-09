@@ -32,8 +32,10 @@ function SearchContent() {
   const [filters, setFilters] = useState<SearchFilters>({
     min_price: searchParams.get("min_price") ? Number(searchParams.get("min_price")) : undefined,
     max_price: searchParams.get("max_price") ? Number(searchParams.get("max_price")) : undefined,
-    bedrooms: searchParams.get("bedrooms") ? Number(searchParams.get("bedrooms")) : undefined,
-    bathrooms: searchParams.get("bathrooms") ? Number(searchParams.get("bathrooms")) : undefined,
+    bedrooms_min: searchParams.get("bedrooms_min") ? Number(searchParams.get("bedrooms_min")) : undefined,
+    bedrooms_max: searchParams.get("bedrooms_max") ? Number(searchParams.get("bedrooms_max")) : undefined,
+    bathrooms_min: searchParams.get("bathrooms_min") ? Number(searchParams.get("bathrooms_min")) : undefined,
+    bathrooms_max: searchParams.get("bathrooms_max") ? Number(searchParams.get("bathrooms_max")) : undefined,
     status: (searchParams.get("status") as PropertyStatus) || undefined,
   });
 
@@ -91,8 +93,10 @@ function SearchContent() {
     const f: SearchFilters = {
       min_price: searchParams.get("min_price") ? Number(searchParams.get("min_price")) : undefined,
       max_price: searchParams.get("max_price") ? Number(searchParams.get("max_price")) : undefined,
-      bedrooms: searchParams.get("bedrooms") ? Number(searchParams.get("bedrooms")) : undefined,
-      bathrooms: searchParams.get("bathrooms") ? Number(searchParams.get("bathrooms")) : undefined,
+      bedrooms_min: searchParams.get("bedrooms_min") ? Number(searchParams.get("bedrooms_min")) : undefined,
+      bedrooms_max: searchParams.get("bedrooms_max") ? Number(searchParams.get("bedrooms_max")) : undefined,
+      bathrooms_min: searchParams.get("bathrooms_min") ? Number(searchParams.get("bathrooms_min")) : undefined,
+      bathrooms_max: searchParams.get("bathrooms_max") ? Number(searchParams.get("bathrooms_max")) : undefined,
       status: (searchParams.get("status") as PropertyStatus) || undefined,
     };
     const p = Number(searchParams.get("page")) || 1;
@@ -107,8 +111,10 @@ function SearchContent() {
     if (loc) params.set("location", loc);
     if (f.min_price) params.set("min_price", String(f.min_price));
     if (f.max_price) params.set("max_price", String(f.max_price));
-    if (f.bedrooms) params.set("bedrooms", String(f.bedrooms));
-    if (f.bathrooms) params.set("bathrooms", String(f.bathrooms));
+    if (f.bedrooms_min) params.set("bedrooms_min", String(f.bedrooms_min));
+    if (f.bedrooms_max) params.set("bedrooms_max", String(f.bedrooms_max));
+    if (f.bathrooms_min) params.set("bathrooms_min", String(f.bathrooms_min));
+    if (f.bathrooms_max) params.set("bathrooms_max", String(f.bathrooms_max));
     if (f.status) params.set("status", f.status);
     if (p > 1) params.set("page", String(p));
     
@@ -163,8 +169,10 @@ function SearchContent() {
   const hasActiveFilters = Boolean(location.trim()) ||
     filters.min_price !== undefined ||
     filters.max_price !== undefined ||
-    filters.bedrooms !== undefined ||
-    filters.bathrooms !== undefined ||
+    filters.bedrooms_min !== undefined ||
+    filters.bedrooms_max !== undefined ||
+    filters.bathrooms_min !== undefined ||
+    filters.bathrooms_max !== undefined ||
     Boolean(filters.status);
 
   return (

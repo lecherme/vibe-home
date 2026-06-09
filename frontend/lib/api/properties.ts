@@ -100,12 +100,20 @@ async function searchProperties(
     url.searchParams.set("max_price", String(filters.max_price));
   }
 
-  if (filters.bedrooms !== undefined) {
-    url.searchParams.set("bedrooms", String(filters.bedrooms));
+  if (filters.bedrooms_min !== undefined) {
+    url.searchParams.set("bedrooms_min", String(filters.bedrooms_min));
   }
 
-  if (filters.bathrooms !== undefined) {
-    url.searchParams.set("bathrooms", String(filters.bathrooms));
+  if (filters.bedrooms_max !== undefined) {
+    url.searchParams.set("bedrooms_max", String(filters.bedrooms_max));
+  }
+
+  if (filters.bathrooms_min !== undefined) {
+    url.searchParams.set("bathrooms_min", String(filters.bathrooms_min));
+  }
+
+  if (filters.bathrooms_max !== undefined) {
+    url.searchParams.set("bathrooms_max", String(filters.bathrooms_max));
   }
 
   if (filters.status !== undefined) {

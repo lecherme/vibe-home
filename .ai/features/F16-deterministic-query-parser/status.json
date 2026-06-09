@@ -1,9 +1,9 @@
 {
   "feature": "F16-deterministic-query-parser",
   "status": "in_progress",
-  "current_stage": "T01_done",
+  "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Start T02 \u2014 Gemini: frontend type + chip updates",
+  "next_step": "Start T03 \u2014 Codex: review",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,7 +24,7 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "gemini-build-T02.md"
     },
@@ -119,13 +119,31 @@
       "timestamp": "2026-06-09T09:25:56Z",
       "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T09:30:41Z",
+      "event": "T02 started \u2014 Gemini: frontend type + chip updates",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T09:37:17Z",
+      "event": "T02 needs-verification \u2014 worker exited 1 but artifact passed validate-artifact (exit 1)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T09:45:52Z",
+      "event": "T02 done \u2014 artifact captured as gemini-build-T02.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T09:50:02Z",
+      "event": "T02 needs-verification \u2014 scope check false failure \u2014 filter-panel.tsx and properties.ts are required adaptations (exit 1)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T09:50:56Z",
+      "event": "T02 verify-pass \u2014 wrapper false failure (exit 1) corrected by Claude after artifact inspection; original: scope check false failure \u2014 filter-panel.tsx and properties.ts are required adaptations",
+      "by": "claude"
     }
-  ],
-  "pending_verification": {
-    "task_id": "T01",
-    "reason": "worker exited 1 but artifact passed validate-artifact",
-    "artifact": "codex-build-T01.md",
-    "worker_exit_code": 1,
-    "timestamp": "2026-06-09T09:17:05Z"
-  }
+  ]
 }

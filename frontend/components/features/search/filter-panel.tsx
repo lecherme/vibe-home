@@ -124,18 +124,18 @@ export function FilterPanel({ filters, onChange, isLoading }: FilterPanelProps) 
 
         <div>
           <Label
-            htmlFor="bedrooms"
+            htmlFor="bedrooms_min"
             className="block text-xs font-medium text-gray-700 mb-1"
           >
             Min Bedrooms
           </Label>
           <Select
-            value={filters.bedrooms?.toString() ?? "any"}
+            value={filters.bedrooms_min?.toString() ?? "any"}
             onValueChange={(val) =>
-              handleChange("bedrooms", val === "any" ? undefined : Number(val))
+              handleChange("bedrooms_min", val === "any" ? undefined : Number(val))
             }
           >
-            <SelectTrigger id="bedrooms" disabled={isLoading} className="w-full">
+            <SelectTrigger id="bedrooms_min" disabled={isLoading} className="w-full">
               <SelectValue placeholder="Any" />
             </SelectTrigger>
             <SelectContent>
@@ -176,18 +176,18 @@ export function FilterPanel({ filters, onChange, isLoading }: FilterPanelProps) 
 
         <div>
           <Label
-            htmlFor="bathrooms"
+            htmlFor="bathrooms_min"
             className="block text-xs font-medium text-gray-700 mb-1"
           >
             Min Bathrooms
           </Label>
           <Select
-            value={filters.bathrooms?.toString() ?? "any"}
+            value={filters.bathrooms_min?.toString() ?? "any"}
             onValueChange={(val) =>
-              handleChange("bathrooms", val === "any" ? undefined : Number(val))
+              handleChange("bathrooms_min", val === "any" ? undefined : Number(val))
             }
           >
-            <SelectTrigger id="bathrooms" disabled={isLoading} className="w-full">
+            <SelectTrigger id="bathrooms_min" disabled={isLoading} className="w-full">
               <SelectValue placeholder="Any" />
             </SelectTrigger>
             <SelectContent>

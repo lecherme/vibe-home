@@ -17,7 +17,8 @@
       "allowed_files": [
         "frontend/types/search.ts",
         "frontend/components/features/search/ai-parsed-filters-card.tsx",
-        "frontend/lib/api/search.ts",
+        "frontend/lib/api/properties.ts",
+        "frontend/components/features/search/filter-panel.tsx",
         "frontend/app/(dashboard)/search/page.tsx"
       ]
     },

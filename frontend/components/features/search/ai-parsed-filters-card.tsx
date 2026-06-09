@@ -39,18 +39,42 @@ export function AiParsedFiltersCard({
       );
     }
 
-    if (parsedFilters.bedrooms != null) {
+    if (parsedFilters.bedrooms_min != null || parsedFilters.bedrooms_max != null) {
+      let bedsStr = "";
+      if (parsedFilters.bedrooms_min != null && parsedFilters.bedrooms_max != null) {
+        if (parsedFilters.bedrooms_min === parsedFilters.bedrooms_max) {
+          bedsStr = `${parsedFilters.bedrooms_min} Beds`;
+        } else {
+          bedsStr = `${parsedFilters.bedrooms_min}–${parsedFilters.bedrooms_max} Beds`;
+        }
+      } else if (parsedFilters.bedrooms_min != null) {
+        bedsStr = `≥${parsedFilters.bedrooms_min} Beds`;
+      } else if (parsedFilters.bedrooms_max != null) {
+        bedsStr = `≤${parsedFilters.bedrooms_max} Beds`;
+      }
       chips.push(
         <span key="beds" className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
-          🛏️ ≥{parsedFilters.bedrooms} Beds
+          🛏️ {bedsStr}
         </span>
       );
     }
 
-    if (parsedFilters.bathrooms != null) {
+    if (parsedFilters.bathrooms_min != null || parsedFilters.bathrooms_max != null) {
+      let bathsStr = "";
+      if (parsedFilters.bathrooms_min != null && parsedFilters.bathrooms_max != null) {
+        if (parsedFilters.bathrooms_min === parsedFilters.bathrooms_max) {
+          bathsStr = `${parsedFilters.bathrooms_min} Baths`;
+        } else {
+          bathsStr = `${parsedFilters.bathrooms_min}–${parsedFilters.bathrooms_max} Baths`;
+        }
+      } else if (parsedFilters.bathrooms_min != null) {
+        bathsStr = `≥${parsedFilters.bathrooms_min} Baths`;
+      } else if (parsedFilters.bathrooms_max != null) {
+        bathsStr = `≤${parsedFilters.bathrooms_max} Baths`;
+      }
       chips.push(
         <span key="baths" className="inline-flex items-center rounded-full bg-cyan-100 px-2.5 py-0.5 text-xs font-medium text-cyan-800">
-          🚿 ≥{parsedFilters.bathrooms} Baths
+          🚿 {bathsStr}
         </span>
       );
     }

@@ -4,8 +4,10 @@ export interface SearchFilters {
   location?: string;
   min_price?: number;
   max_price?: number;
-  bedrooms?: number;
-  bathrooms?: number;
+  bedrooms_min?: number;
+  bedrooms_max?: number;
+  bathrooms_min?: number;
+  bathrooms_max?: number;
   status?: PropertyStatus;
 }
 
