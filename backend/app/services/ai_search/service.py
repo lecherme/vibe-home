@@ -79,11 +79,17 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
         "For 'more than X bedrooms/bathrooms', return X+1 as an integer.\n"
         f"Query: {query}"
     )
-    response_text = complete(prompt=prompt, max_tokens=200, temperature=0, json_mode=True)
-    parsed_payload = json.loads(_sanitize_json_payload(response_text))
-    if not isinstance(parsed_payload, dict):
-        raise ValueError("LLM returned a non-object JSON payload")
-    return _normalize_filters(parsed_payload), True
+    last_exc: Exception = RuntimeError("no attempts made")
+    for _ in range(2):
+        try:
+            response_text = complete(prompt=prompt, max_tokens=200, temperature=0, json_mode=True)
+            parsed_payload = json.loads(_sanitize_json_payload(response_text))
+            if not isinstance(parsed_payload, dict):
+                raise ValueError("LLM returned a non-object JSON payload")
+            return _normalize_filters(parsed_payload), True
+        except Exception as exc:
+            last_exc = exc
+    raise last_exc
 
 
 def _keyword_fallback_search(query: str) -> list[str]:
