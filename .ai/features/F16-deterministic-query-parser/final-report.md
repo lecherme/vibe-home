@@ -27,6 +27,7 @@
 
 - `docker compose exec backend python -m pytest tests/test_eval.py -v` cannot run as written; backend container does not mount `backend/tests/`. Equivalent in-container eval ran 30/30. Environment constraint, not a code defect.
 - Regression coverage for `bedrooms_max`, `bathrooms_min/max` in `test_search.py` is light. Acceptable for this feature scope.
+- **Parser semantic boundary**: Colloquial subjective comparisons (`太少` / `不够` / `太多`) are outside the scope of `_normalize_query`. The deterministic layer only handles explicit comparators (以上/以下/at least/more than/…). Example: "两个浴室太少" is not parsed. Deferred to F17 — Parser Semantic Expansion.
 
 ## Summary
 
