@@ -1,9 +1,9 @@
 {
   "feature": "F16-deterministic-query-parser",
-  "status": "failed",
+  "status": "in_progress",
   "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
+  "next_step": "Start T04 \u2014 Claude: acceptance",
   "last_review_failure": null,
   "tasks": [
     {
@@ -183,6 +183,21 @@
     {
       "timestamp": "2026-06-09T10:19:12Z",
       "event": "T03 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T10:22:14Z",
+      "event": "T03 prepared for review_rerun \u2014 T02 direct fixup: remove min===max chip shortcut, always render X-Y range",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T10:22:31Z",
+      "event": "T03 started \u2014 Codex: review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T10:26:44Z",
+      "event": "T03 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]
