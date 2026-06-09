@@ -1,9 +1,9 @@
 {
   "feature": "F16-deterministic-query-parser",
-  "status": "in_progress",
-  "current_stage": "T02_done",
+  "status": "failed",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Start T03 \u2014 Codex: review",
+  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
   "last_review_failure": null,
   "tasks": [
     {
@@ -37,7 +37,7 @@
         "T01",
         "T02"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "review.md"
     },
@@ -143,6 +143,16 @@
     {
       "timestamp": "2026-06-09T09:50:56Z",
       "event": "T02 verify-pass \u2014 wrapper false failure (exit 1) corrected by Claude after artifact inspection; original: scope check false failure \u2014 filter-panel.tsx and properties.ts are required adaptations",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T09:52:26Z",
+      "event": "T03 started \u2014 Codex: review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T09:56:43Z",
+      "event": "T03 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
     }
   ]
