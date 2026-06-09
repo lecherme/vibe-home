@@ -1,9 +1,9 @@
 {
   "feature": "F16-deterministic-query-parser",
-  "status": "pending",
-  "current_stage": "ready",
+  "status": "in_progress",
+  "current_stage": "T01_done",
   "current_owner": null,
-  "next_step": "Start T01 — Codex: backend schema rename + normalization layer",
+  "next_step": "Start T02 \u2014 Gemini: frontend type + chip updates",
   "last_review_failure": null,
   "tasks": [
     {
@@ -12,7 +12,7 @@
       "owner": "codex",
       "type": "build",
       "depends_on": [],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "codex-build-T01.md"
     },
@@ -21,7 +21,9 @@
       "title": "Gemini: frontend type + chip updates",
       "owner": "gemini",
       "type": "build",
-      "depends_on": ["T01"],
+      "depends_on": [
+        "T01"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": "gemini-build-T02.md"
@@ -31,7 +33,10 @@
       "title": "Codex: review",
       "owner": "codex",
       "type": "review",
-      "depends_on": ["T01", "T02"],
+      "depends_on": [
+        "T01",
+        "T02"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": "review.md"
@@ -41,7 +46,9 @@
       "title": "Claude: acceptance",
       "owner": "claude",
       "type": "acceptance",
-      "depends_on": ["T03"],
+      "depends_on": [
+        "T03"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": "final-report.md"
@@ -51,6 +58,31 @@
     {
       "timestamp": "2026-06-09T06:00:00Z",
       "event": "F16 workspace initialized: spec/tasks/acceptance/owner/status/task_manifest created",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T08:06:55Z",
+      "event": "T01 started \u2014 Codex: backend schema rename + deterministic normalization layer",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T08:07:43Z",
+      "event": "T01 failed \u2014 run_task failed with exit code 1",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T08:34:20Z",
+      "event": "T01 prepared for task_retry \u2014 retry after bwrap sandbox failure",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T08:34:58Z",
+      "event": "T01 started \u2014 Codex: backend schema rename + deterministic normalization layer [task_retry]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-09T08:35:57Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
       "by": "claude"
     }
   ]
