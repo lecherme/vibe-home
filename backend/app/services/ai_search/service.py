@@ -25,11 +25,13 @@ _PRICE_UNIT_PATTERN = re.compile(r"(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>w|万)", 
 _PRICE_SUFFIX_PATTERN = r"(?:\s*(?:hkd|hk\$))?"
 _BEDROOM_PATTERN = r"(?:卧室|房间|bedrooms?|beds?)"
 _BATHROOM_PATTERN = r"(?:浴室|bathrooms?|baths?)"
-_ROOM_SUFFIX_BLOCKER = rf"(?!\s*(?:个)?\s*(?:{_BEDROOM_PATTERN}|{_BATHROOM_PATTERN}))"
+_ROOM_SUFFIX_BLOCKER = rf"(?!\s*(?:个|间)?\s*(?:{_BEDROOM_PATTERN}|{_BATHROOM_PATTERN}))"
 _MIN_COMPARATORS = {"以上", "至少", "最少", "at least", "or more", "or above"}
 _GREATER_THAN_COMPARATORS = {"more than", "greater than", "超过"}
 _MAX_COMPARATORS = {"以下", "at most", "不超过", "or below"}
 _LESS_THAN_COMPARATORS = {"less than", "fewer than", "少于"}
+_CHINESE_DIGITS = {"一": "1", "二": "2", "两": "2", "三": "3", "四": "4", "五": "5", "六": "6", "七": "7", "八": "8", "九": "9", "十": "10"}
+_CHINESE_DIGIT_RE = re.compile("|".join(_CHINESE_DIGITS))
 
 
 def _has_filters(filters: SearchFilters) -> bool:
@@ -46,9 +48,10 @@ def _sanitize_json_payload(text: str) -> str:
 
 
 def _normalize_query(query: str) -> dict[str, Any]:
+    normalized_query = _CHINESE_DIGIT_RE.sub(lambda m: _CHINESE_DIGITS[m.group(0)], query)
     normalized_query = _PRICE_UNIT_PATTERN.sub(
         lambda match: str(int(float(match.group("value")) * 10000)),
-        query,
+        normalized_query,
     )
     extracted: dict[str, int | None] = {
         "min_price": None,
@@ -118,15 +121,21 @@ def _normalize_query(query: str) -> dict[str, Any]:
         remaining_query = re.sub(
             rf"(?P<comparator>至少|最少|at\s+least|or\s+more|or\s+above|more\s+than|greater\s+than|"
             rf"at\s+most|不超过|or\s+below|less\s+than|fewer\s+than|超过|少于)\s*"
-            rf"(?P<count>\d+)\s*(?:个)?\s*{noun_pattern}",
+            rf"(?P<count>\d+)\s*(?:个|间)?\s*{noun_pattern}",
             _replace,
             remaining_query,
             flags=re.IGNORECASE,
         )
         remaining_query = re.sub(
-            rf"(?P<count>\d+)\s*(?:个)?\s*{noun_pattern}\s*"
+            rf"(?P<count>\d+)\s*(?:个|间)?\s*{noun_pattern}\s*"
             rf"(?P<comparator>以上|至少|最少|at\s+least|or\s+more|or\s+above|more\s+than|greater\s+than|"
             rf"以下|at\s+most|不超过|or\s+below|less\s+than|fewer\s+than|超过|少于)",
+            _replace,
+            remaining_query,
+            flags=re.IGNORECASE,
+        )
+        remaining_query = re.sub(
+            rf"(?P<count>\d+)\s*(?:个|间)?\s*(?P<comparator>以上|以下)\s*{noun_pattern}",
             _replace,
             remaining_query,
             flags=re.IGNORECASE,
