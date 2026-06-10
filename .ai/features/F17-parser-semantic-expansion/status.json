@@ -1,9 +1,9 @@
 {
   "feature": "F17-parser-semantic-expansion",
-  "status": "failed",
-  "current_stage": "T03_done",
-  "current_owner": null,
-  "next_step": "Inspect final-report.md and requeue failed task(s)",
+  "status": "in_progress",
+  "current_stage": "T03_running",
+  "current_owner": "claude",
+  "next_step": "Wait for T03 artifact",
   "last_review_failure": null,
   "tasks": [
     {
@@ -36,9 +36,13 @@
       "depends_on": [
         "T02"
       ],
-      "status": "done",
+      "status": "in_progress",
       "retry_count": 0,
-      "artifact": "final-report.md"
+      "artifact": null,
+      "retry": {
+        "type": "task_retry",
+        "reason": "switching to Gemini model; re-run A8-A11 real-LLM manual check"
+      }
     }
   ],
   "activity_log": [
@@ -135,6 +139,16 @@
     {
       "timestamp": "2026-06-10T05:31:45Z",
       "event": "T03 done \u2014 final acceptance artifact captured as final-report.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T15:42:08Z",
+      "event": "T03 prepared for task_retry \u2014 switching to Gemini model; re-run A8-A11 real-LLM manual check",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T15:42:33Z",
+      "event": "T03 started \u2014 Claude: acceptance [task_retry]",
       "by": "claude"
     }
   ]

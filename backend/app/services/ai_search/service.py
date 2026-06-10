@@ -242,7 +242,7 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
     if not remaining_query:
         return _normalize_filters(deterministic_filters), bool(deterministic_filters)
 
-    prompt = (
+    system_prompt = (
         "Extract only unresolved real-estate filters from the remaining query text. "
         "Direct filter bounds for price, bedrooms, and bathrooms were already parsed deterministically, so do not "
         "return or infer bedrooms_min, bedrooms_max, bathrooms_min, bathrooms_max, min_price, or max_price. "
@@ -252,7 +252,9 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
         "Allowed subjective labels are insufficient, excessive, adequate, unknown, or null. "
         "If no explicit count is stated for a subjective bedroom or bathroom judgment, set the corresponding ref "
         "to null and label to unknown or null. "
-        "Use null when a value is not present. status must be one of available, sold, rented or null.\n"
+        "Use null when a value is not present. status must be one of available, sold, rented or null."
+    )
+    user_content = (
         f"Original query: {query}\n"
         f"Resolved numeric filters: {json.dumps(deterministic_filters, ensure_ascii=False)}\n"
         f"Remaining query: {remaining_query}"
@@ -260,7 +262,13 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
     last_exc: Exception = RuntimeError("no attempts made")
     for _ in range(2):
         try:
-            response_text = complete(prompt=prompt, max_tokens=200, temperature=0, json_mode=True)
+            response_text = complete(
+                prompt=user_content,
+                max_tokens=200,
+                temperature=0,
+                json_mode=True,
+                system_prompt=system_prompt,
+            )
             parsed_payload = json.loads(_sanitize_json_payload(response_text))
             if not isinstance(parsed_payload, dict):
                 raise ValueError("LLM returned a non-object JSON payload")

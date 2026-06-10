@@ -5,6 +5,7 @@
       "owner": "codex",
       "allowed_files": [
         "backend/app/services/ai_search/service.py",
+        "backend/app/services/llm/service.py",
         "backend/tests/test_subjective_eval.py"
       ]
     },

@@ -13,19 +13,28 @@ except ImportError:  # pragma: no cover
     OpenAI = None  # type: ignore[assignment]
 
 
-def _complete_with_anthropic(prompt: str, max_tokens: int, temperature: float) -> str:
+def _complete_with_anthropic(
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    *,
+    system_prompt: str | None = None,
+) -> str:
     settings = get_settings()
     if not settings.llm_api_key:
         raise RuntimeError("LLM_API_KEY is not configured")
     if Anthropic is None:
         raise RuntimeError("anthropic package is not installed")
 
-    response = Anthropic(api_key=settings.llm_api_key).messages.create(
-        model=settings.llm_model,
-        max_tokens=max_tokens,
-        temperature=temperature,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    kwargs: dict[str, Any] = {
+        "model": settings.llm_model,
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    if system_prompt:
+        kwargs["system"] = system_prompt
+    response = Anthropic(api_key=settings.llm_api_key).messages.create(**kwargs)
     blocks = getattr(response, "content", [])
     content = "\n".join(block.text for block in blocks if hasattr(block, "text") and block.text)
     return content.strip()
@@ -62,6 +71,7 @@ def _complete_with_openai(
     *,
     base_url: str | None = None,
     json_mode: bool = False,
+    system_prompt: str | None = None,
 ) -> str:
     settings = get_settings()
     if not settings.llm_api_key:
@@ -69,10 +79,15 @@ def _complete_with_openai(
     if OpenAI is None:
         raise RuntimeError("openai package is not installed")
 
+    messages: list[dict[str, str]] = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": prompt})
+
     client = OpenAI(api_key=settings.llm_api_key, base_url=base_url)
     kwargs: dict[str, Any] = {
         "model": settings.llm_model,
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": messages,
         "max_tokens": max_tokens,
         "temperature": temperature,
     }
@@ -82,14 +97,21 @@ def _complete_with_openai(
     return _extract_openai_content(response)
 
 
-def complete(prompt: str, max_tokens: int, temperature: float, *, json_mode: bool = False) -> str:
+def complete(
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    *,
+    json_mode: bool = False,
+    system_prompt: str | None = None,
+) -> str:
     settings = get_settings()
 
     if settings.llm_provider == "anthropic":
-        return _complete_with_anthropic(prompt, max_tokens, temperature)
+        return _complete_with_anthropic(prompt, max_tokens, temperature, system_prompt=system_prompt)
 
     if settings.llm_provider == "openai":
-        return _complete_with_openai(prompt, max_tokens, temperature, json_mode=json_mode)
+        return _complete_with_openai(prompt, max_tokens, temperature, json_mode=json_mode, system_prompt=system_prompt)
 
     if settings.llm_provider == "openai_compatible":
         if not settings.llm_base_url:
@@ -100,6 +122,7 @@ def complete(prompt: str, max_tokens: int, temperature: float, *, json_mode: boo
             temperature,
             base_url=settings.llm_base_url,
             json_mode=json_mode,
+            system_prompt=system_prompt,
         )
 
     raise RuntimeError(f"Unsupported LLM provider: {settings.llm_provider}")

@@ -6,6 +6,7 @@
 
 **允许修改的文件：**
 - `backend/app/services/ai_search/service.py`
+- `backend/app/services/llm/service.py`
 - `backend/tests/test_subjective_eval.py`（新建）
 
 **不得修改：** `frontend/`、`backend/app/schemas/`、`backend/tests/eval_set.json`、`backend/tests/test_eval.py`、`status.json`
