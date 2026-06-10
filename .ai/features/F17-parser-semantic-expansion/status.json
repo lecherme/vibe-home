@@ -1,9 +1,9 @@
 {
   "feature": "F17-parser-semantic-expansion",
-  "status": "in_progress",
-  "current_stage": "T03_running",
-  "current_owner": "claude",
-  "next_step": "Wait for T03 artifact",
+  "status": "done",
+  "current_stage": "T03_done",
+  "current_owner": null,
+  "next_step": "F17-parser-semantic-expansion complete",
   "last_review_failure": null,
   "tasks": [
     {
@@ -36,13 +36,9 @@
       "depends_on": [
         "T02"
       ],
-      "status": "in_progress",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null,
-      "retry": {
-        "type": "task_retry",
-        "reason": "switching to Gemini model; re-run A8-A11 real-LLM manual check"
-      }
+      "artifact": "final-report.md"
     }
   ],
   "activity_log": [
@@ -149,6 +145,11 @@
     {
       "timestamp": "2026-06-10T15:42:33Z",
       "event": "T03 started \u2014 Claude: acceptance [task_retry]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T17:52:43Z",
+      "event": "T03 done \u2014 final acceptance artifact captured as final-report.md",
       "by": "claude"
     }
   ]
