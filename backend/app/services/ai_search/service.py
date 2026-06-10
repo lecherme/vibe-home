@@ -268,6 +268,7 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
                 temperature=0,
                 json_mode=True,
                 system_prompt=system_prompt,
+                disable_thinking=True,
             )
             parsed_payload = json.loads(_sanitize_json_payload(response_text))
             if not isinstance(parsed_payload, dict):

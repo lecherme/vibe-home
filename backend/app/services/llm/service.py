@@ -72,6 +72,7 @@ def _complete_with_openai(
     base_url: str | None = None,
     json_mode: bool = False,
     system_prompt: str | None = None,
+    disable_thinking: bool = False,
 ) -> str:
     settings = get_settings()
     if not settings.llm_api_key:
@@ -93,6 +94,9 @@ def _complete_with_openai(
     }
     if json_mode:
         kwargs["response_format"] = {"type": "json_object"}
+    if disable_thinking:
+        kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
+        kwargs["temperature"] = 1
     response = client.chat.completions.create(**kwargs)
     return _extract_openai_content(response)
 
@@ -104,6 +108,7 @@ def complete(
     *,
     json_mode: bool = False,
     system_prompt: str | None = None,
+    disable_thinking: bool = False,
 ) -> str:
     settings = get_settings()
 
@@ -123,6 +128,7 @@ def complete(
             base_url=settings.llm_base_url,
             json_mode=json_mode,
             system_prompt=system_prompt,
+            disable_thinking=disable_thinking,
         )
 
     raise RuntimeError(f"Unsupported LLM provider: {settings.llm_provider}")
