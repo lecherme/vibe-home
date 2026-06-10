@@ -1,3 +1,6 @@
+import json
+from unittest.mock import patch
+
 import pytest
 
 from app.core.config import get_settings
@@ -38,3 +41,27 @@ def test_parse_filters_subjective_room_cases(query: str, expected: SearchFilters
 
     assert query_parsed is True
     assert parsed_filters.model_dump() == expected.model_dump()
+
+
+def test_llm_forbidden_bound_keys_are_stripped() -> None:
+    """LLM returning bedrooms_min/max directly must not set filter bounds."""
+    forbidden_response = json.dumps({
+        "location": None,
+        "status": None,
+        "remainder": None,
+        "bedrooms_min": 99,
+        "bedrooms_max": 88,
+        "bathrooms_min": 77,
+        "bathrooms_max": 66,
+        "bedrooms_subjective_label": None,
+        "bedrooms_ref": None,
+        "bathrooms_subjective_label": None,
+        "bathrooms_ref": None,
+    })
+    with patch("app.services.ai_search.service.complete", return_value=forbidden_response):
+        parsed_filters, query_parsed = _parse_filters("Central")
+
+    assert parsed_filters.bedrooms_min is None
+    assert parsed_filters.bedrooms_max is None
+    assert parsed_filters.bathrooms_min is None
+    assert parsed_filters.bathrooms_max is None

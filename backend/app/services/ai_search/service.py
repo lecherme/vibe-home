@@ -185,11 +185,19 @@ def _normalize_filters(raw_filters: dict[str, Any]) -> SearchFilters:
     )
 
 
+_LLM_ALLOWED_KEYS = frozenset({
+    "location", "status", "remainder",
+    "bedrooms_subjective_label", "bedrooms_ref",
+    "bathrooms_subjective_label", "bathrooms_ref",
+})
+
+
 def _apply_subjective_room_filters(
     raw_filters: dict[str, Any],
     deterministic_filters: dict[str, Any],
 ) -> dict[str, Any]:
-    merged_filters = {**raw_filters, **deterministic_filters}
+    sanitized_llm = {k: v for k, v in raw_filters.items() if k in _LLM_ALLOWED_KEYS}
+    merged_filters = {**sanitized_llm, **deterministic_filters}
 
     def _normalize_label(value: Any) -> str | None:
         if not isinstance(value, str):
