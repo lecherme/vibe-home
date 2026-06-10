@@ -13,16 +13,14 @@ try:
 except Exception:  # pragma: no cover - environment-dependent
     _SETTINGS = None
 
-
-pytestmark = [
-    pytest.mark.integration,
-    pytest.mark.skipif(
-        _SETTINGS is None or not _SETTINGS.llm_api_key,
-        reason="requires configured LLM API key",
-    ),
-]
+_requires_llm = pytest.mark.skipif(
+    _SETTINGS is None or not _SETTINGS.llm_api_key,
+    reason="requires configured LLM API key",
+)
 
 
+@pytest.mark.integration
+@_requires_llm
 @pytest.mark.parametrize(
     ("query", "expected"),
     [

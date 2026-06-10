@@ -1,9 +1,9 @@
 {
   "feature": "F17-parser-semantic-expansion",
-  "status": "failed",
+  "status": "in_progress",
   "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
+  "next_step": "Start T03 \u2014 Claude: acceptance",
   "last_review_failure": null,
   "tasks": [
     {
@@ -105,6 +105,26 @@
     {
       "timestamp": "2026-06-10T04:47:40Z",
       "event": "T02 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T04:54:30Z",
+      "event": "T02 prepared for review_rerun \u2014 fix: move skipif to parametrized integration tests only; mock test now runs without LLM key",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T04:55:21Z",
+      "event": "T02 started \u2014 Codex: review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T04:57:03Z",
+      "event": "T02 started \u2014 Codex: review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T04:59:55Z",
+      "event": "T02 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]
