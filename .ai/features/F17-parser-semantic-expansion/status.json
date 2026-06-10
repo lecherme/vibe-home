@@ -1,0 +1,91 @@
+{
+  "feature": "F17-parser-semantic-expansion",
+  "status": "failed",
+  "current_stage": "T02_done",
+  "current_owner": null,
+  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
+  "last_review_failure": null,
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Codex: extend _parse_filters with subjective comparisons",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T01.md"
+    },
+    {
+      "id": "T02",
+      "title": "Codex: review",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": [
+        "T01"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "review.md"
+    },
+    {
+      "id": "T03",
+      "title": "Claude: acceptance",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": [
+        "T02"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "final-report.md"
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-06-10T00:00:00Z",
+      "event": "F17 workspace initialized: spec/tasks/acceptance/owner/status/task_manifest created",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T03:10:02Z",
+      "event": "T01 started \u2014 Codex: extend _parse_filters with subjective comparisons",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T03:12:28Z",
+      "event": "T01 started \u2014 Codex: extend _parse_filters with subjective comparisons",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T03:14:53Z",
+      "event": "T01 failed \u2014 run_task failed with exit code 1",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T04:14:03Z",
+      "event": "T01 needs-verification \u2014 worker exited non-zero but artifact passed validate-artifact (exit 1)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T04:25:02Z",
+      "event": "T01 verify-pass \u2014 wrapper false failure (exit 1) corrected by Claude after artifact inspection; original: worker exited non-zero but artifact passed validate-artifact",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T04:26:43Z",
+      "event": "T02 started \u2014 Codex: review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T04:27:01Z",
+      "event": "T02 started \u2014 Codex: review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-10T04:32:13Z",
+      "event": "T02 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
+    }
+  ]
+}

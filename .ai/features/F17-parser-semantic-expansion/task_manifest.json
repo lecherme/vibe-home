@@ -1,0 +1,23 @@
+{
+  "feature": "F17-parser-semantic-expansion",
+  "tasks": {
+    "T01": {
+      "owner": "codex",
+      "allowed_files": [
+        "backend/app/services/ai_search/service.py",
+        "backend/tests/test_subjective_eval.py"
+      ]
+    },
+    "T02": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T03": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F17-parser-semantic-expansion/status.json",
+        ".ai/features/F17-parser-semantic-expansion/final-report.md"
+      ]
+    }
+  }
+}

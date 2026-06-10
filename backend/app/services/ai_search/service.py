@@ -185,6 +185,41 @@ def _normalize_filters(raw_filters: dict[str, Any]) -> SearchFilters:
     )
 
 
+def _apply_subjective_room_filters(
+    raw_filters: dict[str, Any],
+    deterministic_filters: dict[str, Any],
+) -> dict[str, Any]:
+    merged_filters = {**raw_filters, **deterministic_filters}
+
+    def _normalize_label(value: Any) -> str | None:
+        if not isinstance(value, str):
+            return None
+        normalized = value.strip().lower()
+        return normalized or None
+
+    def _to_int(value: Any) -> int | None:
+        if value in (None, ""):
+            return None
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _apply(label_key: str, ref_key: str, min_key: str, max_key: str) -> None:
+        label = _normalize_label(raw_filters.get(label_key))
+        ref = _to_int(raw_filters.get(ref_key))
+        if ref is None:
+            return
+        if label == "insufficient" and deterministic_filters.get(min_key) is None:
+            merged_filters[min_key] = ref + 1
+        elif label == "excessive" and deterministic_filters.get(max_key) is None:
+            merged_filters[max_key] = ref - 1
+
+    _apply("bedrooms_subjective_label", "bedrooms_ref", "bedrooms_min", "bedrooms_max")
+    _apply("bathrooms_subjective_label", "bathrooms_ref", "bathrooms_min", "bathrooms_max")
+    return merged_filters
+
+
 def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
     if not query.strip():
         return SearchFilters(), True
@@ -201,8 +236,14 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
 
     prompt = (
         "Extract only unresolved real-estate filters from the remaining query text. "
-        "Price, bedroom, and bathroom fields were already parsed deterministically, so do not return or infer them. "
-        "Return JSON only with keys location, status, remainder. "
+        "Direct filter bounds for price, bedrooms, and bathrooms were already parsed deterministically, so do not "
+        "return or infer bedrooms_min, bedrooms_max, bathrooms_min, bathrooms_max, min_price, or max_price. "
+        "You may identify subjective room-count judgments only when the user states an explicit bedroom or bathroom "
+        "count N together with a judgment. Return JSON only with keys location, status, remainder, "
+        "bedrooms_subjective_label, bedrooms_ref, bathrooms_subjective_label, bathrooms_ref. "
+        "Allowed subjective labels are insufficient, excessive, adequate, unknown, or null. "
+        "If no explicit count is stated for a subjective bedroom or bathroom judgment, set the corresponding ref "
+        "to null and label to unknown or null. "
         "Use null when a value is not present. status must be one of available, sold, rented or null.\n"
         f"Original query: {query}\n"
         f"Resolved numeric filters: {json.dumps(deterministic_filters, ensure_ascii=False)}\n"
@@ -215,7 +256,7 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
             parsed_payload = json.loads(_sanitize_json_payload(response_text))
             if not isinstance(parsed_payload, dict):
                 raise ValueError("LLM returned a non-object JSON payload")
-            return _normalize_filters({**parsed_payload, **deterministic_filters}), True
+            return _normalize_filters(_apply_subjective_room_filters(parsed_payload, deterministic_filters)), True
         except Exception as exc:
             last_exc = exc
     if deterministic_filters:
