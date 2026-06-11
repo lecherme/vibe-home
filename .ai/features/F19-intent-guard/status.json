@@ -1,9 +1,9 @@
 {
   "feature": "F19-intent-guard",
-  "status": "pending",
-  "current_stage": "ready",
+  "status": "in_progress",
+  "current_stage": "T01_done",
   "current_owner": null,
-  "next_step": "Start T01 — Codex: implement intent guard",
+  "next_step": "Start T02 \u2014 Codex: review",
   "last_review_failure": null,
   "tasks": [
     {
@@ -12,7 +12,7 @@
       "owner": "codex",
       "type": "build",
       "depends_on": [],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "codex-build-T01.md"
     },
@@ -21,7 +21,9 @@
       "title": "Codex: review",
       "owner": "codex",
       "type": "review",
-      "depends_on": ["T01"],
+      "depends_on": [
+        "T01"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": "review.md"
@@ -31,7 +33,9 @@
       "title": "Claude: acceptance",
       "owner": "claude",
       "type": "acceptance",
-      "depends_on": ["T02"],
+      "depends_on": [
+        "T02"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": "final-report.md"
@@ -41,6 +45,16 @@
     {
       "timestamp": "2026-06-11T00:00:00Z",
       "event": "F19 workspace initialized: spec/tasks/acceptance/owner/status/task_manifest created",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T15:26:34Z",
+      "event": "T01 started \u2014 Codex: implement intent guard",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T15:29:47Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
       "by": "claude"
     }
   ]

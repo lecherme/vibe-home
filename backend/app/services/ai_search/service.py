@@ -32,10 +32,82 @@ _MAX_COMPARATORS = {"以下", "at most", "不超过", "or below"}
 _LESS_THAN_COMPARATORS = {"less than", "fewer than", "少于"}
 _CHINESE_DIGITS = {"一": "1", "二": "2", "两": "2", "三": "3", "四": "4", "五": "5", "六": "6", "七": "7", "八": "8", "九": "9", "十": "10"}
 _CHINESE_DIGIT_RE = re.compile("|".join(_CHINESE_DIGITS))
+_NON_SEARCH_REDIRECT_MESSAGE = "这个问题不是房源筛选，我可以帮你按预算、区域、户型、通勤等条件找房。"
+_PROPERTY_NOUN_PATTERN = (
+    r"(?:房源|房子|找房|租房|买房|住房|住宅|公寓|楼盘|新房|二手房|整租|合租|"
+    r"apartment|apartments|flat|flats|house|houses|home|homes|condo|condos|"
+    r"studio|studios|villa|villas|loft|lofts)"
+)
+_PROPERTY_SEARCH_PATTERNS = (
+    re.compile(
+        rf"(?:我要|我想|想|求租|求购|帮我|looking\s+for|searching\s+for|need|want(?:\s+to)?)\s*"
+        rf"(?:买|购|租|找)?\s*{_PROPERTY_NOUN_PATTERN}",
+        re.IGNORECASE,
+    ),
+    re.compile(r"(?:找|求租|求购)\s*(?:房源|房子|公寓|住宅|楼盘)", re.IGNORECASE),
+    re.compile(
+        rf"(?:预算|租金|月租|总价|售价|price|budget|rent)\s*[:：]?\s*\d",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        rf"\d+\s*(?:室|居|卧|卫|bedrooms?|beds?|bathrooms?|baths?)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        rf"{_PROPERTY_NOUN_PATTERN}.*(?:附近|地铁|通勤|区域|location|district|area|near|close\s+to|in\s+\w+)",
+        re.IGNORECASE,
+    ),
+)
+_NON_SEARCH_PATTERNS = (
+    re.compile(r"(?:为什么|为何|怎么|如何|是不是|分析|预测|政策|趋势|行情|原因|解读|why|how|analysis|forecast|policy|trend)", re.IGNORECASE),
+    re.compile(r"(?:房价|楼市|市场|股市|股票|基金|债券|汇率|利率|market|stocks?)", re.IGNORECASE),
+)
 
 
 def _has_filters(filters: SearchFilters) -> bool:
     return any(value is not None for value in filters.model_dump().values())
+
+
+def _is_property_search(query: str) -> bool:
+    normalized_query = " ".join(query.strip().split())
+    if not normalized_query:
+        return True
+
+    for pattern in _PROPERTY_SEARCH_PATTERNS:
+        if pattern.search(normalized_query):
+            return True
+
+    for pattern in _NON_SEARCH_PATTERNS:
+        if pattern.search(normalized_query):
+            return False
+
+    system_prompt = (
+        "Classify whether the user is asking to search or filter property listings. "
+        "Return only true or false. "
+        "Return true for listing search intent such as buy, rent, budget, room count, property type, or location filters. "
+        "Return false for market discussion, policy, advice, explanation, analysis, trends, or non-real-estate topics."
+    )
+    last_exc: Exception = RuntimeError("no attempts made")
+    for _ in range(2):
+        try:
+            response_text = complete(
+                prompt=normalized_query,
+                max_tokens=5,
+                temperature=0,
+                system_prompt=system_prompt,
+                disable_thinking=True,
+            )
+            normalized_response = response_text.strip().lower()
+            if normalized_response == "true":
+                return True
+            if normalized_response == "false":
+                return False
+            raise ValueError(f"Unexpected classifier response: {response_text!r}")
+        except Exception as exc:
+            last_exc = exc
+
+    logger.warning("Property-search intent classification failed", extra={"query": query}, exc_info=last_exc)
+    return True
 
 
 def _sanitize_json_payload(text: str) -> str:
@@ -459,6 +531,19 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
             detail="AI search is unavailable",
         )
 
+    resolved_page = max(page, 1)
+    resolved_page_size = min(max(page_size, 1), _SEARCH_MAX_PAGE_SIZE)
+    if not _is_property_search(query):
+        return AiSearchResult(
+            items=[],
+            total=0,
+            page=resolved_page,
+            page_size=resolved_page_size,
+            parsed_filters=SearchFilters(),
+            ai_summary=_NON_SEARCH_REDIRECT_MESSAGE,
+            query_parsed=False,
+        )
+
     try:
         parsed_filters, query_parsed = _parse_filters(query)
     except Exception:
@@ -466,8 +551,6 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         parsed_filters = SearchFilters()
         query_parsed = False
 
-    resolved_page = max(page, 1)
-    resolved_page_size = min(max(page_size, 1), _SEARCH_MAX_PAGE_SIZE)
     result_ids = _resolve_result_ids(
         query,
         parsed_filters,
