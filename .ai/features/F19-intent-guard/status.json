@@ -1,9 +1,9 @@
 {
   "feature": "F19-intent-guard",
-  "status": "failed",
+  "status": "in_progress",
   "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
+  "next_step": "Start T03 \u2014 Claude: acceptance",
   "last_review_failure": null,
   "tasks": [
     {
@@ -80,6 +80,21 @@
     {
       "timestamp": "2026-06-11T15:54:12Z",
       "event": "T02 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T16:24:17Z",
+      "event": "T02 prepared for review_rerun \u2014 direct_fixup: updated A11 example query to '2 bedrooms' (guaranteed hits in dataset); '3\u5ba42\u536b \u9884\u7b97300\u4e07' had no matching mock data, not a code regression",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T16:24:33Z",
+      "event": "T02 started \u2014 Codex: review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T16:28:54Z",
+      "event": "T02 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]

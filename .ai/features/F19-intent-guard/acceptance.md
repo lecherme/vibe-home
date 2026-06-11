@@ -24,4 +24,4 @@
 | ID | Criterion |
 |----|-----------|
 | A10 | `test_eval.py` and `eval_set.json` unchanged; F16 eval 30/30 unaffected |
-| A11 | A property-search query (e.g. `3室2卫 预算300万`) passed to `ai_search()` returns non-zero results (no regression on normal search path) |
+| A11 | A property-search query (e.g. `2 bedrooms`) passed to `ai_search()` returns non-zero results (no regression on normal search path) |
