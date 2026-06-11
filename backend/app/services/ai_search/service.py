@@ -203,15 +203,16 @@ def _normalize_query(query: str) -> dict[str, Any]:
 
         remaining_query = re.sub(pattern, _replace_bare, remaining_query, flags=re.IGNORECASE)
 
+    _SUBJECTIVE_BLOCKER = r"(?!\s*(?:太多|太少|太好|刚好|不够|够用|too\s+many|too\s+few|not\s+enough))"
     # bedroom bare counts
-    _extract_bare_count(rf"(?P<count>\d+)\s*(?:个|间)\s*{_BEDROOM_PATTERN}", "bedrooms_min")
-    _extract_bare_count(rf"(?P<count>\d+)室(?!\s*(?:个|间|以上|以下|至少|最少))", "bedrooms_min")
-    _extract_bare_count(rf"(?P<count>\d+)卧(?!\s*(?:个|间|室|以上|以下|至少|最少))", "bedrooms_min")
-    _extract_bare_count(rf"(?P<count>\d+)\s*(?:bedrooms?|beds?)", "bedrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)\s*(?:个|间)\s*{_BEDROOM_PATTERN}{_SUBJECTIVE_BLOCKER}", "bedrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)室(?!\s*(?:个|间|以上|以下|至少|最少|太多|太少|刚好|不够)){_SUBJECTIVE_BLOCKER}", "bedrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)卧(?!\s*(?:个|间|室|以上|以下|至少|最少)){_SUBJECTIVE_BLOCKER}", "bedrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)\s*(?:bedrooms?|beds?){_SUBJECTIVE_BLOCKER}", "bedrooms_min")
     # bathroom bare counts
-    _extract_bare_count(rf"(?P<count>\d+)\s*(?:个|间)\s*{_BATHROOM_PATTERN}", "bathrooms_min")
-    _extract_bare_count(rf"(?P<count>\d+)卫(?!\s*(?:个|间|以上|以下|至少|最少|星|生))", "bathrooms_min")
-    _extract_bare_count(rf"(?P<count>\d+)\s*(?:bathrooms?|baths?)", "bathrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)\s*(?:个|间)\s*{_BATHROOM_PATTERN}{_SUBJECTIVE_BLOCKER}", "bathrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)卫(?!\s*(?:个|间|以上|以下|至少|最少|星|生)){_SUBJECTIVE_BLOCKER}", "bathrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)\s*(?:bathrooms?|baths?){_SUBJECTIVE_BLOCKER}", "bathrooms_min")
 
     return {
         **extracted,

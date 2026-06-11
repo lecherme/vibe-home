@@ -33,6 +33,16 @@ Negative lookaheads on single-char bare patterns prevent double-matching already
 
 `docker compose exec backend python -c "import app.main; print('OK')"` → OK
 
+F16 eval: 30/30 pass (confirmed via inline eval run in container after F18 changes)
+
+`test_eval.py` and `eval_set.json` unchanged (confirmed via `git diff HEAD` — no diff)
+
+## Fix Applied After T02 Review
+
+T02 BLOCKER A16: bare-count pass was matching `两个浴室` inside `两个浴室太少`, setting `bathrooms_min=2` and blocking F17 inadequacy path from raising it to 3.
+
+Fix: added `_SUBJECTIVE_BLOCKER` negative lookahead to all bare-count patterns, excluding matches followed by subjective words (`太多`, `太少`, `太好`, `刚好`, `不够`, `够用`, `too many`, `too few`, `not enough`).
+
 ## Open Issues
 
 - None
