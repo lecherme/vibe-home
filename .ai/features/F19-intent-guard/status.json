@@ -66,6 +66,21 @@
       "timestamp": "2026-06-11T15:43:25Z",
       "event": "T02 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T15:48:14Z",
+      "event": "T02 prepared for review_rerun \u2014 direct_fixup: expanded _PROPERTY_SEARCH_PATTERNS with \u6709+property_noun and bare \u4e70\u623f/\u79df\u623f patterns to avoid LLM fallback for clear property-search queries",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T15:48:52Z",
+      "event": "T02 started \u2014 Codex: review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T15:54:12Z",
+      "event": "T02 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
     }
   ]
 }

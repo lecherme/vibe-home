@@ -57,6 +57,11 @@ _PROPERTY_SEARCH_PATTERNS = (
         rf"{_PROPERTY_NOUN_PATTERN}.*(?:附近|地铁|通勤|区域|location|district|area|near|close\s+to|in\s+\w+)",
         re.IGNORECASE,
     ),
+    re.compile(
+        rf"有(?:什么|哪些|没有|啥|何)?\s*{_PROPERTY_NOUN_PATTERN}",
+        re.IGNORECASE,
+    ),
+    re.compile(r"\b(?:买房|租房|找房|看房|买套房|租套房)\b", re.IGNORECASE),
 )
 _NON_SEARCH_PATTERNS = (
     re.compile(r"(?:为什么|为何|怎么|如何|是不是|分析|预测|政策|趋势|行情|原因|解读|why|how|analysis|forecast|policy|trend)", re.IGNORECASE),
