@@ -1,9 +1,9 @@
 {
   "feature": "F18-parser-room-vocab",
-  "status": "failed",
+  "status": "in_progress",
   "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
+  "next_step": "Start T03 \u2014 Claude: acceptance",
   "last_review_failure": null,
   "tasks": [
     {
@@ -85,6 +85,21 @@
     {
       "timestamp": "2026-06-11T05:25:37Z",
       "event": "T02 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T05:28:41Z",
+      "event": "T02 prepared for review_rerun \u2014 T02 Run 2 false failure: bwrap sandbox unavailable; re-run with CODEX_BYPASS_SANDBOX=1",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T05:29:23Z",
+      "event": "T02 started \u2014 Codex: review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T05:32:08Z",
+      "event": "T02 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]
