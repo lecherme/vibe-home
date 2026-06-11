@@ -1,0 +1,22 @@
+{
+  "feature": "F19-intent-guard",
+  "tasks": {
+    "T01": {
+      "owner": "codex",
+      "allowed_files": [
+        "backend/app/services/ai_search/service.py"
+      ]
+    },
+    "T02": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T03": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F19-intent-guard/status.json",
+        ".ai/features/F19-intent-guard/final-report.md"
+      ]
+    }
+  }
+}
