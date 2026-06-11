@@ -24,7 +24,7 @@ _ALLOWED_STATUS_VALUES = {status.value for status in PropertyStatus}
 _PRICE_UNIT_PATTERN = re.compile(r"(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>w|万)", re.IGNORECASE)
 _PRICE_SUFFIX_PATTERN = r"(?:\s*(?:hkd|hk\$))?"
 _BEDROOM_PATTERN = r"(?:卧室|房间|bedrooms?|beds?)"
-_BATHROOM_PATTERN = r"(?:浴室|bathrooms?|baths?)"
+_BATHROOM_PATTERN = r"(?:卫生间|洗手间|浴室|bathrooms?|baths?)"
 _ROOM_SUFFIX_BLOCKER = rf"(?!\s*(?:个|间)?\s*(?:{_BEDROOM_PATTERN}|{_BATHROOM_PATTERN}))"
 _MIN_COMPARATORS = {"以上", "至少", "最少", "at least", "or more", "or above"}
 _GREATER_THAN_COMPARATORS = {"more than", "greater than", "超过"}
@@ -143,6 +143,75 @@ def _normalize_query(query: str) -> dict[str, Any]:
 
     _extract_room_bounds(_BEDROOM_PATTERN, "bedrooms_min", "bedrooms_max")
     _extract_room_bounds(_BATHROOM_PATTERN, "bathrooms_min", "bathrooms_max")
+
+    # --- digit-bounded single-char shorthand passes (N室, N卧, N卫) ---
+    def _extract_shorthand_comparator(char_noun: str, min_key: str, max_key: str) -> None:
+        nonlocal remaining_query
+
+        def _apply_comparator_sh(raw_comparator: str, count: int) -> None:
+            comparator = " ".join(raw_comparator.lower().split())
+            if comparator in _MIN_COMPARATORS:
+                _update_min(min_key, count)
+            elif comparator in _GREATER_THAN_COMPARATORS:
+                _update_min(min_key, count + 1)
+            elif comparator in _MAX_COMPARATORS:
+                _update_max(max_key, count)
+            elif comparator in _LESS_THAN_COMPARATORS:
+                _update_max(max_key, count - 1)
+
+        def _replace_sh(match: re.Match[str]) -> str:
+            _apply_comparator_sh(match.group("comparator"), int(match.group("count")))
+            return " "
+
+        # comparator before N+char
+        remaining_query = re.sub(
+            rf"(?P<comparator>至少|最少|at\s+least|or\s+more|or\s+above|more\s+than|greater\s+than|"
+            rf"at\s+most|不超过|or\s+below|less\s+than|fewer\s+than|超过|少于)\s*"
+            rf"(?P<count>\d+){char_noun}",
+            _replace_sh,
+            remaining_query,
+            flags=re.IGNORECASE,
+        )
+        # N+char followed by comparator
+        remaining_query = re.sub(
+            rf"(?P<count>\d+){char_noun}\s*"
+            rf"(?P<comparator>以上|至少|最少|at\s+least|or\s+more|or\s+above|more\s+than|greater\s+than|"
+            rf"以下|at\s+most|不超过|or\s+below|less\s+than|fewer\s+than|超过|少于)",
+            _replace_sh,
+            remaining_query,
+            flags=re.IGNORECASE,
+        )
+        # N + 以上/以下 + char
+        remaining_query = re.sub(
+            rf"(?P<count>\d+)\s*(?P<comparator>以上|以下)\s*{char_noun}",
+            _replace_sh,
+            remaining_query,
+            flags=re.IGNORECASE,
+        )
+
+    _extract_shorthand_comparator("室", "bedrooms_min", "bedrooms_max")
+    _extract_shorthand_comparator("卧", "bedrooms_min", "bedrooms_max")
+    _extract_shorthand_comparator("卫", "bathrooms_min", "bathrooms_max")
+
+    # --- bare room count extraction (no comparator) → sets _min ---
+    def _extract_bare_count(pattern: str, min_key: str) -> None:
+        nonlocal remaining_query
+
+        def _replace_bare(match: re.Match[str]) -> str:
+            _update_min(min_key, int(match.group("count")))
+            return " "
+
+        remaining_query = re.sub(pattern, _replace_bare, remaining_query, flags=re.IGNORECASE)
+
+    # bedroom bare counts
+    _extract_bare_count(rf"(?P<count>\d+)\s*(?:个|间)\s*{_BEDROOM_PATTERN}", "bedrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)室(?!\s*(?:个|间|以上|以下|至少|最少))", "bedrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)卧(?!\s*(?:个|间|室|以上|以下|至少|最少))", "bedrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)\s*(?:bedrooms?|beds?)", "bedrooms_min")
+    # bathroom bare counts
+    _extract_bare_count(rf"(?P<count>\d+)\s*(?:个|间)\s*{_BATHROOM_PATTERN}", "bathrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)卫(?!\s*(?:个|间|以上|以下|至少|最少|星|生))", "bathrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)\s*(?:bathrooms?|baths?)", "bathrooms_min")
 
     return {
         **extracted,
