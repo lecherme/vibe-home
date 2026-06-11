@@ -71,6 +71,21 @@
       "timestamp": "2026-06-11T05:05:04Z",
       "event": "T02 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T05:22:50Z",
+      "event": "T02 prepared for review_rerun \u2014 A16 fix: add _SUBJECTIVE_BLOCKER to bare-count patterns; A5 evidence: 30/30 F16 eval confirmed",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T05:23:58Z",
+      "event": "T02 started \u2014 Codex: review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-11T05:25:37Z",
+      "event": "T02 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
     }
   ]
 }

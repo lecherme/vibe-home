@@ -6,39 +6,33 @@ FAIL
 ## Criteria Results
 | Criterion | Result | Notes |
 |-----------|--------|-------|
-| A1 | PASS | Build artifact states `_BATHROOM_PATTERN` was expanded to include `卫生间` and `洗手间`. |
-| A2 | PASS | Build artifact states `室` / `卧` were added only through digit-bounded shorthand extraction, not as free alternations in `_BEDROOM_PATTERN`. |
-| A3 | PASS | Build artifact states `卫` was added only through digit-bounded shorthand extraction, not as a free alternation in `_BATHROOM_PATTERN`. |
-| A4 | PASS | Build artifact states a bare-count pass was added after comparator extraction and maps bare room counts to `_min`. |
-| A5 | FAIL | No supplied verification evidence shows F16 eval remains 30/30. The activity log records `import app.main` verification, not a passing eval run. |
-| A6 | PASS | Covered by the stated bathroom synonym expansion plus comparator extraction for explicit lower bounds. |
-| A7 | PASS | Covered by the stated digit-bounded `N卫` comparator extraction. |
-| A8 | PASS | Covered by the stated bare-count bedroom extraction plus existing price parsing. |
-| A9 | PASS | Covered by the stated digit-bounded `N室` comparator extraction. |
-| A10 | PASS | Covered by the stated digit-bounded `N卧` comparator extraction. |
-| A11 | PASS | Covered by the stated bathroom bare-count extraction. |
-| A12 | PASS | Covered by the stated English bare-count extraction for `N bedrooms`. |
-| A13 | PASS | Covered by the stated bare-count `N卫` extraction plus existing price parsing. |
-| A14 | PASS | Covered by the stated bathroom synonym expansion plus existing max-price parsing. |
-| A15 | PASS | Existing comparator-based bedroom parsing is explicitly intended to remain unchanged. |
-| A16 | FAIL | The supplied artifacts do not show a safeguard that prevents the new bare-count pass from preempting the existing adequacy path on `两个浴室太少`. This regression remains unresolved from the evidence provided. |
-| Scope: only `backend/app/services/ai_search/service.py` changed | PASS | Build artifact lists only `service.py` as modified. No approved extra files were needed. |
-| `status.json` not modified by Codex or Gemini | PASS | No artifact or activity-log evidence shows Codex or Gemini editing `status.json`. |
-| No frontend business logic introduced | PASS | No frontend files are reported as changed. |
-| API types published to `frontend/types/` | PASS | No schema/API surface change is described, so no frontend type publication was required. |
+| A1 | FAIL | Could not independently inspect `backend/app/services/ai_search/service.py` in this runtime, so `_BATHROOM_PATTERN` could not be verified. |
+| A2 | FAIL | Could not independently inspect the bedroom patterns/extraction logic, so the `室` / `卧` digit-bounded constraint could not be verified. |
+| A3 | FAIL | Could not independently inspect the bathroom patterns/extraction logic, so the `卫` digit-bounded constraint could not be verified. |
+| A4 | FAIL | Could not independently inspect control flow in the parser, so the post-comparator bare-count extraction step could not be verified. |
+| A5 | PASS | Activity Log records human-verified F16 eval 30/30 pass after F18 and confirms `test_eval.py` / `eval_set.json` remained unchanged; per review rules this is acceptable evidence. |
+| A6 | FAIL | Could not run or inspect `_parse_filters` behavior in this runtime, so `3个卫生间以上 -> bathrooms_min=3` could not be validated. |
+| A7 | FAIL | Could not run or inspect `_parse_filters` behavior in this runtime, so `2卫以下 -> bathrooms_max=2` could not be validated. |
+| A8 | FAIL | Could not run or inspect `_parse_filters` behavior in this runtime, so `2个卧室 预算2000万 -> bedrooms_min=2, max_price=20000000` could not be validated. |
+| A9 | FAIL | Could not run or inspect `_parse_filters` behavior in this runtime, so `3室以上 -> bedrooms_min=3` could not be validated. |
+| A10 | FAIL | Could not run or inspect `_parse_filters` behavior in this runtime, so `2卧以下 -> bedrooms_max=2` could not be validated. |
+| A11 | FAIL | Could not run or inspect `_parse_filters` behavior in this runtime, so `2个浴室 -> bathrooms_min=2` could not be validated. |
+| A12 | FAIL | Could not run or inspect `_parse_filters` behavior in this runtime, so `2 bedrooms -> bedrooms_min=2` could not be validated. |
+| A13 | FAIL | Could not run or inspect `_parse_filters` behavior in this runtime, so `3卫 预算1500w -> bathrooms_min=3, max_price=15000000` could not be validated. |
+| A14 | FAIL | Could not run or inspect `_parse_filters` behavior in this runtime, so `3个卫生间以上 不超过2000w -> bathrooms_min=3, max_price=20000000` could not be validated. |
+| A15 | FAIL | Could not run or inspect `_parse_filters` behavior in this runtime, so regression `3个卧室以上 预算2000万 -> bedrooms_min=3, max_price=20000000` could not be validated. |
+| A16 | FAIL | Could not run or inspect `_parse_filters` behavior in this runtime, so regression `两个浴室太少 -> bathrooms_min=3` could not be validated. |
 
 ## Issues Found
-- BLOCKER: A5 is not satisfied by the supplied evidence. The record shows `import app.main` succeeded, but there is no demonstrated F16 eval 30/30 result.
-- BLOCKER: A16 remains at risk. The new bare-count rule can plausibly match `两个浴室` inside `两个浴室太少`; the supplied artifacts do not show ordering or exclusion logic that preserves the existing adequacy behavior.
-- WARNING: No targeted regression tests were added for the new synonym/shorthand/bare-count cases, which makes parser-order regressions harder to catch.
+- BLOCKER: Independent review could not be completed because repository inspection / command execution was unavailable in this runtime (`bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted`). That prevents validating the actual implementation in `backend/app/services/ai_search/service.py` and prevents functional verification of A6-A16.
+- WARNING: `status.json` cleanliness could not be independently confirmed from the current working tree for the same reason.
+- WARNING: The “no frontend business logic” and “all API types published to frontend/types/” checks could not be independently confirmed from the current working tree, although the provided build report claims no frontend or schema changes.
 
 ## Required Fixes
-- Provide acceptable evidence for A5: confirm `backend/tests/test_eval.py` and `backend/tests/eval_set.json` are unchanged and record a passing F16 eval 30/30 result.
-- Verify and, if necessary, fix the interaction between the new bare-count extraction and the existing adequacy path so `两个浴室太少` still yields `bathrooms_min=3`.
+- Restore working repository inspection for the review run, or provide the exact current contents/diff of `backend/app/services/ai_search/service.py`, so A1-A4 can be validated.
+- Provide a runnable or inspectable path for parser verification, or the exact current `_parse_filters` outputs for A6-A16, so the functional criteria can be reviewed.
+- Provide working-tree evidence for `status.json`, `backend/tests/test_eval.py`, and `backend/tests/eval_set.json` cleanliness if shell access remains unavailable.
 
 ## Approved Items
-- Bathroom vocabulary expansion is correctly scoped to deterministic parsing.
-- Single-character room shorthands are described as digit-bounded only, which matches the boundary requirement.
-- Bare-count extraction is described as a separate pass after comparator extraction, matching the product decision for `_min` semantics.
-- Scope appears contained to `backend/app/services/ai_search/service.py`.
-- No frontend, schema, LLM prompt, or `status.json` changes are evidenced.
+- A5 has acceptable evidence from the Activity Log under the stated review rules.
+- The provided artifacts consistently describe the intended scope as limited to `backend/app/services/ai_search/service.py`, with no declared frontend, schema, or LLM prompt changes.
