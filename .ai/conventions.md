@@ -74,19 +74,26 @@ Every feature gets a workspace at `.ai/features/<feature>/`.
 
 ```json
 {
-  "feature": "f1-auth",
+  "feature": "F1-auth",
   "status": "in_progress",
+  "current_stage": "T02_done",
+  "current_owner": null,
+  "next_step": "Start T03 — Claude: acceptance",
+  "last_review_failure": null,
   "tasks": [
     {
-      "id": "t1",
-      "name": "JWT middleware",
+      "id": "T01",
+      "title": "Codex: implement JWT middleware",
       "owner": "codex",
+      "type": "build",
+      "depends_on": [],
       "status": "done",
+      "retry_count": 0,
       "artifact": "codex-build-T01.md"
     }
   ],
   "activity_log": [
-    { "timestamp": "2026-04-23T10:00:00Z", "event": "task t1 started", "by": "claude" }
+    { "timestamp": "2026-04-23T10:00:00Z", "event": "T01 started — Codex: implement JWT middleware", "by": "claude" }
   ]
 }
 ```
@@ -144,7 +151,9 @@ Required env vars per service are documented in each service's `README.md`.
 
 ## Feature Workflow Conventions
 
-Every feature follows this sequence of sequential tasks:
+The task sequence for a feature is defined by its `tasks.md`. Claude reads `tasks.md` to determine what tasks exist, who owns them, and what their dependencies are. The sequence below is a common example for full-stack features — it is not a mandatory template.
+
+**Common example (full-stack feature):**
 
 1. **Spec** — Claude writes `spec.md`, `tasks.md`, `acceptance.md`, initializes `status.json`
 2. **Skeleton** — Codex scaffolds folder structure, empty files, type stubs; wrapper captures `codex-build-<TASK_ID>.md`
@@ -152,6 +161,8 @@ Every feature follows this sequence of sequential tasks:
 4. **UI** — Gemini scaffolds page + components using published API types; wrapper captures `gemini-build-<TASK_ID>.md`
 5. **Review** — Codex reviews all artifacts against `acceptance.md`; writes `review.md`
 6. **Acceptance** — Claude reads `review.md`, writes `final-report.md`, updates `status.json`
+
+Features with narrower scope (e.g. backend-only parser changes) may have fewer tasks — for example T01 build, T02 review, T03 acceptance. The number and type of tasks varies; always follow `tasks.md` for the feature being worked on.
 
 No task begins until its declared dependency task has a complete output artifact.
 No feature is done until Claude writes `final-report.md` with a passing disposition.

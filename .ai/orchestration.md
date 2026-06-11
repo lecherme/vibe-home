@@ -3,6 +3,16 @@
 Claude is the only orchestrator. Codex and Gemini are execution workers.
 Execution is serial. Every task has exactly one owner.
 
+### Worker invocation rule
+
+`tools/run_task.sh` is the **only** sanctioned entry point for Codex build and review tasks. It provides: preflight checks, `status.json` transitions, artifact capture, scope validation, and git checkpoint.
+
+Agent mode (spawning a general-purpose agent to call Codex directly) is **not** a substitute for `run_task.sh`. Agent mode is permitted only for:
+- Read-only exploration or debug probes that do not modify files
+- Post-hoc rescue when a run was interrupted after code was written but before an artifact was produced (see Step 3c)
+
+Never use Agent mode as the primary execution path for any worker task that should run through `tools/run_task.sh`, especially Codex build and review tasks.
+
 ---
 
 ## Execution Flow
@@ -106,6 +116,21 @@ The canonical state is `task.status = needs_verification` — never rely on
 
 Claude must not proceed to the next task until a `verify-pass` or `verify-fail`
 disposition has been written.
+
+### Step 3c — Manual / Agent implementation rescue
+
+This path applies when code was written via Agent mode or a direct Claude edit — outside of `run_task.sh` — and no artifact was produced.
+
+**When this applies:** the task status is still `pending` or `in_progress`, the implementation files exist and appear correct, but the wrapper was never invoked so no build artifact exists.
+
+**Claude's steps:**
+
+1. Read every modified file and verify the implementation is correct
+2. Write the build artifact manually to the standard path with all required sections (`## Task Completed`, `## Files Changed`, `## Summary`, `## Verification`)
+3. Run `python3 tools/status_guard.py needs-verification <feature> <task_id>` — do NOT call `done` directly
+4. Inspect the artifact and confirm correctness, then call `verify-pass` or `verify-fail` per Step 3b rules
+
+This path does not bypass the artifact requirement or the `needs_verification` gate. It only formalises that Claude, not the wrapper, is responsible for producing the artifact when the standard invocation path was not used.
 
 ### Step 4 — Claude validates the artifact and updates status.json
 
@@ -347,6 +372,7 @@ If a dependency is in a different feature, that feature must be fully `done` bef
 - Task-level `status` transitions: `pending` → `in_progress` → `done` | `failed` | `blocked`
 - A feature is `done` only when `final-report.md` exists with disposition `accepted`.
 - `final-report.md` is written only for final acceptance outcomes (accepted or failed after review), never for intermediate blocked states.
+- `status.json` feature-level `status: "done"` means the workflow completed — it does not encode the acceptance verdict. The authoritative acceptance verdict is the `## Disposition:` line in `final-report.md` only. Do not manually add "ACCEPTED" entries to `activity_log` in `status.json`; the disposition belongs in `final-report.md` exclusively. There is no `accepted` status value in `status.json`.
 
 ### Runtime retry metadata
 
