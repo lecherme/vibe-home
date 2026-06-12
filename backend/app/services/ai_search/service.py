@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 _SEARCH_MAX_PAGE_SIZE = 100
 _HYBRID_MIN_RESULTS = 5
+_RELAX_SUPPLEMENT_THRESHOLD = 3
+_MAX_RELAXATION_STEPS = 3
 _ALLOWED_STATUS_VALUES = {status.value for status in PropertyStatus}
 _PRICE_UNIT_PATTERN = re.compile(r"(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>w|万)", re.IGNORECASE)
 _PRICE_SUFFIX_PATTERN = r"(?:\s*(?:hkd|hk\$))?"
@@ -458,11 +460,89 @@ def _collect_items(property_ids: list[str], page: int, page_size: int) -> tuple[
     return items, total
 
 
+def _relax_filters(filters: SearchFilters) -> tuple[SearchFilters, str] | None:
+    if filters.bedrooms_min is not None:
+        if filters.bedrooms_min > 1:
+            relaxed_bedrooms_min = filters.bedrooms_min - 1
+            return (
+                filters.model_copy(update={"bedrooms_min": relaxed_bedrooms_min}),
+                f"Reduced minimum bedrooms from {filters.bedrooms_min} to {relaxed_bedrooms_min}.",
+            )
+        return (
+            filters.model_copy(update={"bedrooms_min": None}),
+            "Removed the minimum bedrooms requirement.",
+        )
+
+    if filters.bathrooms_min is not None:
+        if filters.bathrooms_min > 1:
+            relaxed_bathrooms_min = filters.bathrooms_min - 1
+            return (
+                filters.model_copy(update={"bathrooms_min": relaxed_bathrooms_min}),
+                f"Reduced minimum bathrooms from {filters.bathrooms_min} to {relaxed_bathrooms_min}.",
+            )
+        return (
+            filters.model_copy(update={"bathrooms_min": None}),
+            "Removed the minimum bathrooms requirement.",
+        )
+
+    if filters.location is not None:
+        return (
+            filters.model_copy(update={"location": None}),
+            f'Removed the location filter "{filters.location}".',
+        )
+
+    return None
+
+
+def _apply_relaxation(
+    query: str,
+    filters: SearchFilters,
+    query_parsed: bool,
+) -> tuple[list[str], SearchFilters, list[str]]:
+    current_filters = filters
+    current_conditions: list[str] = []
+    current_result_ids: list[str] = []
+    last_result_ids: list[str] = []
+    last_filters = filters
+    last_conditions: list[str] = []
+    last_successful_filters = filters
+    last_successful_conditions: list[str] = []
+
+    for _ in range(_MAX_RELAXATION_STEPS):
+        relaxed_result = _relax_filters(current_filters)
+        if relaxed_result is None:
+            break
+
+        current_filters, description = relaxed_result
+        current_conditions = [*current_conditions, description]
+        current_result_ids = _resolve_result_ids(
+            query,
+            current_filters,
+            query_parsed=query_parsed,
+        )
+        last_filters = current_filters
+        last_conditions = current_conditions.copy()
+
+        if current_result_ids:
+            last_result_ids = current_result_ids
+            last_successful_filters = current_filters
+            last_successful_conditions = current_conditions.copy()
+
+        if len(current_result_ids) >= _RELAX_SUPPLEMENT_THRESHOLD:
+            return current_result_ids, current_filters, current_conditions
+
+    if last_result_ids:
+        return last_result_ids, last_successful_filters, last_successful_conditions
+
+    return current_result_ids, last_filters, last_conditions
+
+
 def _generate_summary(
     query: str,
     parsed_filters: SearchFilters,
     total: int,
     items: list[PropertyRead],
+    relaxed_conditions: list[str] = [],
 ) -> str:
     properties_summary = [
         {
@@ -481,6 +561,13 @@ def _generate_summary(
         f"Total matches: {total}\n"
         f"Current page results: {json.dumps(properties_summary)}"
     )
+    if relaxed_conditions:
+        prompt += (
+            "\nRelaxation guidance: "
+            f"{json.dumps(relaxed_conditions, ensure_ascii=False)}\n"
+            "If relaxation guidance is present, explain it naturally in the same sentence. "
+            "When total matches is 0, explain that no close matches were found even after relaxing soft constraints."
+        )
     summary = complete(prompt=prompt, max_tokens=80, temperature=0.2)
     if not summary:
         raise ValueError("LLM returned an empty summary")
@@ -556,15 +643,59 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         parsed_filters = SearchFilters()
         query_parsed = False
 
+    relaxed_conditions: list[str] = []
     result_ids = _resolve_result_ids(
         query,
         parsed_filters,
         query_parsed=query_parsed,
     )
+    if query_parsed:
+        strict_count = len(result_ids)
+        if strict_count == 0:
+            result_ids, parsed_filters, relaxed_conditions = _apply_relaxation(
+                query,
+                parsed_filters,
+                query_parsed,
+            )
+            relaxed_conditions = [
+                (
+                    "Strict filters returned 0 results; soft constraints were relaxed to find the best available matches."
+                    if result_ids
+                    else "Strict filters returned 0 results."
+                ),
+                *relaxed_conditions,
+                *(
+                    ["No close matches were found even after relaxing soft constraints."]
+                    if not result_ids
+                    else []
+                ),
+            ]
+        elif strict_count < _RELAX_SUPPLEMENT_THRESHOLD:
+            relaxed_ids, _, relaxed_conditions = _apply_relaxation(
+                query,
+                parsed_filters,
+                query_parsed,
+            )
+            seen = set(result_ids)
+            appended_count = 0
+            for property_id in relaxed_ids:
+                if property_id not in seen:
+                    result_ids.append(property_id)
+                    seen.add(property_id)
+                    appended_count += 1
+            if relaxed_conditions:
+                relaxed_conditions = [
+                    (
+                        "Strict results were few, so relaxed matches were appended after the strict matches."
+                        if appended_count
+                        else "Strict results were few, and relaxing soft constraints did not uncover additional matches."
+                    ),
+                    *relaxed_conditions,
+                ]
     items, total = _collect_items(result_ids, resolved_page, resolved_page_size)
 
     try:
-        ai_summary = _generate_summary(query, parsed_filters, total, items)
+        ai_summary = _generate_summary(query, parsed_filters, total, items, relaxed_conditions)
     except Exception:
         logger.warning("AI summary generation failed", extra={"query": query}, exc_info=True)
         ai_summary = f"Found {total} properties matching your search."
