@@ -499,6 +499,8 @@ def _apply_relaxation(
     filters: SearchFilters,
     query_parsed: bool,
 ) -> tuple[list[str], SearchFilters, list[str]]:
+    if not query_parsed:
+        return [], filters, []
     current_filters = filters
     current_conditions: list[str] = []
     current_result_ids: list[str] = []
