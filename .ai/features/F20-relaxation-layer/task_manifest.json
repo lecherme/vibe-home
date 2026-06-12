@@ -1,0 +1,22 @@
+{
+  "feature": "F20-relaxation-layer",
+  "tasks": {
+    "T01": {
+      "owner": "codex",
+      "allowed_files": [
+        "backend/app/services/ai_search/service.py"
+      ]
+    },
+    "T02": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T03": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F20-relaxation-layer/status.json",
+        ".ai/features/F20-relaxation-layer/final-report.md"
+      ]
+    }
+  }
+}
