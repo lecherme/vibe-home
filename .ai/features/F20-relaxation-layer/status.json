@@ -1,9 +1,9 @@
 {
   "feature": "F20-relaxation-layer",
-  "status": "in_progress",
-  "current_stage": "T02_done",
+  "status": "done",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Start T03 \u2014 Claude: acceptance",
+  "next_step": "F20-relaxation-layer complete",
   "last_review_failure": null,
   "tasks": [
     {
@@ -36,7 +36,7 @@
       "depends_on": [
         "T02"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "final-report.md"
     }
@@ -80,6 +80,16 @@
     {
       "timestamp": "2026-06-12T06:04:49Z",
       "event": "T02 done \u2014 artifact captured as review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-12T06:36:57Z",
+      "event": "T03 started \u2014 Claude: acceptance",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-12T07:17:10Z",
+      "event": "T03 done \u2014 final acceptance artifact captured as final-report.md",
       "by": "claude"
     }
   ]
