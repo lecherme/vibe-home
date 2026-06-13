@@ -1,0 +1,29 @@
+{
+  "feature": "F21-property-schema-expansion",
+  "tasks": {
+    "T01": {
+      "owner": "codex",
+      "allowed_files": [
+        "backend/migrations/004_add_property_fields.sql",
+        "backend/seeds/002_seed_property_fields.sql",
+        "backend/app/schemas/property.py",
+        "backend/app/schemas/admin.py",
+        "backend/app/services/embeddings/service.py",
+        "backend/app/services/admin/service.py",
+        "backend/app/api/v1/admin/router.py",
+        "frontend/types/property.ts"
+      ]
+    },
+    "T02": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T03": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F21-property-schema-expansion/status.json",
+        ".ai/features/F21-property-schema-expansion/final-report.md"
+      ]
+    }
+  }
+}

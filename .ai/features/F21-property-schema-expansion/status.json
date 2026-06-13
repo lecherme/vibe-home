@@ -1,0 +1,47 @@
+{
+  "feature": "F21-property-schema-expansion",
+  "status": "pending",
+  "current_stage": "ready",
+  "current_owner": null,
+  "next_step": "Start T01 — Codex: implement property schema expansion",
+  "last_review_failure": null,
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Codex: implement property schema expansion",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "codex-build-T01.md"
+    },
+    {
+      "id": "T02",
+      "title": "Codex: review",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": ["T01"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "review.md"
+    },
+    {
+      "id": "T03",
+      "title": "Claude: acceptance",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": ["T02"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "final-report.md"
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-06-13T00:00:00Z",
+      "event": "F21 workspace initialized: spec/tasks/owner/acceptance/status created",
+      "by": "claude"
+    }
+  ]
+}
