@@ -13,6 +13,7 @@
 - `backend/app/services/admin/service.py`
 - `backend/app/api/v1/admin/router.py`
 - `frontend/types/property.ts`
+- `frontend/types/admin.ts`
 
 **不得修改：**
 - `backend/app/schemas/search.py`（`SearchFilters` 不新增字段）

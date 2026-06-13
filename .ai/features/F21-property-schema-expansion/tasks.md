@@ -15,6 +15,7 @@
 - `backend/app/services/admin/service.py`
 - `backend/app/api/v1/admin/router.py`
 - `frontend/types/property.ts`
+- `frontend/types/admin.ts`
 
 **Done condition:**
 - Migration file adds `built_year`, `subway_distance_m`, `tags` columns to the properties table with correct nullability

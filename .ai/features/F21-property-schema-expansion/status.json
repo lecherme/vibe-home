@@ -1,9 +1,9 @@
 {
   "feature": "F21-property-schema-expansion",
-  "status": "failed",
+  "status": "in_progress",
   "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
+  "next_step": "Start T03 \u2014 Claude: acceptance",
   "last_review_failure": null,
   "tasks": [
     {
@@ -65,6 +65,21 @@
     {
       "timestamp": "2026-06-13T15:13:49Z",
       "event": "T02 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-13T15:30:34Z",
+      "event": "T02 prepared for review_rerun \u2014 direct_fixup: add built_year, subway_distance_m, tags to frontend/types/admin.ts",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-13T15:41:13Z",
+      "event": "T02 started \u2014 Codex: review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-13T15:44:48Z",
+      "event": "T02 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]

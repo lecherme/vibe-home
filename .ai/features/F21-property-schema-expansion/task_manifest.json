@@ -11,7 +11,8 @@
         "backend/app/services/embeddings/service.py",
         "backend/app/services/admin/service.py",
         "backend/app/api/v1/admin/router.py",
-        "frontend/types/property.ts"
+        "frontend/types/property.ts",
+        "frontend/types/admin.ts"
       ]
     },
     "T02": {
