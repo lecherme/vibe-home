@@ -1,9 +1,9 @@
 {
   "feature": "F21-property-schema-expansion",
-  "status": "in_progress",
-  "current_stage": "T01_done",
+  "status": "failed",
+  "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Start T02 \u2014 Codex: review",
+  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,7 +24,7 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "review.md"
     },
@@ -55,6 +55,16 @@
     {
       "timestamp": "2026-06-13T14:51:40Z",
       "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-13T15:09:02Z",
+      "event": "T02 started \u2014 Codex: review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-13T15:13:49Z",
+      "event": "T02 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
     }
   ]
