@@ -28,8 +28,28 @@ def _get_openai_client() -> Any:
     )
 
 
-def _build_embedding_text(title: str, description: str, location: str) -> str:
-    return f"{title}. {description}. Located in {location}."
+def _build_embedding_text(
+    title: str,
+    description: str,
+    location: str,
+    area_sqm: float,
+    built_year: int | None = None,
+    subway_distance_m: int | None = None,
+    tags: list[str] | None = None,
+) -> str:
+    parts = [
+        f"{title}.",
+        f"{description}.",
+        f"Located in {location}.",
+        f"Area: {area_sqm}sqm.",
+    ]
+    if built_year is not None:
+        parts.append(f"Built: {built_year}.")
+    if subway_distance_m is not None:
+        parts.append(f"Distance to subway: {subway_distance_m}m.")
+    if tags:
+        parts.append(f"Tags: {', '.join(tags)}.")
+    return " ".join(parts)
 
 
 def embed_text(text: str) -> list[float]:
@@ -52,9 +72,23 @@ def try_upsert_property_embedding(
     title: str,
     description: str,
     location: str,
+    area_sqm: float,
+    built_year: int | None = None,
+    subway_distance_m: int | None = None,
+    tags: list[str] | None = None,
 ) -> None:
     try:
-        embedding = embed_text(_build_embedding_text(title, description, location))
+        embedding = embed_text(
+            _build_embedding_text(
+                title=title,
+                description=description,
+                location=location,
+                area_sqm=area_sqm,
+                built_year=built_year,
+                subway_distance_m=subway_distance_m,
+                tags=tags,
+            )
+        )
         (
             get_supabase_client()
             .table("property_embeddings")

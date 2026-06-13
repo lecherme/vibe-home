@@ -7,6 +7,12 @@ Execution is serial. Every task has exactly one owner.
 
 `tools/run_task.sh` is the **only** sanctioned entry point for Codex build and review tasks. It provides: preflight checks, `status.json` transitions, artifact capture, scope validation, and git checkpoint.
 
+**Required env vars (this host):** always prefix with `CODEX_MODEL=gpt-5.4 CODEX_BYPASS_SANDBOX=1`. The local bwrap/userns sandbox causes false failures; bypass is mandatory. Standard invocation:
+
+```
+CODEX_MODEL=gpt-5.4 CODEX_BYPASS_SANDBOX=1 bash tools/run_task.sh <feature> <task>
+```
+
 Agent mode (spawning a general-purpose agent to call Codex directly) is **not** a substitute for `run_task.sh`. Agent mode is permitted only for:
 - Read-only exploration or debug probes that do not modify files
 - Post-hoc rescue when a run was interrupted after code was written but before an artifact was produced (see Step 3c)

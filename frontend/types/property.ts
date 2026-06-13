@@ -9,6 +9,9 @@ export interface Property {
   bedrooms: number;
   bathrooms: number;
   area_sqm: number;
+  built_year: number | null;
+  subway_distance_m: number | null;
+  tags: string[];
   images: string[];
   status: PropertyStatus;
   created_at: string;

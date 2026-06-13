@@ -25,6 +25,9 @@ def create_property(data: PropertyCreate) -> PropertyRead:
         bedrooms=data.bedrooms,
         bathrooms=data.bathrooms,
         area_sqm=data.area,
+        built_year=data.built_year,
+        subway_distance_m=data.subway_distance_m,
+        tags=data.tags,
         images=data.images,
         status=PropertyStatus.AVAILABLE,
         created_at=datetime.now(timezone.utc),
@@ -35,6 +38,10 @@ def create_property(data: PropertyCreate) -> PropertyRead:
         title=property_item.title,
         description=property_item.description,
         location=property_item.location,
+        area_sqm=property_item.area_sqm,
+        built_year=property_item.built_year,
+        subway_distance_m=property_item.subway_distance_m,
+        tags=property_item.tags,
     )
     return property_item.model_copy(deep=True)
 
@@ -64,6 +71,12 @@ def update_property(property_id: str, data: PropertyUpdate) -> PropertyRead:
         updated_values["bathrooms"] = updates["bathrooms"]
     if "area" in updates and updates["area"] is not None:
         updated_values["area_sqm"] = updates["area"]
+    if "built_year" in updates:
+        updated_values["built_year"] = updates["built_year"]
+    if "subway_distance_m" in updates:
+        updated_values["subway_distance_m"] = updates["subway_distance_m"]
+    if "tags" in updates and updates["tags"] is not None:
+        updated_values["tags"] = updates["tags"]
     if "images" in updates and updates["images"] is not None:
         updated_values["images"] = updates["images"]
 
@@ -80,6 +93,10 @@ def update_property(property_id: str, data: PropertyUpdate) -> PropertyRead:
         title=updated_property.title,
         description=updated_property.description,
         location=updated_property.location,
+        area_sqm=updated_property.area_sqm,
+        built_year=updated_property.built_year,
+        subway_distance_m=updated_property.subway_distance_m,
+        tags=updated_property.tags,
     )
     return updated_property.model_copy(deep=True)
 

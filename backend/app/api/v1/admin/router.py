@@ -52,6 +52,10 @@ async def sync_property_embeddings(
             title=property_item.title,
             description=property_item.description,
             location=property_item.location,
+            area_sqm=property_item.area_sqm,
+            built_year=property_item.built_year,
+            subway_distance_m=property_item.subway_distance_m,
+            tags=property_item.tags,
         )
 
     return {"synced": len(properties)}
