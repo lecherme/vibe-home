@@ -34,6 +34,9 @@ FROM (
     ('prop-hk-017', 1995, 1100, ARRAY['duplex', 'private garden', 'racecourse access']::text[]),
     ('prop-hk-018', 1991, 190, ARRAY['近地铁', '2024 renovation', 'shopping district']::text[]),
     ('prop-hk-019', 2011, 1180, ARRAY['harbour view', 'clubhouse', 'walk-in wardrobe']::text[]),
-    ('prop-hk-020', 2003, 420, ARRAY['entry level', 'built-in storage', 'D2 Place']::text[])
+    ('prop-hk-020', 2003, 420, ARRAY['entry level', 'built-in storage', 'D2 Place']::text[]),
+    ('prop-hk-021', 2005, 280, ARRAY['近地铁', 'studio', '旺角商圈']::text[]),
+    ('prop-hk-022', 2010, 520, ARRAY['马铁沿线', 'quiet estate', 'first-time buyer']::text[]),
+    ('prop-hk-023', 2017, 350, ARRAY['将军澳新区', '近地铁', 'family friendly']::text[])
 ) AS data(id, built_year, subway_distance_m, tags)
 WHERE public.properties.id = data.id;
