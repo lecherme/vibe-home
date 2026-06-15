@@ -1,0 +1,22 @@
+{
+  "feature": "F23-llm-middle-layer",
+  "tasks": {
+    "T01": {
+      "owner": "codex",
+      "allowed_files": [
+        "backend/app/services/ai_search/service.py"
+      ]
+    },
+    "T02": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T03": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F23-llm-middle-layer/status.json",
+        ".ai/features/F23-llm-middle-layer/final-report.md"
+      ]
+    }
+  }
+}
