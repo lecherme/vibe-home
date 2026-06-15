@@ -220,6 +220,27 @@ Do not expand scope unilaterally under any circumstances.
 
 ---
 
+## Running the Eval Suite (F16)
+
+The runtime backend container image does **not** include `backend/tests/`. Do not
+attempt to find or run tests inside the running `backend` container.
+
+Standard command (always use this):
+
+```bash
+bash tools/run_eval.sh
+```
+
+This mounts `backend/tests/` into a one-off container at `/app/tests` and runs
+`pytest /app/tests/test_eval.py -q`. Any extra pytest flags can be appended.
+
+Do **not** use:
+- `docker compose exec backend python3 -m pytest ...` — tests are not in the image
+- `docker cp` to push test files into the live container
+- Host-level `python3 tests/test_eval.py` — backend deps are not installed on host
+
+---
+
 ## Fix Ticket Schema
 
 Fix tickets are the execution units of the review-fix loop. Each ticket lives under
