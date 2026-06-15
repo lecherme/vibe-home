@@ -1,9 +1,9 @@
 {
   "feature": "F22-search-filter-expansion",
-  "status": "in_progress",
-  "current_stage": "T02_done",
+  "status": "done",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Start T03 \u2014 Claude: acceptance",
+  "next_step": "F22-search-filter-expansion complete",
   "last_review_failure": null,
   "tasks": [
     {
@@ -36,7 +36,7 @@
       "depends_on": [
         "T02"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "final-report.md"
     }
@@ -65,6 +65,11 @@
     {
       "timestamp": "2026-06-15T04:44:40Z",
       "event": "T02 done \u2014 artifact captured as review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-15T04:53:06Z",
+      "event": "T03 done \u2014 final acceptance artifact captured as final-report.md",
       "by": "claude"
     }
   ]
