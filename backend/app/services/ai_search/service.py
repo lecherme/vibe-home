@@ -562,17 +562,13 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
             if not isinstance(parsed_payload, dict):
                 raise ValueError("LLM returned a non-object JSON payload")
             llm_subway_distance_max = _validate_llm_int(parsed_payload.get("subway_distance_max"))
-            if llm_subway_distance_max is not None and 50 <= llm_subway_distance_max <= 5000:
+            if llm_subway_distance_max == 500:
                 parsed_payload["subway_distance_max"] = llm_subway_distance_max
             else:
                 parsed_payload.pop("subway_distance_max", None)
 
             llm_built_year_min = _validate_llm_int(parsed_payload.get("built_year_min"))
-            if (
-                llm_built_year_min is not None
-                and 1000 <= llm_built_year_min <= 9999
-                and 1900 <= llm_built_year_min <= current_utc_year + 1
-            ):
+            if llm_built_year_min == recent_building_year_min:
                 parsed_payload["built_year_min"] = llm_built_year_min
             else:
                 parsed_payload.pop("built_year_min", None)
