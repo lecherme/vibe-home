@@ -1,0 +1,25 @@
+{
+  "feature": "F22-search-filter-expansion",
+  "tasks": {
+    "T01": {
+      "owner": "codex",
+      "allowed_files": [
+        "backend/app/schemas/search.py",
+        "backend/app/services/search/service.py",
+        "backend/app/services/ai_search/service.py",
+        "frontend/types/search.ts"
+      ]
+    },
+    "T02": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T03": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F22-search-filter-expansion/status.json",
+        ".ai/features/F22-search-filter-expansion/final-report.md"
+      ]
+    }
+  }
+}
