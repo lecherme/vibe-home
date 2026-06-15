@@ -29,6 +29,12 @@ def search(filters: SearchFilters, db_session: Any) -> list[str]:
         if filters.max_price is not None and property_item.price > filters.max_price:
             continue
 
+        if filters.area_min is not None and property_item.area_sqm < filters.area_min:
+            continue
+
+        if filters.area_max is not None and property_item.area_sqm > filters.area_max:
+            continue
+
         if (
             filters.bedrooms_min is not None
             and property_item.bedrooms < filters.bedrooms_min
@@ -50,6 +56,24 @@ def search(filters: SearchFilters, db_session: Any) -> list[str]:
         if (
             filters.bathrooms_max is not None
             and property_item.bathrooms > filters.bathrooms_max
+        ):
+            continue
+
+        if (
+            filters.built_year_min is not None
+            and (
+                property_item.built_year is None
+                or property_item.built_year < filters.built_year_min
+            )
+        ):
+            continue
+
+        if (
+            filters.subway_distance_max is not None
+            and (
+                property_item.subway_distance_m is None
+                or property_item.subway_distance_m > filters.subway_distance_max
+            )
         ):
             continue
 

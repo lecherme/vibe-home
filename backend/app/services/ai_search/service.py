@@ -72,7 +72,23 @@ _NON_SEARCH_PATTERNS = (
 
 
 def _has_filters(filters: SearchFilters) -> bool:
-    return any(value is not None for value in filters.model_dump().values())
+    return any(
+        value is not None
+        for value in (
+            filters.location,
+            filters.min_price,
+            filters.max_price,
+            filters.area_min,
+            filters.area_max,
+            filters.bedrooms_min,
+            filters.bedrooms_max,
+            filters.bathrooms_min,
+            filters.bathrooms_max,
+            filters.built_year_min,
+            filters.subway_distance_max,
+            filters.status,
+        )
+    )
 
 
 def _is_property_search(query: str) -> bool:
@@ -326,10 +342,14 @@ def _normalize_filters(raw_filters: dict[str, Any]) -> SearchFilters:
         location=normalized_location,
         min_price=_to_int(raw_filters.get("min_price")),
         max_price=_to_int(raw_filters.get("max_price")),
+        area_min=_to_int(raw_filters.get("area_min")),
+        area_max=_to_int(raw_filters.get("area_max")),
         bedrooms_min=_to_int(raw_filters.get("bedrooms_min")),
         bedrooms_max=_to_int(raw_filters.get("bedrooms_max")),
         bathrooms_min=_to_int(raw_filters.get("bathrooms_min")),
         bathrooms_max=_to_int(raw_filters.get("bathrooms_max")),
+        built_year_min=_to_int(raw_filters.get("built_year_min")),
+        subway_distance_max=_to_int(raw_filters.get("subway_distance_max")),
         status=normalized_status,
     )
 
@@ -381,13 +401,113 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
     if not query.strip():
         return SearchFilters(), True
 
-    normalized_query = _normalize_query(query)
-    deterministic_filters = {
+    deterministic_filters: dict[str, Any] = {}
+    remaining_query = _CHINESE_DIGIT_RE.sub(lambda m: _CHINESE_DIGITS[m.group(0)], query)
+
+    def _update_min(key: str, value: int) -> None:
+        current = deterministic_filters.get(key)
+        deterministic_filters[key] = value if current is None else max(current, value)
+
+    def _update_max(key: str, value: int) -> None:
+        if value < 0:
+            return
+        current = deterministic_filters.get(key)
+        deterministic_filters[key] = value if current is None else min(current, value)
+
+    def _strip_with_handler(pattern: str, handler: Any) -> None:
+        nonlocal remaining_query
+
+        def _replace(match: re.Match[str]) -> str:
+            handler(match)
+            return " "
+
+        remaining_query = re.sub(pattern, _replace, remaining_query, flags=re.IGNORECASE)
+
+    area_unit_pattern = r"(?:平米|平|㎡|sqm|sq\.?\s*m)"
+    distance_unit_pattern = r"(?:m|meters?|metres?)"
+    current_year = __import__("datetime").datetime.now(
+        __import__("datetime").timezone.utc
+    ).year
+
+    def _handle_area_range(match: re.Match[str]) -> None:
+        area_min = int(match.group("area_min"))
+        area_max = int(match.group("area_max"))
+        if area_min > area_max:
+            area_min, area_max = area_max, area_min
+        _update_min("area_min", area_min)
+        _update_max("area_max", area_max)
+
+    _strip_with_handler(
+        rf"(?P<area_min>\d+)\s*(?:到|-|至)\s*(?P<area_max>\d+)\s*{area_unit_pattern}",
+        _handle_area_range,
+    )
+    _strip_with_handler(
+        rf"(?P<value>\d+)\s*{area_unit_pattern}\s*以上",
+        lambda match: _update_min("area_min", int(match.group("value"))),
+    )
+    _strip_with_handler(
+        rf"(?P<value>\d+)\s*{area_unit_pattern}\s*以下",
+        lambda match: _update_max("area_max", int(match.group("value"))),
+    )
+    _strip_with_handler(
+        rf"(?:at\s+least|over)\s*(?P<value>\d+)\s*{area_unit_pattern}",
+        lambda match: _update_min("area_min", int(match.group("value"))),
+    )
+    _strip_with_handler(
+        rf"(?:under|below)\s*(?P<value>\d+)\s*{area_unit_pattern}",
+        lambda match: _update_max("area_max", int(match.group("value"))),
+    )
+
+    _strip_with_handler(
+        r"(?P<value>\d{4})年(?:后|以后)",
+        lambda match: _update_min("built_year_min", int(match.group("value"))),
+    )
+    _strip_with_handler(
+        r"(?:房龄|楼龄)\s*(?P<years>\d+)\s*年(?:内|以内)",
+        lambda match: _update_min("built_year_min", current_year - int(match.group("years"))),
+    )
+    _strip_with_handler(
+        r"(?P<years>\d+)\s*年\s*(?:房龄|楼龄)(?:内|以内)",
+        lambda match: _update_min("built_year_min", current_year - int(match.group("years"))),
+    )
+    _strip_with_handler(
+        r"(?:built\s+after|newer\s+than)\s*(?P<value>\d{4})",
+        lambda match: _update_min("built_year_min", int(match.group("value"))),
+    )
+    _strip_with_handler(
+        r"within\s+(?P<years>\d+)\s+years\b",
+        lambda match: _update_min("built_year_min", current_year - int(match.group("years"))),
+    )
+    _strip_with_handler(
+        r"less\s+than\s+(?P<years>\d+)\s+years\s+old\b",
+        lambda match: _update_min("built_year_min", current_year - int(match.group("years"))),
+    )
+
+    _strip_with_handler(
+        r"(?:距(?:离)?\s*)?地铁\s*(?P<value>\d+)\s*米(?:内|以内)",
+        lambda match: _update_max("subway_distance_max", int(match.group("value"))),
+    )
+    _strip_with_handler(
+        rf"mtr\s+within\s+(?P<value>\d+)\s*{distance_unit_pattern}\b",
+        lambda match: _update_max("subway_distance_max", int(match.group("value"))),
+    )
+    _strip_with_handler(
+        rf"(?P<value>\d+)\s*{distance_unit_pattern}\s+from\s+mtr\b",
+        lambda match: _update_max("subway_distance_max", int(match.group("value"))),
+    )
+    _strip_with_handler(
+        rf"within\s+(?P<value>\d+)\s*{distance_unit_pattern}\s+of\s+mtr\b",
+        lambda match: _update_max("subway_distance_max", int(match.group("value"))),
+    )
+
+    normalized_query = _normalize_query(remaining_query)
+    deterministic_filters.update({
         key: value
         for key, value in normalized_query.items()
         if key != "remaining_query" and value is not None
-    }
+    })
     remaining_query = normalized_query.get("remaining_query", "")
+    remaining_query = re.sub(r"\s+", " ", remaining_query).strip(" ,，;；")
     if not remaining_query:
         return _normalize_filters(deterministic_filters), bool(deterministic_filters)
 
