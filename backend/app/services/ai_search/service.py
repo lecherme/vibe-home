@@ -425,9 +425,10 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
 
     area_unit_pattern = r"(?:平米|平|㎡|sqm|sq\.?\s*m)"
     distance_unit_pattern = r"(?:m|meters?|metres?)"
-    current_year = __import__("datetime").datetime.now(
+    current_utc_year = __import__("datetime").datetime.now(
         __import__("datetime").timezone.utc
     ).year
+    recent_building_year_min = current_utc_year - 10
 
     def _handle_area_range(match: re.Match[str]) -> None:
         area_min = int(match.group("area_min"))
@@ -464,11 +465,11 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
     )
     _strip_with_handler(
         r"(?:房龄|楼龄)\s*(?P<years>\d+)\s*年(?:内|以内)",
-        lambda match: _update_min("built_year_min", current_year - int(match.group("years"))),
+        lambda match: _update_min("built_year_min", current_utc_year - int(match.group("years"))),
     )
     _strip_with_handler(
         r"(?P<years>\d+)\s*年\s*(?:房龄|楼龄)(?:内|以内)",
-        lambda match: _update_min("built_year_min", current_year - int(match.group("years"))),
+        lambda match: _update_min("built_year_min", current_utc_year - int(match.group("years"))),
     )
     _strip_with_handler(
         r"(?:built\s+after|newer\s+than)\s*(?P<value>\d{4})",
@@ -476,11 +477,11 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
     )
     _strip_with_handler(
         r"within\s+(?P<years>\d+)\s+years\b",
-        lambda match: _update_min("built_year_min", current_year - int(match.group("years"))),
+        lambda match: _update_min("built_year_min", current_utc_year - int(match.group("years"))),
     )
     _strip_with_handler(
         r"less\s+than\s+(?P<years>\d+)\s+years\s+old\b",
-        lambda match: _update_min("built_year_min", current_year - int(match.group("years"))),
+        lambda match: _update_min("built_year_min", current_utc_year - int(match.group("years"))),
     )
 
     _strip_with_handler(
@@ -511,13 +512,31 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
     if not remaining_query:
         return _normalize_filters(deterministic_filters), bool(deterministic_filters)
 
+    def _validate_llm_int(value: Any) -> int | None:
+        if value in (None, "") or isinstance(value, bool):
+            return None
+        if isinstance(value, int):
+            return value
+        if isinstance(value, float):
+            return int(value) if value.is_integer() else None
+        if isinstance(value, str) and value.strip().isdigit():
+            return int(value.strip())
+        return None
+
     system_prompt = (
         "Extract only unresolved real-estate filters from the remaining query text. "
         "Direct filter bounds for price, bedrooms, and bathrooms were already parsed deterministically, so do not "
         "return or infer bedrooms_min, bedrooms_max, bathrooms_min, bathrooms_max, min_price, or max_price. "
         "You may identify subjective room-count judgments only when the user states an explicit bedroom or bathroom "
-        "count N together with a judgment. Return JSON only with keys location, status, remainder, "
+        "count N together with a judgment. Return JSON only with keys location, status, subway_distance_max, "
+        "built_year_min, remainder, "
         "bedrooms_subjective_label, bedrooms_ref, bathrooms_subjective_label, bathrooms_ref. "
+        "Only recognize these fixed-vocabulary subway expressions and map them to subway_distance_max=500: "
+        "近地铁, 靠近地铁, 地铁口, 步行到地铁, near MTR, close to MTR, walking distance to MTR. "
+        f"Only recognize these fixed-vocabulary building-age expressions and map them to built_year_min={recent_building_year_min}: "
+        "新楼, 次新楼, 次新房, 较新, 新建, new building, newer building. "
+        "Do not invent thresholds or return subway_distance_max or built_year_min for any unlisted expression. "
+        "The built_year_min value above was precomputed by the backend; do not perform relative year arithmetic. "
         "Allowed subjective labels are insufficient, excessive, adequate, unknown, or null. "
         "If no explicit count is stated for a subjective bedroom or bathroom judgment, set the corresponding ref "
         "to null and label to unknown or null. "
@@ -542,7 +561,28 @@ def _parse_filters(query: str) -> tuple[SearchFilters, bool]:
             parsed_payload = json.loads(_sanitize_json_payload(response_text))
             if not isinstance(parsed_payload, dict):
                 raise ValueError("LLM returned a non-object JSON payload")
-            return _normalize_filters(_apply_subjective_room_filters(parsed_payload, deterministic_filters)), True
+            llm_subway_distance_max = _validate_llm_int(parsed_payload.get("subway_distance_max"))
+            if llm_subway_distance_max is not None and 50 <= llm_subway_distance_max <= 5000:
+                parsed_payload["subway_distance_max"] = llm_subway_distance_max
+            else:
+                parsed_payload.pop("subway_distance_max", None)
+
+            llm_built_year_min = _validate_llm_int(parsed_payload.get("built_year_min"))
+            if (
+                llm_built_year_min is not None
+                and 1000 <= llm_built_year_min <= 9999
+                and 1900 <= llm_built_year_min <= current_utc_year + 1
+            ):
+                parsed_payload["built_year_min"] = llm_built_year_min
+            else:
+                parsed_payload.pop("built_year_min", None)
+
+            merged_filters = _apply_subjective_room_filters(parsed_payload, deterministic_filters)
+            if deterministic_filters.get("subway_distance_max") is None and parsed_payload.get("subway_distance_max") is not None:
+                merged_filters["subway_distance_max"] = parsed_payload["subway_distance_max"]
+            if deterministic_filters.get("built_year_min") is None and parsed_payload.get("built_year_min") is not None:
+                merged_filters["built_year_min"] = parsed_payload["built_year_min"]
+            return _normalize_filters(merged_filters), True
         except Exception as exc:
             last_exc = exc
     if deterministic_filters:

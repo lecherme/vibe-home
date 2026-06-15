@@ -1,9 +1,9 @@
 {
   "feature": "F23-llm-middle-layer",
-  "status": "pending",
-  "current_stage": "ready",
+  "status": "in_progress",
+  "current_stage": "T01_done",
   "current_owner": null,
-  "next_step": "Start T01 — Codex: implement LLM middle layer",
+  "next_step": "Start T02 \u2014 Codex: review",
   "last_review_failure": null,
   "tasks": [
     {
@@ -12,7 +12,7 @@
       "owner": "codex",
       "type": "build",
       "depends_on": [],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "codex-build-T01.md"
     },
@@ -45,6 +45,16 @@
     {
       "timestamp": "2026-06-15T00:00:00Z",
       "event": "F23 workspace initialized: spec/tasks/owner/acceptance/status created",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-15T05:23:37Z",
+      "event": "T01 started \u2014 Codex: implement LLM middle layer",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-15T05:25:19Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
       "by": "claude"
     }
   ]
