@@ -6,6 +6,16 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-023 — 中文数字房间词不解析为 bedrooms_min
+
+- **Fixed date:** 2026-06-16
+- **Verification:** `_parse_filters("四房").bedrooms_min == 4`, `_parse_filters("三房").bedrooms_min == 3`; `bash tools/run_eval.sh` PASS
+- **Fixing batch:** `.ai/fix-runs/2026-06-16-chinese-room-vocab` — BUG-023-FIX
+- **Fix:** Added `\d+房(?!\s*(?:源|子|价|间|龄|东))` to bedroom bare-count extraction block in `_normalize_query()`; Chinese digit conversion (四→4) was already present
+- **Original source:** F23 smoke test 2026-06-16
+
+---
+
 ### BUG-021 — AI search "Understood Filters" missing F22 fields
 
 - **Fixed date:** 2026-06-16

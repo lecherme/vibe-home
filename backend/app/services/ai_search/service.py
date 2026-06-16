@@ -302,6 +302,7 @@ def _normalize_query(query: str) -> dict[str, Any]:
     _SUBJECTIVE_BLOCKER = r"(?!\s*(?:太多|太少|太好|刚好|不够|够用|too\s+many|too\s+few|not\s+enough))"
     # bedroom bare counts
     _extract_bare_count(rf"(?P<count>\d+)\s*(?:个|间)\s*{_BEDROOM_PATTERN}{_SUBJECTIVE_BLOCKER}", "bedrooms_min")
+    _extract_bare_count(rf"(?P<count>\d+)房(?!\s*(?:源|子|价|间|龄|东)){_SUBJECTIVE_BLOCKER}", "bedrooms_min")
     _extract_bare_count(rf"(?P<count>\d+)室(?!\s*(?:个|间|以上|以下|至少|最少|太多|太少|刚好|不够)){_SUBJECTIVE_BLOCKER}", "bedrooms_min")
     _extract_bare_count(rf"(?P<count>\d+)卧(?!\s*(?:个|间|室|以上|以下|至少|最少)){_SUBJECTIVE_BLOCKER}", "bedrooms_min")
     _extract_bare_count(rf"(?P<count>\d+)\s*(?:bedrooms?|beds?){_SUBJECTIVE_BLOCKER}", "bedrooms_min")

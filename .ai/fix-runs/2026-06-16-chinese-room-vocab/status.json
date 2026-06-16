@@ -1,16 +1,16 @@
 {
   "feature": "fix-run-2026-06-16-chinese-room-vocab",
-  "status": "pending",
+  "status": "done",
   "tasks": [
     {
       "id": "FIX-BATCH-01",
       "title": "Chinese Room Vocabulary",
       "fix": {
-        "status": "pending",
+        "status": "done",
         "tickets": [
           {
             "id": "BUG-023-FIX",
-            "status": "pending",
+            "status": "verified",
             "required_by": "open-bugs.md",
             "affected_task": "F16/F18",
             "affected_task_title": "BUG-023 — 中文数字房间词不解析为 bedrooms_min",
