@@ -120,6 +120,7 @@ tools/
 ├── next_feature.sh      # Advance the pipeline to the next feature in roadmap.md
 ├── new_feature.sh       # Initialize a new feature workspace from template
 ├── resume.sh            # Resume an in-progress feature after context reset
+├── run_eval.sh          # Run AI search eval suite (mounts backend/tests into a fresh container)
 ├── git_checkpoint.sh    # Commit current state with structured message
 └── status_guard.py      # Validates status.json writes — blocks unauthorized agents
 ```
@@ -131,19 +132,19 @@ tools/
 
 ---
 
-## Features Built (F0 → F8)
+## Product Capabilities
 
-| Feature | Description |
-|---|---|
-| F0 | Project foundation — Next.js + FastAPI scaffold, Docker, CI |
-| F1 | Authentication — Supabase Auth, PKCE flow, middleware, protected routes |
-| F2 | Property listing — paginated API, property cards, Supabase schema |
-| F3 | Favorites — add/remove/list favorites, per-user state |
-| F4 | Admin panel — property CRUD, role-gated routes |
-| F5 | Search — filter by location, price, bedrooms |
-| F6 | Type publishing — shared TypeScript types from backend schema |
-| F7 | Supabase persistence — migrate from in-memory to real database |
-| F8 | Production hardening — CORS allowlist, rate limiting, structured JSON logging, cascade delete |
+- **Auth & role management** — Supabase Auth (PKCE, ES256 JWT), admin-gated routes
+- **Property browsing & favorites** — paginated listings, per-user favorites, image upload to Supabase Storage
+- **Structured search** — filter by location, price, bedrooms, area, build year, subway distance
+- **Hybrid AI search** — natural-language query → deterministic parser + LLM vocabulary recognition → pgvector semantic retrieval → LLM summary
+- **Query parser** — regex-based normalization, Chinese vocabulary support, subjective comparison mapping
+- **Relaxation layer** — when strict filters return 0 results, progressively relaxes soft constraints and discloses what changed
+- **Intent guard** — classifies queries before pipeline entry; non-property queries exit early with a redirect message
+- **Production hardening** — CORS allowlist, rate limiting, structured JSON logging, cascade delete
+- **UI** — shadcn/ui component system throughout (forms, search, admin)
+
+Detailed delivery history: [`.ai/features/`](.ai/features/)
 
 ---
 
@@ -151,10 +152,11 @@ tools/
 
 | Layer | Stack |
 |---|---|
-| Frontend | Next.js 16.2.4 (App Router), TypeScript, Tailwind CSS |
-| Backend | FastAPI, Python 3.12, PyJWT (ES256/JWKS) |
+| Frontend | Next.js 16.2 (App Router), TypeScript 5.6, Tailwind CSS, shadcn/ui |
+| Backend | FastAPI 0.116, Python 3.12, PyJWT (ES256/JWKS) |
 | Auth | Supabase Auth (PKCE, ES256 JWT) |
-| Database | Supabase (PostgreSQL) |
+| Database | Supabase (PostgreSQL + pgvector) |
+| AI | OpenAI (embeddings + LLM filter parsing + summary) |
 | Container | Docker Compose (multi-stage builds) |
 
 ---
@@ -189,13 +191,22 @@ docker compose -f docker-compose.yml up --build
 
 ```env
 SUPABASE_URL=https://<ref>.supabase.co
-SUPABASE_KEY=<service-role-key>                # the key the backend client uses; set to service role key in production
-SUPABASE_SERVICE_ROLE_KEY=<service-role-key>   # reference only — documented for shared project parity
-SUPABASE_ANON_KEY=<anon-key>                   # reference only — documented for shared project parity
-SUPABASE_JWT_SECRET=<jwt-secret>               # optional; not used — JWT verification uses Supabase JWKS (ES256)
-CORS_ALLOWED_ORIGINS=https://yourdomain.com    # takes priority over ALLOWED_ORIGINS when set; recommended for production
-ALLOWED_ORIGINS=http://localhost:3000          # required; used as fallback when CORS_ALLOWED_ORIGINS is absent
+SUPABASE_KEY=<service-role-key>                # backend Supabase client key
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>   # required — used directly by supabase.py for admin operations
+SUPABASE_ANON_KEY=<anon-key>                   # reference only
+SUPABASE_JWT_SECRET=<jwt-secret>               # optional; JWT verification uses Supabase JWKS (ES256)
+ALLOWED_ORIGINS=http://localhost:3000          # required; comma-separated allowed CORS origins
+CORS_ALLOWED_ORIGINS=https://yourdomain.com    # optional; takes priority over ALLOWED_ORIGINS in production
 RATE_LIMIT_AUTH=5/minute                       # optional; default 5/minute; format: <count>/<second|minute|hour|day>
+
+# AI search
+EMBEDDING_API_KEY=<key>                        # API key for embedding provider
+EMBEDDING_MODEL=embedding-3                    # embedding model name
+EMBEDDING_BASE_URL=https://...                 # embedding provider base URL
+LLM_PROVIDER=openai                            # anthropic | openai | openai_compatible
+LLM_API_KEY=<key>                              # LLM API key
+LLM_MODEL=claude-3-5-haiku-latest             # LLM model name
+LLM_BASE_URL=https://...                       # optional; required for openai_compatible provider
 ```
 
 ### Frontend
@@ -245,10 +256,15 @@ Sample data with 20 Hong Kong properties is available at `backend/seeds/001_seed
 | `GET /health` | — | Health check |
 | `GET /api/v1/auth/me` | Bearer | Current user (rate-limited: 5/min) |
 | `GET /api/v1/properties` | Bearer | List properties (paginated) |
-| `GET /api/v1/properties/search` | Bearer | Search with filters |
+| `GET /api/v1/properties/{id}` | Bearer | Property detail |
+| `GET /api/v1/properties/search` | Bearer | Structured search with filters |
+| `POST /api/v1/search/ai` | Bearer | AI search — natural-language query, returns parsed filters + summary |
 | `GET /api/v1/favorites` | Bearer | User favorites |
 | `POST /api/v1/favorites/{id}` | Bearer | Add to favorites |
 | `DELETE /api/v1/favorites/{id}` | Bearer | Remove from favorites |
-| `GET /api/v1/admin/properties` | Bearer (admin) | Admin property list |
+| `GET /api/v1/admin/properties` | Bearer (admin) | List all properties (admin) |
 | `POST /api/v1/admin/properties` | Bearer (admin) | Create property |
+| `PUT /api/v1/admin/properties/{id}` | Bearer (admin) | Update property |
 | `DELETE /api/v1/admin/properties/{id}` | Bearer (admin) | Delete + cascade favorites |
+| `POST /api/v1/admin/uploads/property-image` | Bearer (admin) | Upload image to Supabase Storage |
+| `POST /api/v1/admin/embeddings/sync` | Bearer (admin) | Sync property embeddings for AI search |
