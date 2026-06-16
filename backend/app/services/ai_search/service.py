@@ -802,6 +802,7 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         logger.warning("AI query parsing failed", extra={"query": query}, exc_info=True)
         parsed_filters = SearchFilters()
         query_parsed = False
+    original_parsed_filters = parsed_filters.model_copy()
 
     relaxed_conditions: list[str] = []
     result_ids = _resolve_result_ids(
@@ -869,7 +870,7 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         total=total,
         page=resolved_page,
         page_size=resolved_page_size,
-        parsed_filters=parsed_filters,
+        parsed_filters=original_parsed_filters,
         ai_summary=ai_summary,
         query_parsed=query_parsed,
     )

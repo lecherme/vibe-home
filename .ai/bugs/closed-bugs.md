@@ -6,6 +6,16 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-025 — parsed_filters should preserve original filters when relaxation occurs
+
+- **Fixed date:** 2026-06-16
+- **Verification:** `import app.main` exit 0
+- **Fixing batch:** `.ai/fix-runs/2026-06-16-relaxation-original-filters` — BUG-025-FIX
+- **Fix:** In `ai_search()`, added `original_parsed_filters = parsed_filters.model_copy()` before relaxation logic; `AiSearchResult.parsed_filters` now returns original (pre-relaxation) filters so UNDERSTOOD FILTERS chip reflects user intent, not relaxed state
+- **Original source:** F23 smoke test 2026-06-16 ("四房 2000w预算 近地铁" showed 🛏️ >= 3 Beds instead of >= 4 Beds)
+
+---
+
 ### BUG-024 — Relaxation fallback summary 丢失放宽说明
 
 - **Fixed date:** 2026-06-16

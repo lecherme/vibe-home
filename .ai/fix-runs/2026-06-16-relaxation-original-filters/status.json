@@ -1,16 +1,16 @@
 {
   "feature": "fix-run-2026-06-16-relaxation-original-filters",
-  "status": "pending",
+  "status": "done",
   "tasks": [
     {
       "id": "FIX-BATCH-01",
       "title": "Relaxation Original Filters",
       "fix": {
-        "status": "pending",
+        "status": "done",
         "tickets": [
           {
             "id": "BUG-025-FIX",
-            "status": "pending",
+            "status": "verified",
             "required_by": "open-bugs.md",
             "affected_task": "F20",
             "affected_task_title": "BUG-025 — parsed_filters should preserve original filters when relaxation occurs",
