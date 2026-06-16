@@ -22,6 +22,15 @@
 
 ## Functional Bugs
 
+### BUG-021 — AI search "Understood Filters" missing F22 fields
+
+- **Status:** open
+- **Severity:** P2 / High — F22/F23 filters applied correctly but invisible to user
+- **Source:** F23 smoke test 2026-06-16
+- **Description:** `ai-parsed-filters-card.tsx` renders chips only for `location`, `min_price`, `max_price`, `bedrooms_min/max`, `bathrooms_min/max`, `status`. The four F22 fields (`area_min`, `area_max`, `built_year_min`, `subway_distance_max`) are absent. Backend returns them correctly; frontend silently ignores them, showing "No specific filters parsed" even when filters are active.
+- **Fix:** Add chip rendering for the four missing fields in `renderChips()`. No other files.
+- **Fix run:** [2026-06-16-ai-filters-card-f22-fields](../fix-runs/2026-06-16-ai-filters-card-f22-fields/fix-tickets.md)
+
 
 
 ## Skipped Tests

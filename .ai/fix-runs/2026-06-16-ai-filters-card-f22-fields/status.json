@@ -1,0 +1,28 @@
+{
+  "feature": "fix-run-2026-06-16-ai-filters-card-f22-fields",
+  "status": "pending",
+  "tasks": [
+    {
+      "id": "FIX-BATCH-01",
+      "title": "AI Filters Card F22 Fields",
+      "fix": {
+        "status": "pending",
+        "tickets": [
+          {
+            "id": "BUG-021-FIX",
+            "status": "pending",
+            "required_by": "open-bugs.md",
+            "affected_task": "F22",
+            "affected_task_title": "BUG-021 — AI search Understood Filters missing F22 fields",
+            "criterion": "BUG-021",
+            "description": "Add chip rendering for area_min, area_max, built_year_min, subway_distance_max in renderChips() of ai-parsed-filters-card.tsx. Style consistent with existing chips. No other files.",
+            "verification": "docker compose exec frontend npx tsc --noEmit",
+            "files": [
+              "frontend/components/features/search/ai-parsed-filters-card.tsx"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
