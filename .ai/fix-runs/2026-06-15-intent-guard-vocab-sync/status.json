@@ -1,0 +1,28 @@
+{
+  "feature": "fix-run-2026-06-15-intent-guard-vocab-sync",
+  "status": "pending",
+  "tasks": [
+    {
+      "id": "FIX-BATCH-01",
+      "title": "Intent Guard Vocabulary Sync",
+      "fix": {
+        "status": "pending",
+        "tickets": [
+          {
+            "id": "BUG-020-FIX",
+            "status": "pending",
+            "required_by": "open-bugs.md",
+            "affected_task": "F23-T01",
+            "affected_task_title": "BUG-020 — F23 bare vocabulary queries blocked by F19 intent guard",
+            "criterion": "BUG-020",
+            "description": "Add one re.compile entry to _PROPERTY_SEARCH_PATTERNS matching all 9 F23 vocabulary terms (新楼, 次新楼, 次新房, 较新, 新建, 近地铁, 靠近地铁, 地铁口, 步行到地铁). Do not modify _is_property_search function body or any existing pattern.",
+            "verification": "docker compose exec -T backend python3 -c \"import app.main; print('OK')\"",
+            "files": [
+              "backend/app/services/ai_search/service.py"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
