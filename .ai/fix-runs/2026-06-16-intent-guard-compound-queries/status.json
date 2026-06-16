@@ -1,0 +1,28 @@
+{
+  "feature": "fix-run-2026-06-16-intent-guard-compound-queries",
+  "status": "pending",
+  "tasks": [
+    {
+      "id": "FIX-BATCH-01",
+      "title": "Intent Guard Compound Queries",
+      "fix": {
+        "status": "pending",
+        "tickets": [
+          {
+            "id": "BUG-022-FIX",
+            "status": "pending",
+            "required_by": "open-bugs.md",
+            "affected_task": "F19",
+            "affected_task_title": "BUG-022 — Intent guard non-deterministic for compound queries",
+            "criterion": "BUG-022",
+            "description": "Remove ^...$ anchors from _PROPERTY_SEARCH_PATTERNS line 62 so F23 vocabulary terms match as substrings in compound queries like '近地铁 四房'.",
+            "verification": "docker compose exec -T backend python3 -c \"import app.main; print('OK')\"",
+            "files": [
+              "backend/app/services/ai_search/service.py"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
