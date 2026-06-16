@@ -59,7 +59,7 @@ _PROPERTY_SEARCH_PATTERNS = (
         rf"{_PROPERTY_NOUN_PATTERN}.*(?:附近|地铁|通勤|区域|location|district|area|near|close\s+to|in\s+\w+)",
         re.IGNORECASE,
     ),
-    re.compile(r"^(?:新楼|次新楼|次新房|较新|新建|近地铁|靠近地铁|地铁口|步行到地铁)$", re.IGNORECASE),
+    re.compile(r"(?:新楼|次新楼|次新房|较新|新建|近地铁|靠近地铁|地铁口|步行到地铁)", re.IGNORECASE),
     re.compile(
         rf"有(?:什么|哪些|没有|啥|何)?\s*{_PROPERTY_NOUN_PATTERN}",
         re.IGNORECASE,

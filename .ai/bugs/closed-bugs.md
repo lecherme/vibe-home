@@ -6,6 +6,16 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-022 — Intent guard non-deterministic for compound queries
+
+- **Fixed date:** 2026-06-16
+- **Verification:** `import app.main` exit 0
+- **Fixing batch:** `.ai/fix-runs/2026-06-16-intent-guard-compound-queries` — BUG-022-FIX
+- **Fix:** Removed `^...$` anchors from `_PROPERTY_SEARCH_PATTERNS` line 62; F23 vocabulary terms (近地铁, 新楼, etc.) now match as substrings so compound queries like "近地铁 四房" are classified as property-search without falling to the non-deterministic LLM fallback
+- **Original source:** F23 smoke test 2026-06-16
+
+---
+
 ### BUG-025 — parsed_filters should preserve original filters when relaxation occurs
 
 - **Fixed date:** 2026-06-16

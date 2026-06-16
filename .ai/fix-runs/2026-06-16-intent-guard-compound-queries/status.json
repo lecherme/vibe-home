@@ -1,16 +1,16 @@
 {
   "feature": "fix-run-2026-06-16-intent-guard-compound-queries",
-  "status": "pending",
+  "status": "done",
   "tasks": [
     {
       "id": "FIX-BATCH-01",
       "title": "Intent Guard Compound Queries",
       "fix": {
-        "status": "pending",
+        "status": "done",
         "tickets": [
           {
             "id": "BUG-022-FIX",
-            "status": "pending",
+            "status": "verified",
             "required_by": "open-bugs.md",
             "affected_task": "F19",
             "affected_task_title": "BUG-022 — Intent guard non-deterministic for compound queries",

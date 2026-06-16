@@ -22,15 +22,6 @@
 
 ## Functional Bugs
 
-### BUG-022 — Intent guard non-deterministic for compound queries
-
-- **Status:** open
-- **Severity:** P2 / High
-- **Feature:** F19 / intent guard
-- **Symptom:** Compound queries like "近地铁 四房" or "新楼 三房 港岛" sometimes return the non-search redirect ("不是房源筛选") instead of entering the search pipeline. Single-term queries work (BUG-020 fixed). Compound queries are non-deterministic.
-- **Root cause:** `_PROPERTY_SEARCH_PATTERNS` line 62 uses `^...$` anchors, so F23 vocabulary terms (近地铁, 新楼, etc.) only match when they are the entire query. In a compound query the full string doesn't equal the term, so the pattern misses, and the query falls to the LLM fallback which is non-deterministic.
-- **Fix direction:** Remove `^...$` anchors from line 62 of `_PROPERTY_SEARCH_PATTERNS` so vocabulary terms match as substrings. Do NOT modify `_is_property_search` function body.
-- **File:** `backend/app/services/ai_search/service.py`
 
 
 
