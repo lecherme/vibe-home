@@ -1,0 +1,28 @@
+{
+  "feature": "fix-run-2026-06-16-relaxation-original-filters",
+  "status": "pending",
+  "tasks": [
+    {
+      "id": "FIX-BATCH-01",
+      "title": "Relaxation Original Filters",
+      "fix": {
+        "status": "pending",
+        "tickets": [
+          {
+            "id": "BUG-025-FIX",
+            "status": "pending",
+            "required_by": "open-bugs.md",
+            "affected_task": "F20",
+            "affected_task_title": "BUG-025 — parsed_filters should preserve original filters when relaxation occurs",
+            "criterion": "BUG-025",
+            "description": "In ai_search(), save original parsed_filters before _apply_relaxation; return original in AiSearchResult.parsed_filters so API response reflects user intent, not relaxed state.",
+            "verification": "docker compose exec -T backend python3 -c \"import app.main; print('OK')\"",
+            "files": [
+              "backend/app/services/ai_search/service.py"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
