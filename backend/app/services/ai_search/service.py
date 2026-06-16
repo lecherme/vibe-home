@@ -858,7 +858,11 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         ai_summary = _generate_summary(query, parsed_filters, total, items, relaxed_conditions)
     except Exception:
         logger.warning("AI summary generation failed", extra={"query": query}, exc_info=True)
-        ai_summary = f"Found {total} properties matching your search."
+        ai_summary = (
+            f"Found {total} properties matching your search after relaxing some conditions."
+            if relaxed_conditions
+            else f"Found {total} properties matching your search."
+        )
 
     return AiSearchResult(
         items=items,

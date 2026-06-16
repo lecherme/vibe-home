@@ -6,6 +6,16 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-024 — Relaxation fallback summary 丢失放宽说明
+
+- **Fixed date:** 2026-06-16
+- **Verification:** `import app.main` exit 0; fallback branch verified in source
+- **Fixing batch:** `.ai/fix-runs/2026-06-16-relaxation-fallback-disclosure` — BUG-024-FIX
+- **Fix:** When `relaxed_conditions` non-empty and `_generate_summary` fails, fallback now says "Found N properties matching your search after relaxing some conditions." instead of omitting relaxation context
+- **Original source:** F23 smoke test 2026-06-16
+
+---
+
 ### BUG-023 — 中文数字房间词不解析为 bedrooms_min
 
 - **Fixed date:** 2026-06-16

@@ -1,16 +1,16 @@
 {
   "feature": "fix-run-2026-06-16-relaxation-fallback-disclosure",
-  "status": "pending",
+  "status": "done",
   "tasks": [
     {
       "id": "FIX-BATCH-01",
       "title": "Relaxation Fallback Disclosure",
       "fix": {
-        "status": "pending",
+        "status": "done",
         "tickets": [
           {
             "id": "BUG-024-FIX",
-            "status": "pending",
+            "status": "verified",
             "required_by": "open-bugs.md",
             "affected_task": "F20",
             "affected_task_title": "BUG-024 — Relaxation fallback summary 丢失放宽说明",
