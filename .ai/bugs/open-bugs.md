@@ -22,14 +22,6 @@
 
 ## Functional Bugs
 
-### BUG-020 — F23 bare vocabulary queries blocked by F19 intent guard
-
-- **Status:** open
-- **Severity:** P2 / High — core F23 feature non-functional for bare vocabulary queries
-- **Source:** F23 smoke test 2026-06-15
-- **Description:** Bare preference queries supported by F23 (`新楼`, `次新房`, `近地铁` etc.) are incorrectly classified as non-property-search by `_is_property_search`. `_PROPERTY_SEARCH_PATTERNS` was never updated when F23 vocabulary was added, so these queries fall through to the LLM classifier which returns `false` for bare single-term queries. Result: user sees "not a property search" redirect instead of filtered results.
-- **Fix:** Add one pattern to `_PROPERTY_SEARCH_PATTERNS` covering all 9 F23 vocabulary terms. Do not modify `_is_property_search` function body.
-- **Fix run:** [2026-06-15-intent-guard-vocab-sync](../fix-runs/2026-06-15-intent-guard-vocab-sync/fix-tickets.md)
 
 
 ## Skipped Tests

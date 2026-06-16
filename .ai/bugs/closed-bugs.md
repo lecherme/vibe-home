@@ -6,6 +6,16 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-020 — F23 bare vocabulary queries blocked by F19 intent guard
+
+- **Fixed date:** 2026-06-15
+- **Verification:** `_is_property_search("新楼")` → True, `_is_property_search("次新房")` → True, `_is_property_search("近地铁")` → True; `import app.main` exit 0
+- **Fixing batch:** `.ai/fix-runs/2026-06-15-intent-guard-vocab-sync` — BUG-020-FIX
+- **Fix:** Added `re.compile(r"^(?:新楼|次新楼|次新房|较新|新建|近地铁|靠近地铁|地铁口|步行到地铁)$", re.IGNORECASE)` to `_PROPERTY_SEARCH_PATTERNS` in `backend/app/services/ai_search/service.py`; no other changes
+- **Original source:** F23 smoke test 2026-06-15
+
+---
+
 ### BUG-019 — /properties page 收藏状态上限遗漏
 
 - **Fixed date:** 2026-05-31

@@ -1,16 +1,16 @@
 {
   "feature": "fix-run-2026-06-15-intent-guard-vocab-sync",
-  "status": "pending",
+  "status": "done",
   "tasks": [
     {
       "id": "FIX-BATCH-01",
       "title": "Intent Guard Vocabulary Sync",
       "fix": {
-        "status": "pending",
+        "status": "done",
         "tickets": [
           {
             "id": "BUG-020-FIX",
-            "status": "pending",
+            "status": "verified",
             "required_by": "open-bugs.md",
             "affected_task": "F23-T01",
             "affected_task_title": "BUG-020 — F23 bare vocabulary queries blocked by F19 intent guard",
