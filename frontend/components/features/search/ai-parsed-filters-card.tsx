@@ -39,6 +39,22 @@ export function AiParsedFiltersCard({
       );
     }
 
+    if (parsedFilters.area_min != null || parsedFilters.area_max != null) {
+      let areaStr = "";
+      if (parsedFilters.area_min != null && parsedFilters.area_max != null) {
+        areaStr = `${parsedFilters.area_min}–${parsedFilters.area_max} m²`;
+      } else if (parsedFilters.area_min != null) {
+        areaStr = `>= ${parsedFilters.area_min} m²`;
+      } else if (parsedFilters.area_max != null) {
+        areaStr = `<= ${parsedFilters.area_max} m²`;
+      }
+      chips.push(
+        <span key="area" className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-800">
+          📐 {areaStr}
+        </span>
+      );
+    }
+
     if (parsedFilters.bedrooms_min != null || parsedFilters.bedrooms_max != null) {
       let bedsStr = "";
       if (parsedFilters.bedrooms_min != null && parsedFilters.bedrooms_max != null) {
@@ -67,6 +83,22 @@ export function AiParsedFiltersCard({
       chips.push(
         <span key="baths" className="inline-flex items-center rounded-full bg-cyan-100 px-2.5 py-0.5 text-xs font-medium text-cyan-800">
           🚿 {bathsStr}
+        </span>
+      );
+    }
+
+    if (parsedFilters.built_year_min != null) {
+      chips.push(
+        <span key="built-year" className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+          🏗️ Built since {parsedFilters.built_year_min}
+        </span>
+      );
+    }
+
+    if (parsedFilters.subway_distance_max != null) {
+      chips.push(
+        <span key="subway-distance" className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-800">
+          🚇 ≤ {parsedFilters.subway_distance_max}m to subway
         </span>
       );
     }

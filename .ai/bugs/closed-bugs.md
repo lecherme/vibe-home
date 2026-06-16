@@ -6,6 +6,16 @@ Each entry should include fixed date, verification evidence, fixing commit/batch
 
 ---
 
+### BUG-021 — AI search "Understood Filters" missing F22 fields
+
+- **Fixed date:** 2026-06-16
+- **Verification:** `docker compose exec frontend npx tsc --noEmit` exit 0
+- **Fixing batch:** `.ai/fix-runs/2026-06-16-ai-filters-card-f22-fields` — BUG-021-FIX
+- **Fix:** Added chip rendering for `area_min/max`, `built_year_min`, `subway_distance_max` in `renderChips()` of `ai-parsed-filters-card.tsx`; direct fixup replaced invalid `<=` with `≤` to resolve TSC parse error
+- **Original source:** F23 smoke test 2026-06-16
+
+---
+
 ### BUG-020 — F23 bare vocabulary queries blocked by F19 intent guard
 
 - **Fixed date:** 2026-06-15

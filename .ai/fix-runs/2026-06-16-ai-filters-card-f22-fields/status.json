@@ -1,16 +1,16 @@
 {
   "feature": "fix-run-2026-06-16-ai-filters-card-f22-fields",
-  "status": "pending",
+  "status": "done",
   "tasks": [
     {
       "id": "FIX-BATCH-01",
       "title": "AI Filters Card F22 Fields",
       "fix": {
-        "status": "pending",
+        "status": "done",
         "tickets": [
           {
             "id": "BUG-021-FIX",
-            "status": "pending",
+            "status": "verified",
             "required_by": "open-bugs.md",
             "affected_task": "F22",
             "affected_task_title": "BUG-021 — AI search Understood Filters missing F22 fields",
