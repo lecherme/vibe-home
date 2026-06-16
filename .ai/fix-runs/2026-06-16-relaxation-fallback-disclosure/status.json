@@ -1,0 +1,28 @@
+{
+  "feature": "fix-run-2026-06-16-relaxation-fallback-disclosure",
+  "status": "pending",
+  "tasks": [
+    {
+      "id": "FIX-BATCH-01",
+      "title": "Relaxation Fallback Disclosure",
+      "fix": {
+        "status": "pending",
+        "tickets": [
+          {
+            "id": "BUG-024-FIX",
+            "status": "pending",
+            "required_by": "open-bugs.md",
+            "affected_task": "F20",
+            "affected_task_title": "BUG-024 — Relaxation fallback summary 丢失放宽说明",
+            "criterion": "BUG-024",
+            "description": "In ai_search() summary fallback, when relaxed_conditions is non-empty, include a disclosure that results were broadened. No other changes.",
+            "verification": "docker compose exec -T backend python3 -c \"import app.main; print('OK')\"",
+            "files": [
+              "backend/app/services/ai_search/service.py"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
