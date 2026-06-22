@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import logging
 import re
@@ -7,7 +8,7 @@ from fastapi import HTTPException, status
 
 from app.core.config import get_settings
 from app.data.properties import get_all, get_by_id
-from app.schemas.ai_search import AiSearchResult
+from app.schemas.ai_search import AiSearchResult, ConstraintInfo, MatchReason, RelaxationRecord
 from app.schemas.property import Property as PropertyRead
 from app.schemas.property import PropertyStatus
 from app.schemas.search import SearchFilters
@@ -69,6 +70,32 @@ _PROPERTY_SEARCH_PATTERNS = (
 _NON_SEARCH_PATTERNS = (
     re.compile(r"(?:为什么|为何|怎么|如何|是不是|分析|预测|政策|趋势|行情|原因|解读|why|how|analysis|forecast|policy|trend)", re.IGNORECASE),
     re.compile(r"(?:房价|楼市|市场|股市|股票|基金|债券|汇率|利率|market|stocks?)", re.IGNORECASE),
+)
+_HARD_CONSTRAINT_FIELDS = (
+    "min_price",
+    "max_price",
+    "area_min",
+    "area_max",
+    "bedrooms_min",
+    "bedrooms_max",
+    "bathrooms_min",
+    "bathrooms_max",
+)
+_SOFT_CONSTRAINT_FIELDS = ("subway_distance_max", "built_year_min", "location")
+_NON_RELAXED_FILTER_FIELDS = ("status",)
+_CONSTRAINT_FIELD_ORDER = (
+    "location",
+    "min_price",
+    "max_price",
+    "area_min",
+    "area_max",
+    "bedrooms_min",
+    "bedrooms_max",
+    "bathrooms_min",
+    "bathrooms_max",
+    "built_year_min",
+    "subway_distance_max",
+    "status",
 )
 
 
@@ -618,29 +645,197 @@ def _collect_items(property_ids: list[str], page: int, page_size: int) -> tuple[
     return items, total
 
 
-def _relax_filters(filters: SearchFilters) -> tuple[SearchFilters, str] | None:
-    if filters.bedrooms_min is not None:
-        if filters.bedrooms_min > 1:
-            relaxed_bedrooms_min = filters.bedrooms_min - 1
-            return (
-                filters.model_copy(update={"bedrooms_min": relaxed_bedrooms_min}),
-                f"Reduced minimum bedrooms from {filters.bedrooms_min} to {relaxed_bedrooms_min}.",
-            )
+def _constraint_strength(field: str) -> str:
+    if field in _SOFT_CONSTRAINT_FIELDS:
+        return "soft"
+    return "hard"
+
+
+def _constraint_label(field: str, value: Any) -> str:
+    if field == "location":
+        return f"区域：{value}"
+    if field == "min_price":
+        return f"价格 ≥ {value}"
+    if field == "max_price":
+        return f"价格 ≤ {value}"
+    if field == "area_min":
+        return f"面积 ≥ {value}㎡"
+    if field == "area_max":
+        return f"面积 ≤ {value}㎡"
+    if field == "bedrooms_min":
+        return f"卧室 ≥ {value}"
+    if field == "bedrooms_max":
+        return f"卧室 ≤ {value}"
+    if field == "bathrooms_min":
+        return f"卫生间 ≥ {value}"
+    if field == "bathrooms_max":
+        return f"卫生间 ≤ {value}"
+    if field == "built_year_min":
+        return f"楼龄要求：{value}年后"
+    if field == "subway_distance_max":
+        return f"地铁距离 ≤ {value}m"
+    if field == "status":
+        status_value = getattr(value, "value", value)
+        return f"状态：{status_value}"
+    return f"{field}: {value}"
+
+
+def _active_constraint_items(filters: SearchFilters) -> list[tuple[str, Any]]:
+    active_constraints: list[tuple[str, Any]] = []
+    for field in _CONSTRAINT_FIELD_ORDER:
+        value = getattr(filters, field)
+        if value is not None:
+            active_constraints.append((field, value))
+    return active_constraints
+
+
+def _matches_constraint(property_item: PropertyRead, field: str, value: Any) -> bool:
+    if field == "location":
+        return str(value).strip().lower() in property_item.location.lower()
+    if field == "min_price":
+        return property_item.price >= value
+    if field == "max_price":
+        return property_item.price <= value
+    if field == "area_min":
+        return property_item.area_sqm >= value
+    if field == "area_max":
+        return property_item.area_sqm <= value
+    if field == "bedrooms_min":
+        return property_item.bedrooms >= value
+    if field == "bedrooms_max":
+        return property_item.bedrooms <= value
+    if field == "bathrooms_min":
+        return property_item.bathrooms >= value
+    if field == "bathrooms_max":
+        return property_item.bathrooms <= value
+    if field == "built_year_min":
+        return property_item.built_year is not None and property_item.built_year >= value
+    if field == "subway_distance_max":
         return (
-            filters.model_copy(update={"bedrooms_min": None}),
-            "Removed the minimum bedrooms requirement.",
+            property_item.subway_distance_m is not None
+            and property_item.subway_distance_m <= value
+        )
+    if field == "status":
+        status_value = getattr(value, "value", value)
+        return property_item.status.value == status_value
+    return True
+
+
+def _matches_filters(property_item: PropertyRead, filters: SearchFilters) -> bool:
+    return all(
+        _matches_constraint(property_item, field, value)
+        for field, value in _active_constraint_items(filters)
+    )
+
+
+def _matches_hard_constraints(property: PropertyRead, filters: SearchFilters) -> bool:
+    return all(
+        _matches_constraint(property, field, getattr(filters, field))
+        for field in _HARD_CONSTRAINT_FIELDS
+        if getattr(filters, field) is not None
+    )
+
+
+def _build_parsed_constraints(filters: SearchFilters) -> list[ConstraintInfo]:
+    return [
+        ConstraintInfo(
+            field=field,
+            value=value,
+            strength=_constraint_strength(field),
+            label=_constraint_label(field, value),
+        )
+        for field, value in _active_constraint_items(filters)
+    ]
+
+
+def _build_relaxations(
+    original_filters: SearchFilters,
+    relaxed_filters: SearchFilters,
+) -> list[RelaxationRecord]:
+    relaxations: list[RelaxationRecord] = []
+    for field in _SOFT_CONSTRAINT_FIELDS:
+        from_value = getattr(original_filters, field)
+        to_value = getattr(relaxed_filters, field)
+        if from_value != to_value:
+            relaxations.append(
+                RelaxationRecord(
+                    field=field,
+                    from_value=from_value,
+                    to_value=to_value,
+                )
+            )
+    return relaxations
+
+
+def _build_match_reasons(
+    properties: list[PropertyRead],
+    filters: SearchFilters,
+) -> dict[str, list[MatchReason]]:
+    active_constraints = _active_constraint_items(filters)
+    return {
+        property_item.id: [
+            MatchReason(
+                field=field,
+                label=_constraint_label(field, value),
+                matched=_matches_constraint(property_item, field, value),
+                strength=_constraint_strength(field),
+            )
+            for field, value in active_constraints
+        ]
+        for property_item in properties
+    }
+
+
+def _build_relaxation_summary(
+    strict_ids: list[str],
+    recommended_ids: list[str],
+    relaxations: list[RelaxationRecord],
+) -> list[str]:
+    if not relaxations:
+        return []
+    relaxation_messages = [
+        (
+            f'Removed the location filter "{relaxation.from_value}".'
+            if relaxation.field == "location"
+            else f"Removed the {relaxation.field} filter."
+        )
+        for relaxation in relaxations
+    ]
+    if strict_ids:
+        return [
+            (
+                "Strict results were few, so relaxed matches were appended after the strict matches."
+                if recommended_ids
+                else "Strict results were few, and relaxing soft constraints did not uncover additional matches."
+            ),
+            *relaxation_messages,
+        ]
+    return [
+        (
+            "Strict filters returned 0 results; soft constraints were relaxed to find the best available matches."
+            if recommended_ids
+            else "Strict filters returned 0 results."
+        ),
+        *relaxation_messages,
+        *(
+            ["No close matches were found even after relaxing soft constraints."]
+            if not recommended_ids
+            else []
+        ),
+    ]
+
+
+def _relax_filters(filters: SearchFilters) -> tuple[SearchFilters, str] | None:
+    if filters.subway_distance_max is not None:
+        return (
+            filters.model_copy(update={"subway_distance_max": None}),
+            "Removed the subway distance filter.",
         )
 
-    if filters.bathrooms_min is not None:
-        if filters.bathrooms_min > 1:
-            relaxed_bathrooms_min = filters.bathrooms_min - 1
-            return (
-                filters.model_copy(update={"bathrooms_min": relaxed_bathrooms_min}),
-                f"Reduced minimum bathrooms from {filters.bathrooms_min} to {relaxed_bathrooms_min}.",
-            )
+    if filters.built_year_min is not None:
         return (
-            filters.model_copy(update={"bathrooms_min": None}),
-            "Removed the minimum bathrooms requirement.",
+            filters.model_copy(update={"built_year_min": None}),
+            "Removed the built year filter.",
         )
 
     if filters.location is not None:
@@ -756,15 +951,12 @@ def _resolve_result_ids(
         logger.warning("Semantic search failed", extra={"query": query}, exc_info=True)
 
     if semantic_ids:
-        filter_id_set = set(filter_ids)
-        merged_ids = [property_id for property_id in semantic_ids if property_id in filter_id_set]
-        if len(merged_ids) < _HYBRID_MIN_RESULTS:
-            seen_ids = set(merged_ids)
-            for property_id in filter_ids:
-                if property_id not in seen_ids:
-                    merged_ids.append(property_id)
-                    seen_ids.add(property_id)
-        return merged_ids
+        score_map: defaultdict[str, float] = defaultdict(float)
+        for index, property_id in enumerate(semantic_ids):
+            score_map[property_id] += 1.0 / (index + 1)
+        for property_id in filter_ids:
+            score_map[property_id] += 0.8
+        return sorted(score_map, key=lambda property_id: score_map[property_id], reverse=True)
 
     if semantic_search_failed:
         return filter_ids
@@ -803,57 +995,95 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         parsed_filters = SearchFilters()
         query_parsed = False
     original_parsed_filters = parsed_filters.model_copy()
-
+    parsed_constraints = _build_parsed_constraints(original_parsed_filters)
+    relaxations: list[RelaxationRecord] = []
     relaxed_conditions: list[str] = []
-    result_ids = _resolve_result_ids(
+    strict_result_ids = _resolve_result_ids(
         query,
         parsed_filters,
         query_parsed=query_parsed,
     )
+    strict_ids: list[str] = []
+    recommended_ids: list[str] = []
+
     if query_parsed:
-        strict_count = len(result_ids)
+        for property_id in strict_result_ids:
+            property_item = get_by_id(property_id)
+            if property_item is None:
+                continue
+            if _matches_hard_constraints(property_item, original_parsed_filters) and _matches_filters(
+                property_item,
+                original_parsed_filters,
+            ):
+                strict_ids.append(property_id)
+
+        strict_count = len(strict_ids)
         if strict_count == 0:
-            result_ids, parsed_filters, relaxed_conditions = _apply_relaxation(
+            relaxed_result_ids, relaxed_filters, _ = _apply_relaxation(
                 query,
                 parsed_filters,
                 query_parsed,
             )
-            relaxed_conditions = [
-                (
-                    "Strict filters returned 0 results; soft constraints were relaxed to find the best available matches."
-                    if result_ids
-                    else "Strict filters returned 0 results."
-                ),
-                *relaxed_conditions,
-                *(
-                    ["No close matches were found even after relaxing soft constraints."]
-                    if not result_ids
-                    else []
-                ),
-            ]
+            relaxations = _build_relaxations(original_parsed_filters, relaxed_filters)
+            if relaxations:
+                seen_recommended_ids: set[str] = set()
+                for property_id in relaxed_result_ids:
+                    if property_id in seen_recommended_ids:
+                        continue
+                    property_item = get_by_id(property_id)
+                    if property_item is None:
+                        continue
+                    if not _matches_hard_constraints(property_item, original_parsed_filters):
+                        continue
+                    if not _matches_filters(property_item, relaxed_filters):
+                        continue
+                    if _matches_filters(property_item, original_parsed_filters):
+                        continue
+                    recommended_ids.append(property_id)
+                    seen_recommended_ids.add(property_id)
+                relaxed_conditions = _build_relaxation_summary(
+                    strict_ids,
+                    recommended_ids,
+                    relaxations,
+                )
         elif strict_count < _RELAX_SUPPLEMENT_THRESHOLD:
-            relaxed_ids, _, relaxed_conditions = _apply_relaxation(
+            relaxed_result_ids, relaxed_filters, _ = _apply_relaxation(
                 query,
                 parsed_filters,
                 query_parsed,
             )
-            seen = set(result_ids)
-            appended_count = 0
-            for property_id in relaxed_ids:
-                if property_id not in seen:
-                    result_ids.append(property_id)
-                    seen.add(property_id)
-                    appended_count += 1
-            if relaxed_conditions:
-                relaxed_conditions = [
-                    (
-                        "Strict results were few, so relaxed matches were appended after the strict matches."
-                        if appended_count
-                        else "Strict results were few, and relaxing soft constraints did not uncover additional matches."
-                    ),
-                    *relaxed_conditions,
-                ]
-    items, total = _collect_items(result_ids, resolved_page, resolved_page_size)
+            relaxations = _build_relaxations(original_parsed_filters, relaxed_filters)
+            if relaxations:
+                seen_recommended_ids = set(strict_ids)
+                for property_id in relaxed_result_ids:
+                    if property_id in seen_recommended_ids:
+                        continue
+                    property_item = get_by_id(property_id)
+                    if property_item is None:
+                        continue
+                    if not _matches_hard_constraints(property_item, original_parsed_filters):
+                        continue
+                    if not _matches_filters(property_item, relaxed_filters):
+                        continue
+                    if _matches_filters(property_item, original_parsed_filters):
+                        continue
+                    recommended_ids.append(property_id)
+                    seen_recommended_ids.add(property_id)
+                relaxed_conditions = _build_relaxation_summary(
+                    strict_ids,
+                    recommended_ids,
+                    relaxations,
+                )
+    else:
+        strict_ids = strict_result_ids
+
+    result_ids = [*strict_ids, *recommended_ids]
+    page_items, total = _collect_items(result_ids, resolved_page, resolved_page_size)
+    strict_id_set = set(strict_ids)
+    strict_items = [item for item in page_items if item.id in strict_id_set]
+    recommended_items = [item for item in page_items if item.id not in strict_id_set]
+    items = [*strict_items, *recommended_items]
+    match_reasons = _build_match_reasons(items, original_parsed_filters)
 
     try:
         ai_summary = _generate_summary(query, parsed_filters, total, items, relaxed_conditions)
@@ -873,4 +1103,9 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         parsed_filters=original_parsed_filters,
         ai_summary=ai_summary,
         query_parsed=query_parsed,
+        parsed_constraints=parsed_constraints,
+        strict_items=strict_items,
+        recommended_items=recommended_items,
+        relaxations=relaxations,
+        match_reasons=match_reasons,
     )
