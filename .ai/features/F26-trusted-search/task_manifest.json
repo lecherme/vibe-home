@@ -1,0 +1,41 @@
+{
+  "feature": "F26-trusted-search",
+  "tasks": {
+    "T01": {
+      "owner": "codex",
+      "allowed_files": [
+        "backend/app/schemas/ai_search.py",
+        "backend/app/services/ai_search/service.py"
+      ]
+    },
+    "T02": {
+      "owner": "codex",
+      "allowed_files": [
+        "frontend/components/features/search/ai-parsed-filters-card.tsx",
+        "frontend/components/features/search/ai-search-results.tsx",
+        "frontend/components/features/search/match-reasons-chips.tsx",
+        "frontend/components/features/search/relaxation-notice.tsx",
+        "frontend/app/(dashboard)/search/page.tsx",
+        "frontend/types/ai-search.ts"
+      ]
+    },
+    "T03": {
+      "owner": "codex",
+      "allowed_files": [
+        "backend/tests/eval_set_f26.json",
+        "backend/tests/test_eval_f26.py"
+      ]
+    },
+    "T04": {
+      "owner": "codex",
+      "allowed_files": []
+    },
+    "T05": {
+      "owner": "claude",
+      "allowed_files": [
+        ".ai/features/F26-trusted-search/status.json",
+        ".ai/features/F26-trusted-search/final-report.md"
+      ]
+    }
+  }
+}
