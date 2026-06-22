@@ -1,9 +1,9 @@
 {
   "feature": "F26-trusted-search",
-  "status": "in_progress",
-  "current_stage": "T04_done",
+  "status": "done",
+  "current_stage": "T05_done",
   "current_owner": null,
-  "next_step": "Start T05 \u2014 Claude: acceptance",
+  "next_step": "F26-trusted-search complete",
   "last_review_failure": null,
   "tasks": [
     {
@@ -62,7 +62,7 @@
       "depends_on": [
         "T04"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "final-report.md"
     }
@@ -121,6 +121,31 @@
     {
       "timestamp": "2026-06-22T16:29:52Z",
       "event": "T04 done \u2014 artifact captured as review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T17:10:04Z",
+      "event": "T05 started \u2014 Claude: acceptance",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T17:10:31Z",
+      "event": "T05 done \u2014 final acceptance artifact captured as final-report.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T17:19:49Z",
+      "event": "T05 prepared for direct_fixup \u2014 final-report disposition keyword missing",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T17:20:57Z",
+      "event": "T05 started \u2014 Claude: acceptance [direct_fixup]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T17:22:46Z",
+      "event": "T05 done \u2014 final acceptance artifact captured as final-report.md",
       "by": "claude"
     }
   ]
