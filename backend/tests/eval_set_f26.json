@@ -1,0 +1,193 @@
+[
+  {
+    "id": "hard_only_four_bed_budget",
+    "query": "4房 2000万以内",
+    "case_type": "hard_only",
+    "parse_mode": "stub",
+    "parsed_filters": {
+      "bedrooms_min": 4,
+      "max_price": 20000000
+    },
+    "semantic_ids": ["prop_j", "prop_a", "prop_c", "prop_b", "prop_d", "prop_e", "prop_h", "prop_g", "prop_f", "prop_i"],
+    "expected_relaxations": []
+  },
+  {
+    "id": "hard_only_five_bed_budget",
+    "query": "至少5个卧室 价格不超过26000000",
+    "case_type": "hard_only",
+    "parse_mode": "stub",
+    "parsed_filters": {
+      "bedrooms_min": 5,
+      "max_price": 26000000
+    },
+    "semantic_ids": ["prop_j", "prop_a", "prop_c", "prop_b", "prop_d", "prop_e", "prop_h", "prop_g", "prop_f", "prop_i"],
+    "expected_relaxations": []
+  },
+  {
+    "id": "soft_only_subway_and_year",
+    "query": "Central 新楼 近地铁",
+    "case_type": "soft_only",
+    "parse_mode": "stub",
+    "parsed_filters": {
+      "location": "Central",
+      "built_year_min": 2016,
+      "subway_distance_max": 500
+    },
+    "semantic_ids": [],
+    "expected_relaxations": [
+      {
+        "field": "subway_distance_max",
+        "from_value": 500,
+        "to_value": null
+      },
+      {
+        "field": "built_year_min",
+        "from_value": 2016,
+        "to_value": null
+      }
+    ]
+  },
+  {
+    "id": "soft_only_built_year",
+    "query": "Central 新楼",
+    "case_type": "soft_only",
+    "parse_mode": "stub",
+    "parsed_filters": {
+      "location": "Central",
+      "built_year_min": 2016
+    },
+    "semantic_ids": ["prop_j", "prop_a", "prop_c", "prop_b", "prop_d", "prop_e", "prop_h", "prop_g", "prop_f", "prop_i"],
+    "expected_relaxations": [
+      {
+        "field": "built_year_min",
+        "from_value": 2016,
+        "to_value": null
+      }
+    ]
+  },
+  {
+    "id": "mixed_hard_soft_subway",
+    "query": "Central 4房 2000万以内 近地铁",
+    "case_type": "mixed_hard_soft",
+    "parse_mode": "stub",
+    "parsed_filters": {
+      "location": "Central",
+      "bedrooms_min": 4,
+      "max_price": 20000000,
+      "subway_distance_max": 500
+    },
+    "semantic_ids": ["prop_j", "prop_a", "prop_c", "prop_b", "prop_d", "prop_e", "prop_h", "prop_g", "prop_f", "prop_i"],
+    "expected_relaxations": [
+      {
+        "field": "subway_distance_max",
+        "from_value": 500,
+        "to_value": null
+      }
+    ]
+  },
+  {
+    "id": "mixed_hard_soft_built_year",
+    "query": "Central 4房 2000万以内 新楼",
+    "case_type": "mixed_hard_soft",
+    "parse_mode": "stub",
+    "parsed_filters": {
+      "location": "Central",
+      "bedrooms_min": 4,
+      "max_price": 20000000,
+      "built_year_min": 2016
+    },
+    "semantic_ids": ["prop_j", "prop_a", "prop_c", "prop_b", "prop_d", "prop_e", "prop_h", "prop_g", "prop_f", "prop_i"],
+    "expected_relaxations": [
+      {
+        "field": "built_year_min",
+        "from_value": 2016,
+        "to_value": null
+      }
+    ]
+  },
+  {
+    "id": "chinese_pipeline_entry",
+    "query": "西区四房 近地铁 新楼",
+    "case_type": "chinese_vocabulary",
+    "parse_mode": "live",
+    "expected_filters": {
+      "location": "Western",
+      "bedrooms_min": 4,
+      "built_year_min": 2016,
+      "subway_distance_max": 500
+    },
+    "llm_response": {
+      "location": "Western",
+      "status": null,
+      "subway_distance_max": 500,
+      "built_year_min": 2016,
+      "remainder": null,
+      "bedrooms_subjective_label": null,
+      "bedrooms_ref": null,
+      "bathrooms_subjective_label": null,
+      "bathrooms_ref": null
+    },
+    "semantic_ids": [],
+    "expected_relaxations": [
+      {
+        "field": "subway_distance_max",
+        "from_value": 500,
+        "to_value": null
+      },
+      {
+        "field": "built_year_min",
+        "from_value": 2016,
+        "to_value": null
+      },
+      {
+        "field": "location",
+        "from_value": "Western",
+        "to_value": null
+      }
+    ]
+  },
+  {
+    "id": "no_relax_enough_results",
+    "query": "找房 Central",
+    "case_type": "no_relax",
+    "parse_mode": "stub",
+    "parsed_filters": {
+      "location": "Central"
+    },
+    "semantic_ids": ["prop_j", "prop_a", "prop_c", "prop_b", "prop_d", "prop_e", "prop_h", "prop_g", "prop_f", "prop_i"],
+    "expected_relaxations": []
+  },
+  {
+    "id": "zero_results_after_relax",
+    "query": "8房 1000万以内 近地铁 新楼",
+    "case_type": "zero_after_relax",
+    "parse_mode": "stub",
+    "parsed_filters": {
+      "bedrooms_min": 8,
+      "max_price": 10000000,
+      "built_year_min": 2016,
+      "subway_distance_max": 500
+    },
+    "semantic_ids": [],
+    "expected_relaxations": [
+      {
+        "field": "subway_distance_max",
+        "from_value": 500,
+        "to_value": null
+      },
+      {
+        "field": "built_year_min",
+        "from_value": 2016,
+        "to_value": null
+      }
+    ]
+  },
+  {
+    "id": "non_search_query",
+    "query": "为什么最近房价上涨",
+    "case_type": "non_search",
+    "parse_mode": "none",
+    "semantic_ids": [],
+    "expected_relaxations": []
+  }
+]

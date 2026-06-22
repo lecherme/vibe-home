@@ -5,7 +5,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { propertiesApi } from "@/lib/api/properties";
 import { favoritesApi } from "@/lib/api/favorites";
 import { aiSearch } from "@/lib/api/ai-search";
-import type { SearchFilters, SearchResult, AiSearchResult } from "@/types/search";
+import type { AiSearchResult } from "@/types/ai-search";
+import type { SearchFilters, SearchResult } from "@/types/search";
 import type { PropertyStatus } from "@/types/property";
 import { SearchBar } from "@/components/features/search/search-bar";
 import { FilterPanel } from "@/components/features/search/filter-panel";
@@ -14,6 +15,7 @@ import { PropertyListSkeleton } from "@/components/features/properties/PropertyL
 import { PaginationControls } from "@/components/features/common/PaginationControls";
 import { AiSearchBar } from "@/components/features/search/ai-search-bar";
 import { AiParsedFiltersCard } from "@/components/features/search/ai-parsed-filters-card";
+import { AiSearchResults } from "@/components/features/search/ai-search-results";
 
 const PAGE_SIZE = 9;
 
@@ -143,7 +145,7 @@ function SearchContent() {
         aiSearch(query, pageNum, PAGE_SIZE),
         favoritesApi.getAllFavoriteIds().catch(() => new Set<string>())
       ]);
-      setAiResult(data);
+      setAiResult(data as AiSearchResult);
       setFavoriteIds(favRes);
     } catch (err: any) {
       setAiResult(null);
@@ -166,6 +168,12 @@ function SearchContent() {
 
   const totalPages = result ? Math.ceil(result.total / PAGE_SIZE) : 0;
   const aiTotalPages = aiResult ? Math.ceil(aiResult.total / PAGE_SIZE) : 0;
+  const hasGroupedAiItems = aiResult != null && (aiResult.strict_items !== undefined || aiResult.recommended_items !== undefined);
+  const hasAiItems = aiResult != null && (
+    hasGroupedAiItems
+      ? (aiResult.strict_items?.length ?? 0) > 0 || (aiResult.recommended_items?.length ?? 0) > 0
+      : aiResult.items.length > 0
+  );
   const hasActiveFilters = Boolean(location.trim()) ||
     filters.min_price !== undefined ||
     filters.max_price !== undefined ||
@@ -240,6 +248,7 @@ function SearchContent() {
                 queryParsed={aiResult.query_parsed}
                 parsedFilters={aiResult.parsed_filters}
                 aiSummary={aiResult.ai_summary}
+                parsedConstraints={aiResult.parsed_constraints}
               />
             )}
           </div>
@@ -336,19 +345,10 @@ function SearchContent() {
       ) : (
         aiLoading && !aiResult ? (
           <PropertyListSkeleton />
-        ) : aiResult && aiResult.items.length > 0 ? (
+        ) : hasAiItems && aiResult ? (
           <>
-            <div className="mb-4 text-sm text-gray-600">
-              Found {aiResult.total} properties
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {aiResult.items.map((property) => (
-                <PropertyCard 
-                  key={property.id} 
-                  property={property} 
-                  isFavorited={favoriteIds.has(property.id)}
-                />
-              ))}
+            <div className="mb-8">
+              <AiSearchResults result={aiResult} favoriteIds={favoriteIds} />
             </div>
 
             <PaginationControls

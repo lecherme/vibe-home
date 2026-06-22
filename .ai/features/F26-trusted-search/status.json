@@ -1,9 +1,9 @@
 {
   "feature": "F26-trusted-search",
   "status": "in_progress",
-  "current_stage": "T01_done",
+  "current_stage": "T04_done",
   "current_owner": null,
-  "next_step": "Start T02 \u2014 Codex: frontend rendering",
+  "next_step": "Start T05 \u2014 Claude: acceptance",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,7 +24,7 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "codex-build-T02.md"
     },
@@ -36,7 +36,7 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "codex-build-T03.md"
     },
@@ -50,7 +50,7 @@
         "T02",
         "T03"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "review.md"
     },
@@ -81,6 +81,46 @@
     {
       "timestamp": "2026-06-22T15:48:56Z",
       "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T15:56:11Z",
+      "event": "T02 started \u2014 Codex: frontend rendering",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T15:56:11Z",
+      "event": "T03 started \u2014 Codex: evaluation set",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T15:59:35Z",
+      "event": "T02 needs-verification \u2014 worker exited 1 but artifact passed validate-artifact (exit 1)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T16:06:29Z",
+      "event": "T03 needs-verification \u2014 worker exited 1 but artifact passed validate-artifact (exit 1)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T16:15:13Z",
+      "event": "T02 verify-pass \u2014 wrapper false failure (exit 1) corrected by Claude after artifact inspection; original: worker exited 1 but artifact passed validate-artifact",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T16:19:42Z",
+      "event": "T03 verify-pass \u2014 wrapper false failure (exit ?) corrected by Claude after artifact inspection; original: unknown",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T16:25:04Z",
+      "event": "T04 started \u2014 Codex: review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-22T16:29:52Z",
+      "event": "T04 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]

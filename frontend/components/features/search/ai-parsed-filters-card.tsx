@@ -1,18 +1,53 @@
 import React from "react";
+import type { ConstraintInfo } from "@/types/ai-search";
 import type { SearchFilters } from "@/types/search";
 
 interface AiParsedFiltersCardProps {
   queryParsed: boolean;
   parsedFilters: SearchFilters;
   aiSummary: string;
+  parsedConstraints?: ConstraintInfo[];
 }
 
 export function AiParsedFiltersCard({
   queryParsed,
   parsedFilters,
   aiSummary,
+  parsedConstraints,
 }: AiParsedFiltersCardProps) {
+  const renderStructuredChips = () => {
+    if (!parsedConstraints || parsedConstraints.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="flex flex-wrap gap-2">
+        {parsedConstraints.map((constraint) => {
+          const className = constraint.strength === "hard"
+            ? "border-slate-200 bg-slate-100 text-slate-700"
+            : "border-emerald-200 bg-emerald-50 text-emerald-700";
+
+          return (
+            <span
+              key={`${constraint.field}-${constraint.label}`}
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium ${className}`}
+            >
+              <span>{constraint.label}</span>
+              <span className="uppercase opacity-70">{constraint.strength}</span>
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
+
   const renderChips = () => {
+    const structuredChips = renderStructuredChips();
+
+    if (structuredChips) {
+      return structuredChips;
+    }
+
     const chips: React.ReactNode[] = [];
 
     if (parsedFilters.location) {
