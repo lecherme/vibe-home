@@ -146,6 +146,11 @@ echo "Running codex for: $FEATURE_DIR task=$TASK_ID"
 echo "Report → $REPORT_FILE"
 echo "Log    → $LOG_FILE"
 
+if [[ -x "$HOME/.local/bin/codex" ]]; then
+  CODEX_BIN="$HOME/.local/bin/codex"
+else
+  CODEX_BIN="$(which codex)"
+fi
 CODEX_FLAGS=(--skip-git-repo-check)
 if [[ "${CODEX_BYPASS_SANDBOX:-0}" == "1" ]]; then
   CODEX_FLAGS+=(--dangerously-bypass-approvals-and-sandbox)
@@ -154,7 +159,7 @@ if [[ -n "${CODEX_MODEL:-}" ]]; then
   CODEX_FLAGS+=(-m "$CODEX_MODEL")
 fi
 
-codex exec "${CODEX_FLAGS[@]}" "$PROMPT" \
+"$CODEX_BIN" exec "${CODEX_FLAGS[@]}" "$PROMPT" \
   2> >(tee "$LOG_FILE" >&2) \
   | tee "$REPORT_FILE"
 

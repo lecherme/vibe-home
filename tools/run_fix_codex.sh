@@ -145,12 +145,17 @@ None, or list any remaining concerns or contract violations for Claude to evalua
 
 # --- Run Codex (capture stdout to temp; tee stderr to log) ---
 set +e
+if [[ -x "$HOME/.local/bin/codex" ]]; then
+  CODEX_BIN="$HOME/.local/bin/codex"
+else
+  CODEX_BIN="$(which codex)"
+fi
 CODEX_FLAGS=(--skip-git-repo-check)
 if [[ "${CODEX_BYPASS_SANDBOX:-0}" == "1" ]]; then
   CODEX_FLAGS+=(--dangerously-bypass-approvals-and-sandbox)
 fi
 
-codex exec "${CODEX_FLAGS[@]}" "$PROMPT" \
+"$CODEX_BIN" exec "${CODEX_FLAGS[@]}" "$PROMPT" \
   2> >(tee "$LOG_FILE" >&2) \
   > "$CODEX_TMP"
 CODEX_EXIT=$?
