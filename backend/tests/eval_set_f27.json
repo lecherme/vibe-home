@@ -1,0 +1,205 @@
+[
+  {
+    "id": "bug_026_entry",
+    "query": "一室两厅",
+    "case_type": "bug_026",
+    "parsed_filters": {
+      "bedrooms_min": 1
+    },
+    "expected_property_search": true,
+    "expected_living_rooms": 2
+  },
+  {
+    "id": "one_room_two_living_three_person_family",
+    "query": "一室两厅 一家三口",
+    "case_type": "tension",
+    "parsed_filters": {
+      "bedrooms_min": 1
+    },
+    "expected_property_search": true,
+    "expected_living_rooms": 2,
+    "expected_interpreted_intent": [
+      {
+        "field": "living_rooms",
+        "value": 2,
+        "raw": "两厅",
+        "label": "2厅",
+        "filterable": false
+      }
+    ],
+    "llm_response": {
+      "needs": [
+        {
+          "type": "household_size",
+          "value": 3,
+          "raw": "一家三口"
+        }
+      ],
+      "unresolved": []
+    },
+    "expected_needs": [
+      {
+        "type": "household_size",
+        "value": 3,
+        "raw": "一家三口"
+      }
+    ],
+    "expected_notices": [
+      {
+        "type": "tension",
+        "message": "1室对3口之家可能偏小",
+        "related_need_type": "household_size"
+      }
+    ],
+    "expected_unresolved": []
+  },
+  {
+    "id": "two_room_one_living_three_person_family",
+    "query": "两室一厅 一家三口",
+    "case_type": "no_tension",
+    "parsed_filters": {
+      "bedrooms_min": 2
+    },
+    "expected_property_search": true,
+    "expected_living_rooms": 1,
+    "llm_response": {
+      "needs": [
+        {
+          "type": "household_size",
+          "value": 3,
+          "raw": "一家三口"
+        }
+      ],
+      "unresolved": []
+    },
+    "expected_needs": [
+      {
+        "type": "household_size",
+        "value": 3,
+        "raw": "一家三口"
+      }
+    ],
+    "expected_notices": [],
+    "expected_unresolved": []
+  },
+  {
+    "id": "three_room_two_living_four_person_family",
+    "query": "三室两厅 一家四口",
+    "case_type": "fit",
+    "parsed_filters": {
+      "bedrooms_min": 3
+    },
+    "expected_property_search": true,
+    "expected_living_rooms": 2,
+    "llm_response": {
+      "needs": [
+        {
+          "type": "household_size",
+          "value": 4,
+          "raw": "一家四口"
+        }
+      ],
+      "unresolved": []
+    },
+    "expected_needs": [
+      {
+        "type": "household_size",
+        "value": 4,
+        "raw": "一家四口"
+      }
+    ],
+    "expected_notices": [],
+    "expected_unresolved": []
+  },
+  {
+    "id": "pure_filters_only",
+    "query": "三室两卫 预算300万",
+    "case_type": "filters_only",
+    "parsed_filters": {
+      "bedrooms_min": 3,
+      "bathrooms_min": 2,
+      "max_price": 3000000
+    },
+    "expected_property_search": true,
+    "expected_living_rooms": null,
+    "llm_response": {
+      "needs": [],
+      "unresolved": []
+    },
+    "expected_needs": [],
+    "expected_notices": [],
+    "expected_unresolved": []
+  },
+  {
+    "id": "elderly_quiet_unresolved",
+    "query": "适合老人住，安静一点，不要太远",
+    "case_type": "needs_and_unresolved",
+    "parsed_filters": {},
+    "llm_response": {
+      "needs": [
+        {
+          "type": "lifestyle",
+          "value": "适合老人住",
+          "raw": "适合老人住"
+        },
+        {
+          "type": "quiet_environment",
+          "value": true,
+          "raw": "安静一点"
+        }
+      ],
+      "unresolved": [
+        "不要太远"
+      ]
+    },
+    "expected_needs": [
+      {
+        "type": "lifestyle",
+        "value": "适合老人住",
+        "raw": "适合老人住"
+      },
+      {
+        "type": "quiet_environment",
+        "value": true,
+        "raw": "安静一点"
+      }
+    ],
+    "expected_notices": [],
+    "expected_unresolved": [
+      "不要太远"
+    ]
+  },
+  {
+    "id": "school_and_environment_unresolved",
+    "query": "靠近好学校，周边环境好",
+    "case_type": "unresolved_only",
+    "parsed_filters": {},
+    "llm_response": {
+      "needs": [],
+      "unresolved": [
+        "靠近好学校",
+        "周边环境好"
+      ]
+    },
+    "expected_needs": [],
+    "expected_notices": [],
+    "expected_unresolved": [
+      "靠近好学校",
+      "周边环境好"
+    ]
+  },
+  {
+    "id": "non_search_query",
+    "query": "现在房价会涨吗",
+    "case_type": "non_search",
+    "parsed_filters": {},
+    "expected_property_search": false,
+    "llm_response": {
+      "needs": [],
+      "unresolved": []
+    },
+    "expected_needs": [],
+    "expected_notices": [],
+    "expected_unresolved": []
+  }
+]

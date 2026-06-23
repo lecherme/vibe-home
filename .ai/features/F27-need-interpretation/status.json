@@ -1,7 +1,7 @@
 {
   "feature": "F27-need-interpretation",
   "status": "in_progress",
-  "current_stage": "T01_done",
+  "current_stage": "T03_done",
   "current_owner": null,
   "next_step": "Start T02 \u2014 Gemini: frontend UI rendering",
   "last_review_failure": null,
@@ -36,7 +36,7 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "codex-build-T03.md"
     },
@@ -81,6 +81,16 @@
     {
       "timestamp": "2026-06-23T15:01:29Z",
       "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-23T15:03:40Z",
+      "event": "T03 started \u2014 Codex: evaluation set",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-23T15:08:35Z",
+      "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
       "by": "claude"
     }
   ]
