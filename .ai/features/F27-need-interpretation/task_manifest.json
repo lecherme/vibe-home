@@ -1,0 +1,73 @@
+{
+  "feature": "F27-need-interpretation",
+  "tasks": {
+    "T01": {
+      "allowed_files": [
+        "backend/app/schemas/ai_search.py",
+        "backend/app/services/ai_search/service.py",
+        "frontend/types/ai-search.ts",
+        ".ai/features/F27-need-interpretation/tension-policy.md"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        ".env",
+        ".env.*",
+        "node_modules/**",
+        "**/*.log",
+        "backend/app/schemas/search.py",
+        "backend/app/services/search/service.py",
+        "backend/tests/eval_set.json",
+        "backend/tests/test_eval.py"
+      ],
+      "expected_artifact": "codex-build-T01.md",
+      "verify_commands": [
+        "docker compose exec -T backend python3 -c \"import app.main; print('OK')\"",
+        "cd frontend && npx tsc --noEmit"
+      ]
+    },
+    "T02": {
+      "allowed_files": [
+        "frontend/components/features/search/interpreted-needs-card.tsx",
+        "frontend/app/(dashboard)/search/page.tsx"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "backend/**",
+        "frontend/types/ai-search.ts",
+        "frontend/components/features/search/ai-parsed-filters-card.tsx",
+        "frontend/components/features/search/ai-search-results.tsx",
+        "frontend/components/features/search/match-reasons-chips.tsx",
+        "frontend/components/features/search/relaxation-notice.tsx"
+      ],
+      "expected_artifact": "gemini-build-T02.md",
+      "verify_commands": [
+        "cd frontend && npx tsc --noEmit"
+      ]
+    },
+    "T03": {
+      "allowed_files": [
+        "backend/tests/eval_set_f27.json",
+        "backend/tests/test_eval_f27.py"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "backend/tests/eval_set.json",
+        "backend/tests/eval_set_f26.json",
+        "backend/tests/test_eval.py",
+        "backend/tests/test_eval_f26.py",
+        "backend/app/**",
+        "frontend/**"
+      ],
+      "expected_artifact": "codex-build-T03.md",
+      "verify_commands": []
+    },
+    "T04": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json"
+      ],
+      "expected_artifact": "review.md",
+      "verify_commands": []
+    }
+  }
+}

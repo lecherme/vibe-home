@@ -1,0 +1,67 @@
+{
+  "feature": "F27-need-interpretation",
+  "status": "pending",
+  "current_stage": "initialized",
+  "current_owner": null,
+  "next_step": "Start T01 — Codex: backend + BUG-026 + frontend types",
+  "last_review_failure": null,
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Codex: backend + BUG-026 + frontend types",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "codex-build-T01.md"
+    },
+    {
+      "id": "T02",
+      "title": "Gemini: frontend UI rendering",
+      "owner": "gemini",
+      "type": "build",
+      "depends_on": ["T01"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "gemini-build-T02.md"
+    },
+    {
+      "id": "T03",
+      "title": "Codex: evaluation set",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": ["T01"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "codex-build-T03.md"
+    },
+    {
+      "id": "T04",
+      "title": "Codex: review",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": ["T01", "T02", "T03"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "review.md"
+    },
+    {
+      "id": "T05",
+      "title": "Claude: acceptance",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": ["T04"],
+      "status": "pending",
+      "retry_count": 0,
+      "artifact": "final-report.md"
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-06-23T08:45:48Z",
+      "event": "F27 workspace initialized: spec/tasks/acceptance/status/task_manifest/owner created",
+      "by": "claude"
+    }
+  ]
+}
