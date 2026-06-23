@@ -29,7 +29,7 @@ export function InterpretedNeedsCard({
           {interpretedNeeds.notices.map((notice, idx) => {
             const isTension = notice.type === "tension";
             const bgClass = isTension
-              ? "bg-amber-50 border-amber-200 text-amber-800"
+              ? "bg-amber-50 border-amber-200 text-amber-600"
               : "bg-blue-50 border-blue-200 text-blue-800";
             const icon = isTension ? "⚠️" : "💡";
 

@@ -142,6 +142,21 @@
       "timestamp": "2026-06-23T17:27:52Z",
       "event": "T04 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-23T17:43:51Z",
+      "event": "T04 prepared for direct_fixup \u2014 A28: tension notice text-amber-800 -> text-amber-600",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-23T17:44:16Z",
+      "event": "T04 started \u2014 Codex: review [direct_fixup]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-23T17:50:04Z",
+      "event": "T04 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
     }
   ]
 }
