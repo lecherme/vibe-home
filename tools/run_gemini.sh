@@ -255,22 +255,14 @@ fi
 REPORT_FILE="$FEATURE_DIR/gemini-build-${TASK_ID}.md"
 LOG_FILE="$FEATURE_DIR/gemini-build-${TASK_ID}.log"
 
-GEMINI_BIN=$(which gemini)
-# Gemini CLI requires Node >=20. Try fnm v20 first; fall back to system node.
-NODE_BIN=$(fnm exec --using=v20 node --print-eval "process.execPath" 2>/dev/null || true)
-if [[ -z "$NODE_BIN" ]]; then
-  NODE_BIN=$(ls "$HOME/.local/share/fnm/node-versions/v20."*/installation/bin/node 2>/dev/null | tail -1 || true)
-fi
-if [[ -z "$NODE_BIN" ]]; then
-  NODE_BIN=$(which node)
-fi
+AGY_BIN=$(which agy 2>/dev/null || echo "$HOME/.local/bin/agy")
 
 echo "Running gemini for: $FEATURE_DIR task=$TASK_ID"
 echo "Report → $REPORT_FILE"
 echo "Log    → $LOG_FILE"
 
-# --approval-mode yolo allows Gemini to apply permitted UI edits; post-run diff review is required.
-"$NODE_BIN" "$GEMINI_BIN" --approval-mode yolo -p "$PROMPT" \
+# --dangerously-skip-permissions allows agy to apply permitted UI edits; post-run diff review is required.
+"$AGY_BIN" --dangerously-skip-permissions -p "$PROMPT" \
   2> >(tee "$LOG_FILE" >&2) \
   | awk '/^# Gemini Build Report/{found=1} found{print}' \
   | tee "$REPORT_FILE"

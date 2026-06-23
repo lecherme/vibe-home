@@ -16,6 +16,7 @@ import { PaginationControls } from "@/components/features/common/PaginationContr
 import { AiSearchBar } from "@/components/features/search/ai-search-bar";
 import { AiParsedFiltersCard } from "@/components/features/search/ai-parsed-filters-card";
 import { AiSearchResults } from "@/components/features/search/ai-search-results";
+import { InterpretedNeedsCard } from "@/components/features/search/interpreted-needs-card";
 
 const PAGE_SIZE = 9;
 
@@ -244,12 +245,18 @@ function SearchContent() {
           <div className="mb-8">
             <AiSearchBar onSearch={handleAiSearch} isLoading={aiLoading} />
             {aiResult && (
-              <AiParsedFiltersCard
-                queryParsed={aiResult.query_parsed}
-                parsedFilters={aiResult.parsed_filters}
-                aiSummary={aiResult.ai_summary}
-                parsedConstraints={aiResult.parsed_constraints}
-              />
+              <>
+                <AiParsedFiltersCard
+                  queryParsed={aiResult.query_parsed}
+                  parsedFilters={aiResult.parsed_filters}
+                  aiSummary={aiResult.ai_summary}
+                  parsedConstraints={aiResult.parsed_constraints}
+                />
+                <InterpretedNeedsCard
+                  interpretedNeeds={aiResult.interpreted_needs}
+                  interpretedIntent={aiResult.interpreted_intent}
+                />
+              </>
             )}
           </div>
         )}
