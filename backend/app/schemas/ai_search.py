@@ -32,6 +32,32 @@ class ConstraintInfo(BaseModel):
     label: str
 
 
+class IntentField(BaseModel):
+    field: str
+    value: Any
+    raw: str
+    label: str
+    filterable: bool
+
+
+class UserNeed(BaseModel):
+    type: Literal["household_size", "quiet_environment", "lifestyle"]
+    value: bool | int | str
+    raw: str
+
+
+class SearchNotice(BaseModel):
+    type: Literal["tension", "suggestion"]
+    message: str
+    related_need_type: str | None = None
+
+
+class InterpretedNeeds(BaseModel):
+    needs: list[UserNeed] = Field(default_factory=list)
+    notices: list[SearchNotice] = Field(default_factory=list)
+    unresolved: list[str] = Field(default_factory=list)
+
+
 class AiSearchResult(SearchResult):
     parsed_filters: SearchFilters
     ai_summary: str
@@ -41,3 +67,5 @@ class AiSearchResult(SearchResult):
     recommended_items: list[PropertyRead] = Field(default_factory=list)
     relaxations: list[RelaxationRecord] = Field(default_factory=list)
     match_reasons: dict[str, list[MatchReason]] = Field(default_factory=dict)
+    interpreted_intent: list[IntentField] = Field(default_factory=list)
+    interpreted_needs: InterpretedNeeds = Field(default_factory=InterpretedNeeds)

@@ -23,6 +23,36 @@ export interface ConstraintInfo {
   label: string;
 }
 
+export interface IntentField {
+  field: string;
+  value: unknown;
+  raw: string;
+  label: string;
+  filterable: boolean;
+}
+
+export type NeedType = "household_size" | "quiet_environment" | "lifestyle";
+
+export type NoticeType = "tension" | "suggestion";
+
+export interface UserNeed {
+  type: NeedType;
+  value: number | boolean | string;
+  raw: string;
+}
+
+export interface SearchNotice {
+  type: NoticeType;
+  message: string;
+  related_need_type: string | null;
+}
+
+export interface InterpretedNeeds {
+  needs: UserNeed[];
+  notices: SearchNotice[];
+  unresolved: string[];
+}
+
 export interface AiSearchResult extends SearchResult {
   parsed_filters: SearchFilters;
   ai_summary: string;
@@ -32,4 +62,6 @@ export interface AiSearchResult extends SearchResult {
   recommended_items?: Property[];
   relaxations?: RelaxationRecord[];
   match_reasons?: Record<string, MatchReason[]>;
+  interpreted_intent?: IntentField[];
+  interpreted_needs?: InterpretedNeeds;
 }

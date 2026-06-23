@@ -8,7 +8,16 @@ from fastapi import HTTPException, status
 
 from app.core.config import get_settings
 from app.data.properties import get_all, get_by_id
-from app.schemas.ai_search import AiSearchResult, ConstraintInfo, MatchReason, RelaxationRecord
+from app.schemas.ai_search import (
+    AiSearchResult,
+    ConstraintInfo,
+    InterpretedNeeds,
+    IntentField,
+    MatchReason,
+    RelaxationRecord,
+    SearchNotice,
+    UserNeed,
+)
 from app.schemas.property import Property as PropertyRead
 from app.schemas.property import PropertyStatus
 from app.schemas.search import SearchFilters
@@ -28,6 +37,7 @@ _PRICE_UNIT_PATTERN = re.compile(r"(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>w|万)", 
 _PRICE_SUFFIX_PATTERN = r"(?:\s*(?:hkd|hk\$))?"
 _BEDROOM_PATTERN = r"(?:卧室|房间|bedrooms?|beds?)"
 _BATHROOM_PATTERN = r"(?:卫生间|洗手间|浴室|bathrooms?|baths?)"
+_LIVING_ROOM_PATTERN = re.compile(r"(\d+)\s*厅", re.IGNORECASE)
 _ROOM_SUFFIX_BLOCKER = rf"(?!\s*(?:个|间)?\s*(?:{_BEDROOM_PATTERN}|{_BATHROOM_PATTERN}))"
 _MIN_COMPARATORS = {"以上", "至少", "最少", "at least", "or more", "or above"}
 _GREATER_THAN_COMPARATORS = {"more than", "greater than", "超过"}
@@ -35,6 +45,7 @@ _MAX_COMPARATORS = {"以下", "at most", "不超过", "or below"}
 _LESS_THAN_COMPARATORS = {"less than", "fewer than", "少于"}
 _CHINESE_DIGITS = {"一": "1", "二": "2", "两": "2", "三": "3", "四": "4", "五": "5", "六": "6", "七": "7", "八": "8", "九": "9", "十": "10"}
 _CHINESE_DIGIT_RE = re.compile("|".join(_CHINESE_DIGITS))
+_ALLOWED_NEED_TYPES = {"household_size", "quiet_environment", "lifestyle"}
 _NON_SEARCH_REDIRECT_MESSAGE = "这个问题不是房源筛选，我可以帮你按预算、区域、户型、通勤等条件找房。"
 _PROPERTY_NOUN_PATTERN = (
     r"(?:房源|房子|找房|租房|买房|住房|住宅|公寓|楼盘|新房|二手房|整租|合租|"
@@ -53,7 +64,7 @@ _PROPERTY_SEARCH_PATTERNS = (
         re.IGNORECASE,
     ),
     re.compile(
-        rf"\d+\s*(?:室|居|卧|卫|bedrooms?|beds?|bathrooms?|baths?)\b",
+        rf"\d+\s*(?:室|厅|居|卧|卫|bedrooms?|beds?|bathrooms?|baths?)\b",
         re.IGNORECASE,
     ),
     re.compile(
@@ -120,7 +131,10 @@ def _has_filters(filters: SearchFilters) -> bool:
 
 
 def _is_property_search(query: str) -> bool:
-    normalized_query = " ".join(query.strip().split())
+    normalized_query = _CHINESE_DIGIT_RE.sub(
+        lambda m: _CHINESE_DIGITS[m.group(0)],
+        " ".join(query.strip().split()),
+    )
     if not normalized_query:
         return True
 
@@ -159,6 +173,131 @@ def _is_property_search(query: str) -> bool:
 
     logger.warning("Property-search intent classification failed", extra={"query": query}, exc_info=last_exc)
     return True
+
+
+def _extract_living_rooms(query: str) -> int | None:
+    normalized_query = _CHINESE_DIGIT_RE.sub(lambda m: _CHINESE_DIGITS[m.group(0)], query)
+    match = _LIVING_ROOM_PATTERN.search(normalized_query)
+    return int(match.group(1)) if match else None
+
+
+def _interpret_needs(query: str, parsed_filters: SearchFilters) -> InterpretedNeeds:
+    system_prompt = (
+        "Interpret user needs that are not standard property filters. "
+        "Return JSON only with keys needs and unresolved. "
+        "Each need must include type, value, and raw. "
+        "Allowed NeedType values are household_size, quiet_environment, lifestyle. "
+        "Silently drop any need whose type is outside that enum. "
+        "Do not return notices, suggestions, filters, explanations, or extra keys.\n"
+        "Example 1 input: 三室两卫 预算300万\n"
+        'Example 1 output: {"needs":[],"unresolved":[]}\n'
+        "Example 2 input: 适合老人住，安静一点，不要太远\n"
+        'Example 2 output: {"needs":[{"type":"lifestyle","value":"适合老人住","raw":"适合老人住"},{"type":"quiet_environment","value":true,"raw":"安静一点"}],"unresolved":["不要太远"]}\n'
+        "Example 3 input: 三室两厅 一家四口\n"
+        'Example 3 output: {"needs":[{"type":"household_size","value":4,"raw":"一家四口"}],"unresolved":[]}\n'
+        "Example 4 input: 一室两厅 一家三口\n"
+        'Example 4 output: {"needs":[{"type":"household_size","value":3,"raw":"一家三口"}],"unresolved":[]}\n'
+        "Example 5 input: 靠近好学校，周边环境好\n"
+        'Example 5 output: {"needs":[],"unresolved":["靠近好学校","周边环境好"]}\n'
+        "Example 6 input: 现在房价会涨吗\n"
+        'Example 6 output: {"needs":[],"unresolved":[]}'
+    )
+    response_text = complete(
+        prompt=(
+            f"User query: {query}\n"
+            f"Parsed filters: {parsed_filters.model_dump_json()}"
+        ),
+        max_tokens=250,
+        temperature=0,
+        json_mode=True,
+        system_prompt=system_prompt,
+        disable_thinking=True,
+    )
+    parsed_payload = json.loads(_sanitize_json_payload(response_text))
+    if not isinstance(parsed_payload, dict):
+        raise ValueError("LLM returned a non-object JSON payload")
+
+    needs_payload = parsed_payload.get("needs")
+    unresolved_payload = parsed_payload.get("unresolved")
+    needs: list[UserNeed] = []
+
+    if isinstance(needs_payload, list):
+        for need_payload in needs_payload:
+            if not isinstance(need_payload, dict):
+                continue
+            need_type = need_payload.get("type")
+            if need_type not in _ALLOWED_NEED_TYPES:
+                continue
+            raw_value = need_payload.get("raw")
+            if not isinstance(raw_value, str):
+                continue
+            raw = raw_value.strip()
+            if not raw:
+                continue
+
+            value = need_payload.get("value")
+            if need_type == "household_size":
+                if isinstance(value, bool):
+                    continue
+                if isinstance(value, int):
+                    normalized_value = value
+                elif isinstance(value, float) and value.is_integer():
+                    normalized_value = int(value)
+                elif isinstance(value, str) and value.strip().isdigit():
+                    normalized_value = int(value.strip())
+                else:
+                    continue
+            elif need_type == "quiet_environment":
+                if isinstance(value, bool):
+                    normalized_value = value
+                elif isinstance(value, str):
+                    lowered = value.strip().lower()
+                    if lowered in {"true", "1", "yes"}:
+                        normalized_value = True
+                    elif lowered in {"false", "0", "no"}:
+                        normalized_value = False
+                    else:
+                        normalized_value = True
+                else:
+                    normalized_value = True
+            else:
+                normalized_value = value if isinstance(value, str) and value.strip() else raw
+
+            needs.append(
+                UserNeed(
+                    type=need_type,
+                    value=normalized_value,
+                    raw=raw,
+                )
+            )
+
+    unresolved = [
+        item.strip()
+        for item in unresolved_payload
+        if isinstance(item, str) and item.strip()
+    ] if isinstance(unresolved_payload, list) else []
+
+    return InterpretedNeeds(needs=needs, unresolved=unresolved)
+
+
+def _detect_tensions(needs: list[UserNeed], parsed_filters: SearchFilters) -> list[SearchNotice]:
+    bedrooms_min = parsed_filters.bedrooms_min
+    if bedrooms_min is None:
+        return []
+
+    notices: list[SearchNotice] = []
+    for need in needs:
+        if need.type != "household_size" or not isinstance(need.value, int):
+            continue
+        if need.value > bedrooms_min + 1:
+            notices.append(
+                SearchNotice(
+                    type="tension",
+                    message=f"{bedrooms_min}室对{need.value}口之家可能偏小",
+                    related_need_type=need.type,
+                )
+            )
+    return notices
 
 
 def _sanitize_json_payload(text: str) -> str:
@@ -995,6 +1134,27 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         parsed_filters = SearchFilters()
         query_parsed = False
     original_parsed_filters = parsed_filters.model_copy()
+    interpreted_intent: list[IntentField] = []
+    living_rooms = _extract_living_rooms(query)
+    if living_rooms is not None:
+        living_room_match = re.search(r"([一二两三四五六七八九十\d]+)\s*厅", query, re.IGNORECASE)
+        interpreted_intent.append(
+            IntentField(
+                field="living_rooms",
+                value=living_rooms,
+                raw=living_room_match.group(0) if living_room_match is not None else f"{living_rooms}厅",
+                label=f"{living_rooms}厅",
+                filterable=False,
+            )
+        )
+    interpreted_needs = InterpretedNeeds()
+    try:
+        interpreted_needs = _interpret_needs(query, original_parsed_filters)
+        interpreted_needs = interpreted_needs.model_copy(
+            update={"notices": _detect_tensions(interpreted_needs.needs, original_parsed_filters)}
+        )
+    except Exception:
+        logger.warning("Need interpretation failed", extra={"query": query}, exc_info=True)
     parsed_constraints = _build_parsed_constraints(original_parsed_filters)
     relaxations: list[RelaxationRecord] = []
     relaxed_conditions: list[str] = []
@@ -1108,4 +1268,6 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         recommended_items=recommended_items,
         relaxations=relaxations,
         match_reasons=match_reasons,
+        interpreted_intent=interpreted_intent,
+        interpreted_needs=interpreted_needs,
     )
