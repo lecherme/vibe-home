@@ -215,3 +215,53 @@ def test_ai_search_non_search_query_returns_redirect(monkeypatch: pytest.MonkeyP
         "notices": [],
         "unresolved": [],
     }
+
+
+def test_interpret_needs_discards_unknown_type(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A18: LLM returns a need type not in the allowed enum; it must be silently dropped.
+    # A valid need in the same response must still be returned normally.
+    llm_response = json.dumps(
+        {
+            "needs": [
+                {"type": "unknown_future_type", "value": "foo", "raw": "foo"},
+                {"type": "household_size", "value": 3, "raw": "一家三口"},
+            ],
+            "unresolved": [],
+        },
+        ensure_ascii=False,
+    )
+    monkeypatch.setattr(ai_search_service, "complete", lambda *args, **kwargs: llm_response)
+
+    from app.schemas.search import SearchFilters
+
+    interpreted = ai_search_service._interpret_needs("一室两厅 一家三口", SearchFilters())
+
+    assert len(interpreted.needs) == 1
+    assert interpreted.needs[0].type == "household_size"
+    assert interpreted.needs[0].value == 3
+    assert interpreted.unresolved == []
+
+
+def test_ai_search_interpret_needs_exception_returns_empty_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A19: When _interpret_needs raises, ai_search must catch the exception,
+    # return an empty InterpretedNeeds, and complete the search normally.
+    case = _case_by_id("one_room_two_living_three_person_family")
+    empty_needs = InterpretedNeeds()
+
+    _stub_ai_search_dependencies(monkeypatch, _filters_from_case(case), empty_needs)
+    monkeypatch.setattr(
+        ai_search_service,
+        "_interpret_needs",
+        lambda query, filters: (_ for _ in ()).throw(RuntimeError("LLM unavailable")),
+    )
+
+    result = ai_search_service.ai_search(case["query"], page=1, page_size=20)
+
+    assert result.interpreted_needs.model_dump() == {
+        "needs": [],
+        "notices": [],
+        "unresolved": [],
+    }
+    assert result.ai_summary == "summary"

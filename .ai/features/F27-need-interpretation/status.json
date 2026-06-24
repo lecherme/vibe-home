@@ -1,9 +1,9 @@
 {
   "feature": "F27-need-interpretation",
-  "status": "failed",
+  "status": "in_progress",
   "current_stage": "T04_done",
   "current_owner": null,
-  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
+  "next_step": "Start T05 \u2014 Claude: acceptance",
   "last_review_failure": null,
   "tasks": [
     {
@@ -156,6 +156,21 @@
     {
       "timestamp": "2026-06-23T17:50:04Z",
       "event": "T04 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-24T03:21:25Z",
+      "event": "T04 prepared for direct_fixup \u2014 add A18/A19 tests: enum discard + exception fallback; tools/*.sh are pre-authorized orchestrator infrastructure changes (Antigravity CLI + Codex binary fix)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-24T03:44:35Z",
+      "event": "T04 started \u2014 Codex: review [direct_fixup]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-24T03:48:47Z",
+      "event": "T04 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]
