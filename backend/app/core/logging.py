@@ -14,6 +14,16 @@ class RequestIdFilter(logging.Filter):
         return True
 
 
+_EXTRA_FIELDS = (
+    "parse_filters_ms",
+    "interpret_needs_ms",
+    "resolve_ids_ms",
+    "collect_items_ms",
+    "total_ms",
+    "query",
+)
+
+
 class JsonLogFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         payload = {
@@ -22,6 +32,10 @@ class JsonLogFormatter(logging.Formatter):
             "message": record.getMessage(),
             "request_id": getattr(record, "request_id", None),
         }
+        for field in _EXTRA_FIELDS:
+            val = getattr(record, field, None)
+            if val is not None:
+                payload[field] = val
         if record.exc_info:
             payload["exception"] = self.formatException(record.exc_info)
         return json.dumps(payload)
