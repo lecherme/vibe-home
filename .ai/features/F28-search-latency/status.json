@@ -1,14 +1,14 @@
 {
   "feature": "F28-search-latency",
   "status": "in_progress",
-  "current_stage": "T02_done",
+  "current_stage": "T05_done",
   "current_owner": null,
-  "next_step": "Run T05 — CODEX_MODEL=gpt-5.4 CODEX_BYPASS_SANDBOX=1 bash tools/run_task.sh .ai/features/F28-search-latency T05",
+  "next_step": "Start T06 \u2014 Codex review",
   "last_review_failure": null,
   "tasks": [
     {
       "id": "T01",
-      "title": "Instrumentation — per-stage timing in ai_search()",
+      "title": "Instrumentation \u2014 per-stage timing in ai_search()",
       "owner": "codex",
       "type": "build",
       "depends_on": [],
@@ -21,18 +21,23 @@
       "title": "Parallelize _interpret_needs + _resolve_result_ids",
       "owner": "codex",
       "type": "build",
-      "depends_on": ["T01"],
+      "depends_on": [
+        "T01"
+      ],
       "status": "done",
       "retry_count": 0,
       "artifact": "codex-build-T02.md"
     },
     {
       "id": "T05",
-      "title": "Non-regression eval — F16 + F27",
+      "title": "Non-regression eval \u2014 F16 + F27",
       "owner": "codex",
       "type": "build",
-      "depends_on": ["T01", "T02"],
-      "status": "pending",
+      "depends_on": [
+        "T01",
+        "T02"
+      ],
+      "status": "done",
       "retry_count": 0,
       "artifact": "codex-build-T05.md"
     },
@@ -41,7 +46,11 @@
       "title": "Codex review",
       "owner": "codex",
       "type": "review",
-      "depends_on": ["T01", "T02", "T05"],
+      "depends_on": [
+        "T01",
+        "T02",
+        "T05"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": "review.md"
@@ -51,7 +60,9 @@
       "title": "Claude acceptance",
       "owner": "claude",
       "type": "acceptance",
-      "depends_on": ["T06"],
+      "depends_on": [
+        "T06"
+      ],
       "status": "pending",
       "retry_count": 0,
       "artifact": "final-report.md"
@@ -65,27 +76,37 @@
     },
     {
       "timestamp": "2026-06-25T04:59:15Z",
-      "event": "T01 started — Instrumentation — per-stage timing in ai_search()",
+      "event": "T01 started \u2014 Instrumentation \u2014 per-stage timing in ai_search()",
       "by": "claude"
     },
     {
       "timestamp": "2026-06-25T05:00:08Z",
-      "event": "T01 done — artifact captured as codex-build-T01.md",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
       "by": "claude"
     },
     {
       "timestamp": "2026-06-25T05:00:43Z",
-      "event": "T02 started — Parallelize _interpret_needs + _resolve_result_ids",
+      "event": "T02 started \u2014 Parallelize _interpret_needs + _resolve_result_ids",
       "by": "claude"
     },
     {
       "timestamp": "2026-06-25T05:03:02Z",
-      "event": "T02 done — artifact captured as codex-build-T02.md",
+      "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
       "by": "claude"
     },
     {
       "timestamp": "2026-06-25T09:01:36Z",
-      "event": "T03 reverted — summary decoupling deferred to F29; T03/T04 removed from F28 scope (方案 A)",
+      "event": "T03 reverted \u2014 summary decoupling deferred to F29; T03/T04 removed from F28 scope (\u65b9\u6848 A)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-25T15:01:24Z",
+      "event": "T05 started \u2014 Non-regression eval \u2014 F16 + F27",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-25T15:02:11Z",
+      "event": "T05 done \u2014 artifact captured as codex-build-T05.md",
       "by": "claude"
     }
   ]
