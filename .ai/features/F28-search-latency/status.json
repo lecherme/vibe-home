@@ -1,9 +1,9 @@
 {
   "feature": "F28-search-latency",
   "status": "in_progress",
-  "current_stage": "T06_pending",
+  "current_stage": "T06_done",
   "current_owner": null,
-  "next_step": "Retry T06 \u2014 rerun review after upstream fixup",
+  "next_step": "Start T07 \u2014 Claude acceptance",
   "last_review_failure": null,
   "tasks": [
     {
@@ -51,13 +51,9 @@
         "T02",
         "T05"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
-      "artifact": null,
-      "retry": {
-        "type": "review_rerun",
-        "reason": "BLOCKER is false positive: status.json was modified by Claude orchestration (run_task.sh state transitions), not by Codex or Gemini workers. Activity log confirms all entries have by=claude. Working tree shows uncommitted orchestration state only."
-      }
+      "artifact": "review.md"
     },
     {
       "id": "T07",
@@ -126,6 +122,16 @@
     {
       "timestamp": "2026-06-25T15:11:17Z",
       "event": "T06 prepared for review_rerun \u2014 BLOCKER is false positive: status.json was modified by Claude orchestration (run_task.sh state transitions), not by Codex or Gemini workers. Activity log confirms all entries have by=claude. Working tree shows uncommitted orchestration state only.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-25T15:11:57Z",
+      "event": "T06 started \u2014 Codex review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-25T15:14:05Z",
+      "event": "T06 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]
