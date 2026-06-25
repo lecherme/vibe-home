@@ -1192,6 +1192,7 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
     strict_ids: list[str] = []
     recommended_ids: list[str] = []
 
+    relaxation_started_at = time.perf_counter()
     if query_parsed:
         for property_id in strict_result_ids:
             property_item = get_by_id(property_id)
@@ -1263,6 +1264,8 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
     else:
         strict_ids = strict_result_ids
 
+    relaxation_ms = int((time.perf_counter() - relaxation_started_at) * 1000)
+
     result_ids = [*strict_ids, *recommended_ids]
     collect_items_started_at = time.perf_counter()
     page_items, total = _collect_items(result_ids, resolved_page, resolved_page_size)
@@ -1273,6 +1276,7 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
     items = [*strict_items, *recommended_items]
     match_reasons = _build_match_reasons(items, original_parsed_filters)
 
+    generate_summary_started_at = time.perf_counter()
     try:
         ai_summary = _generate_summary(query, parsed_filters, total, items, relaxed_conditions)
     except Exception:
@@ -1282,15 +1286,29 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
             if relaxed_conditions
             else f"Found {total} properties matching your search."
         )
+    generate_summary_ms = int((time.perf_counter() - generate_summary_started_at) * 1000)
 
+    total_ms = int((time.perf_counter() - total_started_at) * 1000)
+    accounted_ms = (
+        parse_filters_ms
+        + interpret_needs_ms
+        + resolve_ids_ms
+        + relaxation_ms
+        + collect_items_ms
+        + generate_summary_ms
+    )
     logger.info(
         "AI search timing",
         extra={
             "parse_filters_ms": parse_filters_ms,
             "interpret_needs_ms": interpret_needs_ms,
             "resolve_ids_ms": resolve_ids_ms,
+            "relaxation_ms": relaxation_ms,
             "collect_items_ms": collect_items_ms,
-            "total_ms": int((time.perf_counter() - total_started_at) * 1000),
+            "generate_summary_ms": generate_summary_ms,
+            "accounted_ms": accounted_ms,
+            "unaccounted_ms": total_ms - accounted_ms,
+            "total_ms": total_ms,
             "query": query,
         },
     )

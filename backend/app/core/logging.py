@@ -18,7 +18,11 @@ _EXTRA_FIELDS = (
     "parse_filters_ms",
     "interpret_needs_ms",
     "resolve_ids_ms",
+    "relaxation_ms",
     "collect_items_ms",
+    "generate_summary_ms",
+    "accounted_ms",
+    "unaccounted_ms",
     "total_ms",
     "query",
 )
