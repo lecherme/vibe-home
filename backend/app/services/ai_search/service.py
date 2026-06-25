@@ -2,6 +2,7 @@ from collections import defaultdict
 import json
 import logging
 import re
+import time
 from typing import Any
 
 from fastapi import HTTPException, status
@@ -1107,6 +1108,11 @@ def _resolve_result_ids(
 
 
 def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
+    total_started_at = time.perf_counter()
+    parse_filters_ms = 0
+    interpret_needs_ms = 0
+    resolve_ids_ms = 0
+    collect_items_ms = 0
     settings = get_settings()
     if not settings.embedding_api_key or not settings.llm_api_key:
         raise HTTPException(
@@ -1127,12 +1133,14 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
             query_parsed=False,
         )
 
+    parse_filters_started_at = time.perf_counter()
     try:
         parsed_filters, query_parsed = _parse_filters(query)
     except Exception:
         logger.warning("AI query parsing failed", extra={"query": query}, exc_info=True)
         parsed_filters = SearchFilters()
         query_parsed = False
+    parse_filters_ms = int((time.perf_counter() - parse_filters_started_at) * 1000)
     original_parsed_filters = parsed_filters.model_copy()
     interpreted_intent: list[IntentField] = []
     living_rooms = _extract_living_rooms(query)
@@ -1148,6 +1156,7 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
             )
         )
     interpreted_needs = InterpretedNeeds()
+    interpret_needs_started_at = time.perf_counter()
     try:
         interpreted_needs = _interpret_needs(query, original_parsed_filters)
         interpreted_needs = interpreted_needs.model_copy(
@@ -1155,14 +1164,17 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         )
     except Exception:
         logger.warning("Need interpretation failed", extra={"query": query}, exc_info=True)
+    interpret_needs_ms = int((time.perf_counter() - interpret_needs_started_at) * 1000)
     parsed_constraints = _build_parsed_constraints(original_parsed_filters)
     relaxations: list[RelaxationRecord] = []
     relaxed_conditions: list[str] = []
+    resolve_ids_started_at = time.perf_counter()
     strict_result_ids = _resolve_result_ids(
         query,
         parsed_filters,
         query_parsed=query_parsed,
     )
+    resolve_ids_ms = int((time.perf_counter() - resolve_ids_started_at) * 1000)
     strict_ids: list[str] = []
     recommended_ids: list[str] = []
 
@@ -1238,7 +1250,9 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         strict_ids = strict_result_ids
 
     result_ids = [*strict_ids, *recommended_ids]
+    collect_items_started_at = time.perf_counter()
     page_items, total = _collect_items(result_ids, resolved_page, resolved_page_size)
+    collect_items_ms = int((time.perf_counter() - collect_items_started_at) * 1000)
     strict_id_set = set(strict_ids)
     strict_items = [item for item in page_items if item.id in strict_id_set]
     recommended_items = [item for item in page_items if item.id not in strict_id_set]
@@ -1254,6 +1268,18 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
             if relaxed_conditions
             else f"Found {total} properties matching your search."
         )
+
+    logger.info(
+        "AI search timing",
+        extra={
+            "parse_filters_ms": parse_filters_ms,
+            "interpret_needs_ms": interpret_needs_ms,
+            "resolve_ids_ms": resolve_ids_ms,
+            "collect_items_ms": collect_items_ms,
+            "total_ms": int((time.perf_counter() - total_started_at) * 1000),
+            "query": query,
+        },
+    )
 
     return AiSearchResult(
         items=items,
