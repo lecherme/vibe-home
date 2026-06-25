@@ -1,13 +1,10 @@
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
 import json
 import logging
 import re
-from threading import Lock
 import time
-from typing import Any, Callable
-from uuid import uuid4
+from typing import Any
 
 from fastapi import HTTPException, status
 
@@ -37,8 +34,6 @@ _SEARCH_MAX_PAGE_SIZE = 100
 _HYBRID_MIN_RESULTS = 5
 _RELAX_SUPPLEMENT_THRESHOLD = 3
 _MAX_RELAXATION_STEPS = 3
-_SUMMARY_CONTEXT_TTL_SECONDS = 120
-_SUMMARY_CONTEXT_MAX_ENTRIES = 512
 _ALLOWED_STATUS_VALUES = {status.value for status in PropertyStatus}
 _PRICE_UNIT_PATTERN = re.compile(r"(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>w|万)", re.IGNORECASE)
 _PRICE_SUFFIX_PATTERN = r"(?:\s*(?:hkd|hk\$))?"
@@ -114,68 +109,6 @@ _CONSTRAINT_FIELD_ORDER = (
     "built_year_min",
     "subway_distance_max",
     "status",
-)
-
-
-@dataclass(frozen=True)
-class SummaryContext:
-    query: str
-    parsed_filters: SearchFilters
-    total: int
-    items: list[PropertyRead]
-    relaxed_conditions: list[str]
-
-
-class _SummaryContextTTLCache:
-    def __init__(
-        self,
-        *,
-        maxsize: int,
-        ttl_seconds: int,
-        timer: Callable[[], float] = time.monotonic,
-    ) -> None:
-        self._maxsize = maxsize
-        self._ttl_seconds = ttl_seconds
-        self._timer = timer
-        self._lock = Lock()
-        self._entries: OrderedDict[str, tuple[float, SummaryContext]] = OrderedDict()
-
-    def _purge_expired_locked(self, now: float) -> None:
-        while self._entries:
-            _, (expires_at, _) = next(iter(self._entries.items()))
-            if expires_at > now:
-                break
-            self._entries.popitem(last=False)
-
-    def set(self, key: str, value: SummaryContext) -> None:
-        with self._lock:
-            now = self._timer()
-            self._purge_expired_locked(now)
-            self._entries.pop(key, None)
-            while len(self._entries) >= self._maxsize:
-                self._entries.popitem(last=False)
-            self._entries[key] = (now + self._ttl_seconds, value)
-
-    def pop(self, key: str) -> SummaryContext | None:
-        with self._lock:
-            now = self._timer()
-            self._purge_expired_locked(now)
-            entry = self._entries.pop(key, None)
-            if entry is None:
-                return None
-            expires_at, value = entry
-            if expires_at <= now:
-                return None
-            return value
-
-    def clear(self) -> None:
-        with self._lock:
-            self._entries.clear()
-
-
-_summary_context_store = _SummaryContextTTLCache(
-    maxsize=_SUMMARY_CONTEXT_MAX_ENTRIES,
-    ttl_seconds=_SUMMARY_CONTEXT_TTL_SECONDS,
 )
 
 
@@ -1137,27 +1070,6 @@ def _generate_summary(
     return summary
 
 
-def generate_summary_for_request(search_request_id: str) -> str:
-    summary_context = _summary_context_store.pop(search_request_id)
-    if summary_context is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Search summary context not found",
-        )
-
-    try:
-        return _generate_summary(
-            summary_context.query,
-            summary_context.parsed_filters,
-            summary_context.total,
-            summary_context.items,
-            summary_context.relaxed_conditions,
-        )
-    except Exception:
-        _summary_context_store.set(search_request_id, summary_context)
-        raise
-
-
 def _resolve_result_ids(
     query: str,
     parsed_filters: SearchFilters,
@@ -1360,17 +1272,16 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
     recommended_items = [item for item in page_items if item.id not in strict_id_set]
     items = [*strict_items, *recommended_items]
     match_reasons = _build_match_reasons(items, original_parsed_filters)
-    search_request_id = str(uuid4())
-    _summary_context_store.set(
-        search_request_id,
-        SummaryContext(
-            query=query,
-            parsed_filters=parsed_filters,
-            total=total,
-            items=list(items[:5]),
-            relaxed_conditions=list(relaxed_conditions),
-        ),
-    )
+
+    try:
+        ai_summary = _generate_summary(query, parsed_filters, total, items, relaxed_conditions)
+    except Exception:
+        logger.warning("AI summary generation failed", extra={"query": query}, exc_info=True)
+        ai_summary = (
+            f"Found {total} properties matching your search after relaxing some conditions."
+            if relaxed_conditions
+            else f"Found {total} properties matching your search."
+        )
 
     logger.info(
         "AI search timing",
@@ -1390,8 +1301,7 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         page=resolved_page,
         page_size=resolved_page_size,
         parsed_filters=original_parsed_filters,
-        ai_summary="",
-        search_request_id=search_request_id,
+        ai_summary=ai_summary,
         query_parsed=query_parsed,
         parsed_constraints=parsed_constraints,
         strict_items=strict_items,

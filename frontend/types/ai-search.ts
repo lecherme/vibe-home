@@ -53,18 +53,9 @@ export interface InterpretedNeeds {
   unresolved: string[];
 }
 
-export interface SearchSummaryRequest {
-  search_request_id: string;
-}
-
-export interface SearchSummaryResponse {
-  ai_summary: string;
-}
-
 export interface AiSearchResult extends SearchResult {
   parsed_filters: SearchFilters;
   ai_summary: string;
-  search_request_id?: string;
   query_parsed: boolean;
   parsed_constraints?: ConstraintInfo[];
   strict_items?: Property[];
