@@ -1,0 +1,115 @@
+{
+  "feature": "F28-search-latency",
+  "tasks": {
+    "T01": {
+      "allowed_files": [
+        "backend/app/services/ai_search/service.py"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "backend/app/schemas/**",
+        "backend/app/api/**",
+        "frontend/**",
+        "backend/tests/**"
+      ],
+      "expected_artifact": "codex-build-T01.md",
+      "verify_commands": [
+        "docker compose exec -T backend python3 -c \"import app.main; print('OK')\""
+      ]
+    },
+    "T02": {
+      "allowed_files": [
+        "backend/app/services/ai_search/service.py",
+        "backend/tests/test_f28_latency.py"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "backend/app/schemas/**",
+        "backend/app/api/**",
+        "frontend/**",
+        "backend/tests/eval_set.json",
+        "backend/tests/test_eval.py",
+        "backend/tests/eval_set_f27.json",
+        "backend/tests/test_eval_f27.py"
+      ],
+      "expected_artifact": "codex-build-T02.md",
+      "verify_commands": [
+        "docker compose run --rm -v $(pwd)/backend/tests:/app/tests backend python3 -m pytest /app/tests/test_f28_latency.py -q"
+      ]
+    },
+    "T03": {
+      "allowed_files": [
+        "backend/app/services/ai_search/service.py",
+        "backend/app/api/v1/ai_search/router.py",
+        "backend/app/schemas/ai_search.py",
+        "frontend/types/ai-search.ts",
+        "frontend/lib/api/search.ts",
+        "backend/tests/test_f28_latency.py"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "frontend/app/**",
+        "frontend/components/**",
+        "backend/tests/eval_set.json",
+        "backend/tests/test_eval.py",
+        "backend/tests/eval_set_f27.json",
+        "backend/tests/test_eval_f27.py"
+      ],
+      "expected_artifact": "codex-build-T03.md",
+      "verify_commands": [
+        "cd frontend && npx tsc --noEmit"
+      ]
+    },
+    "T04": {
+      "allowed_files": [
+        "frontend/app/(dashboard)/search/page.tsx",
+        "frontend/components/features/search/ai-summary-card.tsx",
+        "frontend/components/features/search/ai-search-results.tsx",
+        "frontend/components/features/search/search-summary.tsx"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "backend/**",
+        "frontend/types/**",
+        "frontend/lib/**"
+      ],
+      "expected_artifact": "gemini-build-T04.md",
+      "verify_commands": [
+        "cd frontend && npx tsc --noEmit"
+      ]
+    },
+    "T05": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "backend/app/**",
+        "frontend/**"
+      ],
+      "expected_artifact": "codex-build-T05.md",
+      "verify_commands": [
+        "bash tools/run_eval.sh",
+        "docker compose run --rm -v $(pwd)/backend/tests:/app/tests backend python3 -m pytest /app/tests/test_eval_f27.py -q"
+      ]
+    },
+    "T06": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json"
+      ],
+      "expected_artifact": "review.md",
+      "verify_commands": []
+    },
+    "T07": {
+      "allowed_files": [
+        ".ai/features/F28-search-latency/status.json",
+        ".ai/features/F28-search-latency/final-report.md"
+      ],
+      "forbidden_files": [
+        "backend/**",
+        "frontend/**"
+      ],
+      "expected_artifact": "final-report.md",
+      "verify_commands": []
+    }
+  }
+}
