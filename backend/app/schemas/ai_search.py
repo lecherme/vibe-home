@@ -12,6 +12,14 @@ class AiSearchRequest(BaseModel):
     page_size: int = Field(default=20, ge=1)
 
 
+class SummaryRequest(BaseModel):
+    search_request_id: str
+
+
+class SummaryResponse(BaseModel):
+    ai_summary: str
+
+
 class RelaxationRecord(BaseModel):
     field: str
     from_value: Any
@@ -60,7 +68,8 @@ class InterpretedNeeds(BaseModel):
 
 class AiSearchResult(SearchResult):
     parsed_filters: SearchFilters
-    ai_summary: str
+    ai_summary: str = ""
+    search_request_id: str | None = None
     query_parsed: bool
     parsed_constraints: list[ConstraintInfo] = Field(default_factory=list)
     strict_items: list[PropertyRead] = Field(default_factory=list)

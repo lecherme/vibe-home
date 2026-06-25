@@ -1,8 +1,15 @@
 from types import SimpleNamespace
 
 import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
+from app.api.v1.ai_search.router import router as ai_search_router
+from app.core.security import get_current_user
 from app.schemas.ai_search import InterpretedNeeds
+from app.schemas.auth import AppRole, UserRead
+from app.schemas.property import Property as PropertyRead
+from app.schemas.property import PropertyStatus
 from app.schemas.search import SearchFilters
 from app.services.ai_search import service
 
@@ -19,6 +26,44 @@ def _configure_ai_search_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(service, "_build_parsed_constraints", lambda parsed_filters: [])
     monkeypatch.setattr(service, "_build_match_reasons", lambda items, parsed_filters: {})
     monkeypatch.setattr(service, "_generate_summary", lambda query, parsed_filters, total, items, relaxed_conditions: "summary")
+
+
+@pytest.fixture(autouse=True)
+def clear_summary_context_store() -> None:
+    service._summary_context_store.clear()
+    yield
+    service._summary_context_store.clear()
+
+
+@pytest.fixture
+def client() -> TestClient:
+    app = FastAPI()
+    app.include_router(ai_search_router, prefix="/api/v1/search/ai")
+    app.dependency_overrides[get_current_user] = lambda: UserRead(
+        id="user-123",
+        email="user@example.com",
+        role=AppRole.USER,
+    )
+    return TestClient(app)
+
+
+def _build_property(property_id: str) -> PropertyRead:
+    return PropertyRead(
+        id=property_id,
+        title="Test Property",
+        description="Test Description",
+        price=500000,
+        location="Test Location",
+        bedrooms=2,
+        bathrooms=1,
+        area_sqm=80,
+        built_year=2020,
+        subway_distance_m=500,
+        tags=[],
+        images=[],
+        status=PropertyStatus.AVAILABLE,
+        created_at="2025-01-01T00:00:00Z",
+    )
 
 
 def test_ai_search_submits_interpret_and_resolve_before_waiting(
@@ -104,3 +149,52 @@ def test_ai_search_uses_resolved_ids_when_interpretation_fails(
     assert result.interpreted_needs == InterpretedNeeds()
     assert result.total == 1
     assert any(record.message == "Need interpretation failed" for record in caplog.records)
+
+
+def test_search_summary_endpoint_returns_generated_summary_and_deletes_context(
+    monkeypatch: pytest.MonkeyPatch,
+    client: TestClient,
+) -> None:
+    _configure_ai_search_defaults(monkeypatch)
+
+    monkeypatch.setattr(service, "_interpret_needs", lambda query, parsed_filters: InterpretedNeeds())
+    monkeypatch.setattr(
+        service,
+        "_resolve_result_ids",
+        lambda query, parsed_filters, query_parsed: ["prop-123"],
+    )
+    monkeypatch.setattr(
+        service,
+        "_collect_items",
+        lambda result_ids, page, page_size: ([_build_property("prop-123")], 1),
+    )
+
+    result = service.ai_search("2 bedroom condo", page=1, page_size=20)
+
+    assert result.ai_summary == ""
+    assert result.search_request_id is not None
+
+    response = client.post(
+        "/api/v1/search/ai/summary",
+        json={"search_request_id": result.search_request_id},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"ai_summary": "summary"}
+
+    second_response = client.post(
+        "/api/v1/search/ai/summary",
+        json={"search_request_id": result.search_request_id},
+    )
+
+    assert second_response.status_code == 404
+
+
+def test_search_summary_endpoint_returns_404_for_unknown_request_id(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/search/ai/summary",
+        json={"search_request_id": "unknown-request-id"},
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Search summary context not found"}
