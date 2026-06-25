@@ -1,4 +1,5 @@
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 import json
 import logging
 import re
@@ -1156,25 +1157,38 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
             )
         )
     interpreted_needs = InterpretedNeeds()
-    interpret_needs_started_at = time.perf_counter()
-    try:
-        interpreted_needs = _interpret_needs(query, original_parsed_filters)
-        interpreted_needs = interpreted_needs.model_copy(
-            update={"notices": _detect_tensions(interpreted_needs.needs, original_parsed_filters)}
-        )
-    except Exception:
-        logger.warning("Need interpretation failed", extra={"query": query}, exc_info=True)
-    interpret_needs_ms = int((time.perf_counter() - interpret_needs_started_at) * 1000)
     parsed_constraints = _build_parsed_constraints(original_parsed_filters)
     relaxations: list[RelaxationRecord] = []
     relaxed_conditions: list[str] = []
-    resolve_ids_started_at = time.perf_counter()
-    strict_result_ids = _resolve_result_ids(
-        query,
-        parsed_filters,
-        query_parsed=query_parsed,
-    )
-    resolve_ids_ms = int((time.perf_counter() - resolve_ids_started_at) * 1000)
+
+    def _run_interpret_needs() -> tuple[InterpretedNeeds, int]:
+        interpret_needs_started_at = time.perf_counter()
+        interpreted = _interpret_needs(query, original_parsed_filters)
+        interpreted = interpreted.model_copy(
+            update={"notices": _detect_tensions(interpreted.needs, original_parsed_filters)}
+        )
+        return interpreted, int((time.perf_counter() - interpret_needs_started_at) * 1000)
+
+    def _run_resolve_result_ids() -> tuple[list[str], int]:
+        resolve_ids_started_at = time.perf_counter()
+        result_ids = _resolve_result_ids(
+            query,
+            parsed_filters,
+            query_parsed=query_parsed,
+        )
+        return result_ids, int((time.perf_counter() - resolve_ids_started_at) * 1000)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        interpret_needs_future = executor.submit(_run_interpret_needs)
+        resolve_result_ids_future = executor.submit(_run_resolve_result_ids)
+
+        try:
+            interpreted_needs, interpret_needs_ms = interpret_needs_future.result()
+        except Exception:
+            logger.warning("Need interpretation failed", extra={"query": query}, exc_info=True)
+
+        strict_result_ids, resolve_ids_ms = resolve_result_ids_future.result()
+
     strict_ids: list[str] = []
     recommended_ids: list[str] = []
 

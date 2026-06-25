@@ -1,9 +1,9 @@
 {
   "feature": "F28-search-latency",
   "status": "in_progress",
-  "current_stage": "T01_done",
+  "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Start T02 \u2014 Parallelize _interpret_needs + _resolve_result_ids",
+  "next_step": "Start T03 \u2014 Decouple _generate_summary \u2014 context store, summary endpoint, schema, frontend contract",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,7 +24,7 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "codex-build-T02.md"
     },
@@ -108,6 +108,16 @@
     {
       "timestamp": "2026-06-25T05:00:08Z",
       "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-25T05:00:43Z",
+      "event": "T02 started \u2014 Parallelize _interpret_needs + _resolve_result_ids",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-25T05:03:02Z",
+      "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
       "by": "claude"
     }
   ]
