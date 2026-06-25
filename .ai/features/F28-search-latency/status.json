@@ -1,9 +1,9 @@
 {
   "feature": "F28-search-latency",
-  "status": "in_progress",
-  "current_stage": "T05_done",
+  "status": "failed",
+  "current_stage": "T06_done",
   "current_owner": null,
-  "next_step": "Start T06 \u2014 Codex review",
+  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
   "last_review_failure": null,
   "tasks": [
     {
@@ -51,7 +51,7 @@
         "T02",
         "T05"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "review.md"
     },
@@ -107,6 +107,16 @@
     {
       "timestamp": "2026-06-25T15:02:11Z",
       "event": "T05 done \u2014 artifact captured as codex-build-T05.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-25T15:06:45Z",
+      "event": "T06 started \u2014 Codex review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-25T15:09:53Z",
+      "event": "T06 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
     }
   ]
