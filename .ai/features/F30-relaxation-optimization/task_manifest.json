@@ -5,7 +5,9 @@
       "allowed_files": [
         "backend/app/services/ai_search/service.py",
         "backend/app/core/logging.py",
-        "backend/tests/test_eval_f27.py"
+        "backend/tests/test_eval_f27.py",
+        "backend/tests/test_f28_latency.py",
+        "backend/tests/test_eval_f26.py"
       ],
       "forbidden_files": [
         ".ai/**/status.json",

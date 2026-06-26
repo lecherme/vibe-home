@@ -32,7 +32,7 @@ def test_ai_search_submits_interpret_and_resolve_before_waiting(
     monkeypatch.setattr(
         service,
         "_resolve_result_ids",
-        lambda query, parsed_filters, query_parsed: ["prop-1"],
+        lambda query, parsed_filters, **kwargs: (["prop-1"], None, [], False),
     )
     monkeypatch.setattr(service, "_collect_items", lambda result_ids, page, page_size: ([], 0))
 
@@ -94,7 +94,7 @@ def test_ai_search_uses_resolved_ids_when_interpretation_fails(
     monkeypatch.setattr(
         service,
         "_resolve_result_ids",
-        lambda query, parsed_filters, query_parsed: ["prop-123"],
+        lambda query, parsed_filters, **kwargs: (["prop-123"], None, [], False),
     )
     monkeypatch.setattr(service, "_collect_items", _collect_items)
 

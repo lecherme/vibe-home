@@ -225,7 +225,7 @@ def _item_ids(items: list[PropertyRead]) -> list[str]:
 
 
 def _expected_split(query: str, filters: SearchFilters) -> tuple[list[str], list[str], SearchFilters]:
-    strict_result_ids = ai_search_service._resolve_result_ids(
+    strict_result_ids, _, _, _ = ai_search_service._resolve_result_ids(
         query,
         filters,
         query_parsed=True,
@@ -243,7 +243,7 @@ def _expected_split(query: str, filters: SearchFilters) -> tuple[list[str], list
     relaxed_filters = filters
     strict_count = len(strict_ids)
     if strict_count == 0 or strict_count < ai_search_service._RELAX_SUPPLEMENT_THRESHOLD:
-        relaxed_result_ids, relaxed_filters, _ = ai_search_service._apply_relaxation(
+        relaxed_result_ids, relaxed_filters, _, _ = ai_search_service._apply_relaxation(
             query,
             filters,
             True,
@@ -281,7 +281,6 @@ def _patch_dependencies(
         lambda: SimpleNamespace(embedding_api_key="test-embedding-key", llm_api_key="test-llm-key"),
     )
     monkeypatch.setattr(ai_search_service, "get_all", lambda: list(_TEST_PROPERTIES))
-    monkeypatch.setattr(ai_search_service, "get_by_id", lambda property_id: _PROPERTIES_BY_ID.get(property_id))
     monkeypatch.setattr(ai_search_service, "search", _mock_search)
     monkeypatch.setattr(ai_search_service, "embed_text", lambda query: query)
     semantic_ids = list(case.get("semantic_ids", []))

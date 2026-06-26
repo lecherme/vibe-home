@@ -10,6 +10,8 @@
 - `backend/app/services/ai_search/service.py`
 - `backend/app/core/logging.py`
 - `backend/tests/test_eval_f27.py` — update monkeypatch stubs for `_resolve_result_ids` and `_apply_relaxation` to match new return signatures
+- `backend/tests/test_f28_latency.py` — update `_resolve_result_ids` stubs to 4-tuple return
+- `backend/tests/test_eval_f26.py` — unpack `_resolve_result_ids` and `_apply_relaxation` as 4-tuples; remove `get_by_id` monkeypatch (symbol removed from service)
 
 **Done condition:**
 

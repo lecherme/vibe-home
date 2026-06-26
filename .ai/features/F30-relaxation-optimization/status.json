@@ -4,7 +4,19 @@
   "current_stage": "T03_done",
   "current_owner": null,
   "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
-  "last_review_failure": null,
+  "last_review_failure": {
+    "review_task": "T03",
+    "timestamp": "2026-06-26T05:29:57Z",
+    "fix_path": "direct_fixup",
+    "failed_criteria": ["BLOCKER-1", "BLOCKER-2"],
+    "failure_types": {
+      "BLOCKER-1": "missing_tests",
+      "BLOCKER-2": "missing_tests"
+    },
+    "reset_scope": [],
+    "do_not_touch": ["T01", "T02"],
+    "fix_instructions": "1) test_f28_latency.py lines 35 and 97: _resolve_result_ids stub 改为返回 (result_ids, None, [], False) 4-tuple，签名改 **kwargs。2) test_eval_f26.py line 228: _resolve_result_ids 调用返回值解包为 4-tuple。line 246: _apply_relaxation 返回值解包为 4-tuple。line 284: 删除 get_by_id monkeypatch（该符号已从 service.py 移除）。"
+  },
   "tasks": [
     {
       "id": "T01",
