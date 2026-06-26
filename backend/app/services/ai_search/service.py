@@ -9,7 +9,7 @@ from typing import Any
 from fastapi import HTTPException, status
 
 from app.core.config import get_settings
-from app.data.properties import get_all, get_by_id
+from app.data.properties import get_all
 from app.schemas.ai_search import (
     AiSearchResult,
     ConstraintInfo,
@@ -778,12 +778,57 @@ def _collect_items(property_ids: list[str], page: int, page_size: int) -> tuple[
     total = len(property_ids)
     start_index = (page - 1) * page_size
     end_index = start_index + page_size
+    properties_by_id = _get_properties_by_ids(property_ids[start_index:end_index])
     items = [
-        property_item
+        properties_by_id[property_id]
         for property_id in property_ids[start_index:end_index]
-        if (property_item := get_by_id(property_id)) is not None
+        if property_id in properties_by_id
     ]
     return items, total
+
+
+def _get_properties_by_ids(property_ids: list[str]) -> dict[str, PropertyRead]:
+    if not property_ids:
+        return {}
+    property_id_set = set(property_ids)
+    return {
+        property_item.id: property_item
+        for property_item in get_all()
+        if property_item.id in property_id_set
+    }
+
+
+def _filter_ranked_result_ids(
+    property_ids: list[str],
+    filters: SearchFilters,
+    *,
+    hard_constraint_filters: SearchFilters | None = None,
+    exclude_ids: set[str] | None = None,
+    must_not_match_filters: SearchFilters | None = None,
+) -> list[str]:
+    properties_by_id = _get_properties_by_ids(property_ids)
+    filtered_ids: list[str] = []
+    seen_ids = set(exclude_ids or ())
+
+    for property_id in property_ids:
+        if property_id in seen_ids:
+            continue
+        property_item = properties_by_id.get(property_id)
+        if property_item is None:
+            continue
+        if hard_constraint_filters is not None and not _matches_hard_constraints(
+            property_item,
+            hard_constraint_filters,
+        ):
+            continue
+        if not _matches_filters(property_item, filters):
+            continue
+        if must_not_match_filters is not None and _matches_filters(property_item, must_not_match_filters):
+            continue
+        filtered_ids.append(property_id)
+        seen_ids.add(property_id)
+
+    return filtered_ids
 
 
 def _constraint_strength(field: str) -> str:
@@ -992,9 +1037,13 @@ def _apply_relaxation(
     query: str,
     filters: SearchFilters,
     query_parsed: bool,
-) -> tuple[list[str], SearchFilters, list[str]]:
+    *,
+    query_embedding: Any | None = None,
+    semantic_ids: list[str] | None = None,
+    semantic_search_failed: bool = False,
+) -> tuple[list[str], SearchFilters, list[str], int]:
     if not query_parsed:
-        return [], filters, []
+        return [], filters, [], 0
     current_filters = filters
     current_conditions: list[str] = []
     current_result_ids: list[str] = []
@@ -1003,6 +1052,7 @@ def _apply_relaxation(
     last_conditions: list[str] = []
     last_successful_filters = filters
     last_successful_conditions: list[str] = []
+    relaxation_steps = 0
 
     for _ in range(_MAX_RELAXATION_STEPS):
         relaxed_result = _relax_filters(current_filters)
@@ -1011,10 +1061,14 @@ def _apply_relaxation(
 
         current_filters, description = relaxed_result
         current_conditions = [*current_conditions, description]
-        current_result_ids = _resolve_result_ids(
+        relaxation_steps += 1
+        current_result_ids = _merge_ranked_result_ids(
             query,
             current_filters,
+            search(current_filters, db_session=None),
             query_parsed=query_parsed,
+            semantic_ids=semantic_ids,
+            semantic_search_failed=semantic_search_failed,
         )
         last_filters = current_filters
         last_conditions = current_conditions.copy()
@@ -1025,12 +1079,12 @@ def _apply_relaxation(
             last_successful_conditions = current_conditions.copy()
 
         if len(current_result_ids) >= _RELAX_SUPPLEMENT_THRESHOLD:
-            return current_result_ids, current_filters, current_conditions
+            return current_result_ids, current_filters, current_conditions, relaxation_steps
 
     if last_result_ids:
-        return last_result_ids, last_successful_filters, last_successful_conditions
+        return last_result_ids, last_successful_filters, last_successful_conditions, relaxation_steps
 
-    return current_result_ids, last_filters, last_conditions
+    return current_result_ids, last_filters, last_conditions, relaxation_steps
 
 
 def _generate_summary(
@@ -1070,30 +1124,25 @@ def _generate_summary(
     return summary
 
 
-def _resolve_result_ids(
+def _merge_ranked_result_ids(
     query: str,
     parsed_filters: SearchFilters,
+    filter_ids: list[str],
     *,
     query_parsed: bool,
+    semantic_ids: list[str] | None = None,
+    semantic_search_failed: bool = False,
 ) -> list[str]:
     if not query_parsed:
         return _keyword_fallback_search(query)
 
-    filter_ids = search(parsed_filters, db_session=None)
     if not query.strip():
         return filter_ids
 
-    semantic_ids: list[str] = []
-    semantic_search_failed = False
-    try:
-        semantic_ids = semantic_search(embed_text(query))
-    except Exception:
-        semantic_search_failed = True
-        logger.warning("Semantic search failed", extra={"query": query}, exc_info=True)
-
-    if semantic_ids:
+    semantic_ranked_ids = semantic_ids or []
+    if semantic_ranked_ids:
         score_map: defaultdict[str, float] = defaultdict(float)
-        for index, property_id in enumerate(semantic_ids):
+        for index, property_id in enumerate(semantic_ranked_ids):
             score_map[property_id] += 1.0 / (index + 1)
         for property_id in filter_ids:
             score_map[property_id] += 0.8
@@ -1108,11 +1157,59 @@ def _resolve_result_ids(
     return _keyword_fallback_search(query)
 
 
+def _resolve_result_ids(
+    query: str,
+    parsed_filters: SearchFilters,
+    *,
+    query_parsed: bool,
+    query_embedding: Any | None = None,
+    semantic_ids: list[str] | None = None,
+    semantic_search_failed: bool = False,
+) -> tuple[list[str], Any | None, list[str], bool]:
+    if not query_parsed:
+        return _keyword_fallback_search(query), query_embedding, semantic_ids or [], semantic_search_failed
+
+    filter_ids = search(parsed_filters, db_session=None)
+    if not query.strip():
+        return filter_ids, query_embedding, semantic_ids or [], semantic_search_failed
+
+    resolved_semantic_ids = semantic_ids or []
+    resolved_query_embedding = query_embedding
+    resolved_semantic_search_failed = semantic_search_failed
+    if semantic_ids is None and not semantic_search_failed:
+        try:
+            if resolved_query_embedding is None:
+                resolved_query_embedding = embed_text(query)
+            resolved_semantic_ids = semantic_search(resolved_query_embedding)
+        except Exception:
+            resolved_semantic_search_failed = True
+            resolved_semantic_ids = []
+            logger.warning("Semantic search failed", extra={"query": query}, exc_info=True)
+
+    return (
+        _merge_ranked_result_ids(
+            query,
+            parsed_filters,
+            filter_ids,
+            query_parsed=query_parsed,
+            semantic_ids=resolved_semantic_ids,
+            semantic_search_failed=resolved_semantic_search_failed,
+        ),
+        resolved_query_embedding,
+        resolved_semantic_ids,
+        resolved_semantic_search_failed,
+    )
+
+
 def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
     total_started_at = time.perf_counter()
     parse_filters_ms = 0
     interpret_needs_ms = 0
     resolve_ids_ms = 0
+    strict_filtering_ms = 0
+    apply_relaxation_ms = 0
+    relaxed_filtering_ms = 0
+    relaxation_steps = 0
     collect_items_ms = 0
     settings = get_settings()
     if not settings.embedding_api_key or not settings.llm_api_key:
@@ -1169,14 +1266,20 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         )
         return interpreted, int((time.perf_counter() - interpret_needs_started_at) * 1000)
 
-    def _run_resolve_result_ids() -> tuple[list[str], int]:
+    def _run_resolve_result_ids() -> tuple[list[str], Any | None, list[str], bool, int]:
         resolve_ids_started_at = time.perf_counter()
-        result_ids = _resolve_result_ids(
+        result_ids, query_embedding, semantic_ids, semantic_search_failed = _resolve_result_ids(
             query,
             parsed_filters,
             query_parsed=query_parsed,
         )
-        return result_ids, int((time.perf_counter() - resolve_ids_started_at) * 1000)
+        return (
+            result_ids,
+            query_embedding,
+            semantic_ids,
+            semantic_search_failed,
+            int((time.perf_counter() - resolve_ids_started_at) * 1000),
+        )
 
     with ThreadPoolExecutor(max_workers=2) as executor:
         interpret_needs_future = executor.submit(_run_interpret_needs)
@@ -1187,75 +1290,72 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         except Exception:
             logger.warning("Need interpretation failed", extra={"query": query}, exc_info=True)
 
-        strict_result_ids, resolve_ids_ms = resolve_result_ids_future.result()
+        strict_result_ids, query_embedding, semantic_ids, semantic_search_failed, resolve_ids_ms = (
+            resolve_result_ids_future.result()
+        )
 
     strict_ids: list[str] = []
     recommended_ids: list[str] = []
 
     relaxation_started_at = time.perf_counter()
     if query_parsed:
-        for property_id in strict_result_ids:
-            property_item = get_by_id(property_id)
-            if property_item is None:
-                continue
-            if _matches_hard_constraints(property_item, original_parsed_filters) and _matches_filters(
-                property_item,
-                original_parsed_filters,
-            ):
-                strict_ids.append(property_id)
+        strict_filtering_started_at = time.perf_counter()
+        strict_ids = _filter_ranked_result_ids(
+            strict_result_ids,
+            original_parsed_filters,
+            hard_constraint_filters=original_parsed_filters,
+        )
+        strict_filtering_ms = int((time.perf_counter() - strict_filtering_started_at) * 1000)
 
         strict_count = len(strict_ids)
         if strict_count == 0:
-            relaxed_result_ids, relaxed_filters, _ = _apply_relaxation(
+            apply_relaxation_started_at = time.perf_counter()
+            relaxed_result_ids, relaxed_filters, _, relaxation_steps = _apply_relaxation(
                 query,
                 parsed_filters,
                 query_parsed,
+                query_embedding=query_embedding,
+                semantic_ids=semantic_ids,
+                semantic_search_failed=semantic_search_failed,
             )
+            apply_relaxation_ms = int((time.perf_counter() - apply_relaxation_started_at) * 1000)
             relaxations = _build_relaxations(original_parsed_filters, relaxed_filters)
             if relaxations:
-                seen_recommended_ids: set[str] = set()
-                for property_id in relaxed_result_ids:
-                    if property_id in seen_recommended_ids:
-                        continue
-                    property_item = get_by_id(property_id)
-                    if property_item is None:
-                        continue
-                    if not _matches_hard_constraints(property_item, original_parsed_filters):
-                        continue
-                    if not _matches_filters(property_item, relaxed_filters):
-                        continue
-                    if _matches_filters(property_item, original_parsed_filters):
-                        continue
-                    recommended_ids.append(property_id)
-                    seen_recommended_ids.add(property_id)
+                relaxed_filtering_started_at = time.perf_counter()
+                recommended_ids = _filter_ranked_result_ids(
+                    relaxed_result_ids,
+                    relaxed_filters,
+                    hard_constraint_filters=original_parsed_filters,
+                    must_not_match_filters=original_parsed_filters,
+                )
+                relaxed_filtering_ms = int((time.perf_counter() - relaxed_filtering_started_at) * 1000)
                 relaxed_conditions = _build_relaxation_summary(
                     strict_ids,
                     recommended_ids,
                     relaxations,
                 )
         elif strict_count < _RELAX_SUPPLEMENT_THRESHOLD:
-            relaxed_result_ids, relaxed_filters, _ = _apply_relaxation(
+            apply_relaxation_started_at = time.perf_counter()
+            relaxed_result_ids, relaxed_filters, _, relaxation_steps = _apply_relaxation(
                 query,
                 parsed_filters,
                 query_parsed,
+                query_embedding=query_embedding,
+                semantic_ids=semantic_ids,
+                semantic_search_failed=semantic_search_failed,
             )
+            apply_relaxation_ms = int((time.perf_counter() - apply_relaxation_started_at) * 1000)
             relaxations = _build_relaxations(original_parsed_filters, relaxed_filters)
             if relaxations:
-                seen_recommended_ids = set(strict_ids)
-                for property_id in relaxed_result_ids:
-                    if property_id in seen_recommended_ids:
-                        continue
-                    property_item = get_by_id(property_id)
-                    if property_item is None:
-                        continue
-                    if not _matches_hard_constraints(property_item, original_parsed_filters):
-                        continue
-                    if not _matches_filters(property_item, relaxed_filters):
-                        continue
-                    if _matches_filters(property_item, original_parsed_filters):
-                        continue
-                    recommended_ids.append(property_id)
-                    seen_recommended_ids.add(property_id)
+                relaxed_filtering_started_at = time.perf_counter()
+                recommended_ids = _filter_ranked_result_ids(
+                    relaxed_result_ids,
+                    relaxed_filters,
+                    hard_constraint_filters=original_parsed_filters,
+                    exclude_ids=set(strict_ids),
+                    must_not_match_filters=original_parsed_filters,
+                )
+                relaxed_filtering_ms = int((time.perf_counter() - relaxed_filtering_started_at) * 1000)
                 relaxed_conditions = _build_relaxation_summary(
                     strict_ids,
                     recommended_ids,
@@ -1304,6 +1404,10 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
             "interpret_needs_ms": interpret_needs_ms,
             "resolve_ids_ms": resolve_ids_ms,
             "relaxation_ms": relaxation_ms,
+            "strict_filtering_ms": strict_filtering_ms,
+            "apply_relaxation_ms": apply_relaxation_ms,
+            "relaxed_filtering_ms": relaxed_filtering_ms,
+            "relaxation_steps": relaxation_steps,
             "collect_items_ms": collect_items_ms,
             "generate_summary_ms": generate_summary_ms,
             "accounted_ms": accounted_ms,
