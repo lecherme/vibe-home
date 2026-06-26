@@ -1,9 +1,9 @@
 {
   "feature": "F30-relaxation-optimization",
-  "status": "in_progress",
-  "current_stage": "T01_done",
+  "status": "failed",
+  "current_stage": "T03_done",
   "current_owner": null,
-  "next_step": "Start T02 \u2014 Non-regression eval: F16 + F27",
+  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,7 +24,7 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "codex-build-T02.md"
     },
@@ -37,7 +37,7 @@
         "T01",
         "T02"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "review.md"
     },
@@ -68,6 +68,36 @@
     {
       "timestamp": "2026-06-26T04:53:18Z",
       "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-26T05:06:53Z",
+      "event": "T02 started \u2014 Non-regression eval: F16 + F27",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-26T05:07:25Z",
+      "event": "T02 failed \u2014 run_task failed with exit code 1",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-26T05:25:28Z",
+      "event": "T02 needs-verification \u2014 worker exited non-zero but artifact passed validate-artifact (exit 1)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-26T05:25:28Z",
+      "event": "T02 verify-pass \u2014 wrapper false failure (exit 1) corrected by Claude after artifact inspection; original: worker exited non-zero but artifact passed validate-artifact",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-26T05:26:22Z",
+      "event": "T03 started \u2014 Codex review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-26T05:29:57Z",
+      "event": "T03 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
     }
   ]

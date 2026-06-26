@@ -4,14 +4,18 @@
     "T01": {
       "allowed_files": [
         "backend/app/services/ai_search/service.py",
-        "backend/app/core/logging.py"
+        "backend/app/core/logging.py",
+        "backend/tests/test_eval_f27.py"
       ],
       "forbidden_files": [
         ".ai/**/status.json",
         "backend/app/schemas/**",
         "backend/app/api/**",
         "frontend/**",
-        "backend/tests/**"
+        "backend/tests/test_eval.py",
+        "backend/tests/eval_set.json",
+        "backend/tests/eval_set_f27.json",
+        "backend/tests/test_f28_latency.py"
       ],
       "expected_artifact": "codex-build-T01.md",
       "verify_commands": [

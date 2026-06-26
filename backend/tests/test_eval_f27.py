@@ -59,12 +59,12 @@ def _stub_ai_search_dependencies(
     monkeypatch.setattr(
         ai_search_service,
         "_resolve_result_ids",
-        lambda query, filters, query_parsed: [],
+        lambda query, filters, **kwargs: ([], None, [], False),
     )
     monkeypatch.setattr(
         ai_search_service,
         "_apply_relaxation",
-        lambda query, filters, query_parsed: ([], filters, query_parsed),
+        lambda query, filters, query_parsed, **kwargs: ([], filters, [], 0),
     )
     monkeypatch.setattr(ai_search_service, "_build_relaxations", lambda original, relaxed: [])
     monkeypatch.setattr(ai_search_service, "_build_parsed_constraints", lambda filters: [])

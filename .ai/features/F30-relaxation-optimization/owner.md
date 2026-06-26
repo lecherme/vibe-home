@@ -10,6 +10,7 @@
 ## Codex constraints (T01, T02, T03)
 
 - May only modify files listed in the task's Scope block in tasks.md
+- T01 may additionally modify `backend/tests/test_eval_f27.py` to update monkeypatch stubs for changed function signatures
 - Must not modify `status.json`, `frontend/**`, `backend/app/schemas/**`, `backend/app/api/**`
 - Must not add new API endpoints, Pydantic schemas, or frontend components
 - Must not run git commands

@@ -9,6 +9,7 @@
 **Scope:**
 - `backend/app/services/ai_search/service.py`
 - `backend/app/core/logging.py`
+- `backend/tests/test_eval_f27.py` — update monkeypatch stubs for `_resolve_result_ids` and `_apply_relaxation` to match new return signatures
 
 **Done condition:**
 
