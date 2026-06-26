@@ -1,0 +1,55 @@
+{
+  "feature": "F30-relaxation-optimization",
+  "tasks": {
+    "T01": {
+      "allowed_files": [
+        "backend/app/services/ai_search/service.py",
+        "backend/app/core/logging.py"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "backend/app/schemas/**",
+        "backend/app/api/**",
+        "frontend/**",
+        "backend/tests/**"
+      ],
+      "expected_artifact": "codex-build-T01.md",
+      "verify_commands": [
+        "docker compose exec -T backend python3 -c \"import app.main; print('OK')\""
+      ]
+    },
+    "T02": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "backend/app/**",
+        "frontend/**"
+      ],
+      "expected_artifact": "codex-build-T02.md",
+      "verify_commands": [
+        "bash tools/run_eval.sh",
+        "docker compose run --rm -v $(pwd)/backend/tests:/app/tests backend python3 -m pytest /app/tests/test_eval_f27.py -q"
+      ]
+    },
+    "T03": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json"
+      ],
+      "expected_artifact": "review.md",
+      "verify_commands": []
+    },
+    "T04": {
+      "allowed_files": [
+        ".ai/features/F30-relaxation-optimization/status.json",
+        ".ai/features/F30-relaxation-optimization/final-report.md"
+      ],
+      "forbidden_files": [
+        "backend/**",
+        "frontend/**"
+      ],
+      "expected_artifact": "final-report.md",
+      "verify_commands": []
+    }
+  }
+}
