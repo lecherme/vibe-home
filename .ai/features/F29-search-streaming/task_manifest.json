@@ -1,0 +1,77 @@
+{
+  "feature": "F29-search-streaming",
+  "tasks": {
+    "T01": {
+      "allowed_files": [
+        "backend/app/services/ai_search/service.py",
+        "backend/app/api/v1/ai_search/router.py",
+        "backend/app/schemas/ai_search.py",
+        "backend/tests/test_f29_stream.py"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "frontend/**",
+        "backend/tests/test_eval_f26.py",
+        "backend/tests/test_eval_f27.py",
+        "backend/tests/test_f28_latency.py",
+        "backend/tests/test_eval.py",
+        "backend/requirements.txt"
+      ],
+      "expected_artifact": "codex-build-T01.md",
+      "verify_commands": [
+        "docker compose exec -T backend python3 -c \"import app.main; print('OK')\"",
+        "bash tools/run_eval.sh"
+      ]
+    },
+    "T02": {
+      "allowed_files": [
+        "frontend/types/ai-search.ts",
+        "frontend/lib/api/ai-search.ts"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "backend/**",
+        "frontend/app/**",
+        "frontend/components/**"
+      ],
+      "expected_artifact": "codex-build-T02.md",
+      "verify_commands": []
+    },
+    "T03": {
+      "allowed_files": [
+        "frontend/app/(dashboard)/search/page.tsx",
+        "frontend/components/features/search/ai-search-results.tsx"
+      ],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "backend/**",
+        "frontend/types/**",
+        "frontend/lib/**"
+      ],
+      "expected_artifact": "codex-build-T03.md",
+      "verify_commands": []
+    },
+    "T04": {
+      "allowed_files": [],
+      "forbidden_files": [
+        ".ai/**/status.json",
+        "backend/**",
+        "frontend/**"
+      ],
+      "expected_artifact": "review.md",
+      "verify_commands": []
+    },
+    "T05": {
+      "allowed_files": [
+        ".ai/features/F29-search-streaming/status.json",
+        ".ai/features/F29-search-streaming/final-report.md"
+      ],
+      "forbidden_files": [
+        "backend/**",
+        "frontend/**"
+      ],
+      "expected_artifact": "final-report.md",
+      "verify_commands": []
+    }
+  }
+}
