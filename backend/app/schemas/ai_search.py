@@ -69,3 +69,35 @@ class AiSearchResult(SearchResult):
     match_reasons: dict[str, list[MatchReason]] = Field(default_factory=dict)
     interpreted_intent: list[IntentField] = Field(default_factory=list)
     interpreted_needs: InterpretedNeeds = Field(default_factory=InterpretedNeeds)
+
+
+class AiSearchStreamEmpty(BaseModel):
+    pass
+
+
+class AiSearchParsedEventData(BaseModel):
+    query_parsed: bool
+    parsed_filters: SearchFilters
+    parsed_constraints: list[ConstraintInfo] = Field(default_factory=list)
+    interpreted_intent: list[IntentField] = Field(default_factory=list)
+    interpreted_needs: InterpretedNeeds = Field(default_factory=InterpretedNeeds)
+
+
+class AiSearchSearchingEventData(BaseModel):
+    stage: Literal["searching"] = "searching"
+    message: str
+
+
+class AiSearchResultsEventData(SearchResult):
+    strict_items: list[PropertyRead] = Field(default_factory=list)
+    recommended_items: list[PropertyRead] = Field(default_factory=list)
+    relaxations: list[RelaxationRecord] = Field(default_factory=list)
+    match_reasons: dict[str, list[MatchReason]] = Field(default_factory=dict)
+
+
+class AiSearchSummaryEventData(BaseModel):
+    ai_summary: str
+
+
+class AiSearchErrorEventData(BaseModel):
+    message: str

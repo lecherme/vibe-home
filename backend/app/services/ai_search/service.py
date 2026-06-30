@@ -11,7 +11,13 @@ from fastapi import HTTPException, status
 from app.core.config import get_settings
 from app.data.properties import get_all
 from app.schemas.ai_search import (
+    AiSearchErrorEventData,
+    AiSearchParsedEventData,
     AiSearchResult,
+    AiSearchResultsEventData,
+    AiSearchSearchingEventData,
+    AiSearchStreamEmpty,
+    AiSearchSummaryEventData,
     ConstraintInfo,
     InterpretedNeeds,
     IntentField,
@@ -110,6 +116,69 @@ _CONSTRAINT_FIELD_ORDER = (
     "subway_distance_max",
     "status",
 )
+
+
+def _resolve_pagination(page: int, page_size: int) -> tuple[int, int]:
+    return max(page, 1), min(max(page_size, 1), _SEARCH_MAX_PAGE_SIZE)
+
+
+def _build_interpreted_intent(query: str) -> list[IntentField]:
+    interpreted_intent: list[IntentField] = []
+    living_rooms = _extract_living_rooms(query)
+    if living_rooms is not None:
+        living_room_match = re.search(r"([一二两三四五六七八九十\d]+)\s*厅", query, re.IGNORECASE)
+        interpreted_intent.append(
+            IntentField(
+                field="living_rooms",
+                value=living_rooms,
+                raw=living_room_match.group(0) if living_room_match is not None else f"{living_rooms}厅",
+                label=f"{living_rooms}厅",
+                filterable=False,
+            )
+        )
+    return interpreted_intent
+
+
+def _build_non_search_result(page: int, page_size: int) -> AiSearchResult:
+    return AiSearchResult(
+        items=[],
+        total=0,
+        page=page,
+        page_size=page_size,
+        parsed_filters=SearchFilters(),
+        ai_summary=_NON_SEARCH_REDIRECT_MESSAGE,
+        query_parsed=False,
+    )
+
+
+def _build_parsed_event_data(
+    *,
+    query_parsed: bool,
+    parsed_filters: SearchFilters,
+    parsed_constraints: list[ConstraintInfo],
+    interpreted_intent: list[IntentField],
+    interpreted_needs: InterpretedNeeds,
+) -> AiSearchParsedEventData:
+    return AiSearchParsedEventData(
+        query_parsed=query_parsed,
+        parsed_filters=parsed_filters,
+        parsed_constraints=parsed_constraints,
+        interpreted_intent=interpreted_intent,
+        interpreted_needs=interpreted_needs,
+    )
+
+
+def _build_results_event_data(result: AiSearchResult) -> AiSearchResultsEventData:
+    return AiSearchResultsEventData(
+        items=result.items,
+        strict_items=result.strict_items,
+        recommended_items=result.recommended_items,
+        total=result.total,
+        page=result.page,
+        page_size=result.page_size,
+        relaxations=result.relaxations,
+        match_reasons=result.match_reasons,
+    )
 
 
 def _has_filters(filters: SearchFilters) -> bool:
@@ -1218,18 +1287,9 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
             detail="AI search is unavailable",
         )
 
-    resolved_page = max(page, 1)
-    resolved_page_size = min(max(page_size, 1), _SEARCH_MAX_PAGE_SIZE)
+    resolved_page, resolved_page_size = _resolve_pagination(page, page_size)
     if not _is_property_search(query):
-        return AiSearchResult(
-            items=[],
-            total=0,
-            page=resolved_page,
-            page_size=resolved_page_size,
-            parsed_filters=SearchFilters(),
-            ai_summary=_NON_SEARCH_REDIRECT_MESSAGE,
-            query_parsed=False,
-        )
+        return _build_non_search_result(resolved_page, resolved_page_size)
 
     parse_filters_started_at = time.perf_counter()
     try:
@@ -1240,19 +1300,7 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         query_parsed = False
     parse_filters_ms = int((time.perf_counter() - parse_filters_started_at) * 1000)
     original_parsed_filters = parsed_filters.model_copy()
-    interpreted_intent: list[IntentField] = []
-    living_rooms = _extract_living_rooms(query)
-    if living_rooms is not None:
-        living_room_match = re.search(r"([一二两三四五六七八九十\d]+)\s*厅", query, re.IGNORECASE)
-        interpreted_intent.append(
-            IntentField(
-                field="living_rooms",
-                value=living_rooms,
-                raw=living_room_match.group(0) if living_room_match is not None else f"{living_rooms}厅",
-                label=f"{living_rooms}厅",
-                filterable=False,
-            )
-        )
+    interpreted_intent = _build_interpreted_intent(query)
     interpreted_needs = InterpretedNeeds()
     parsed_constraints = _build_parsed_constraints(original_parsed_filters)
     relaxations: list[RelaxationRecord] = []
@@ -1433,3 +1481,201 @@ def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
         interpreted_intent=interpreted_intent,
         interpreted_needs=interpreted_needs,
     )
+
+
+def ai_search_stream(
+    query: str,
+    page: int,
+    page_size: int,
+) -> Any:
+    yield "started", AiSearchStreamEmpty()
+    try:
+        settings = get_settings()
+        if not settings.embedding_api_key or not settings.llm_api_key:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="AI search is unavailable",
+            )
+
+        resolved_page, resolved_page_size = _resolve_pagination(page, page_size)
+        if not _is_property_search(query):
+            result = _build_non_search_result(resolved_page, resolved_page_size)
+            yield (
+                "parsed",
+                _build_parsed_event_data(
+                    query_parsed=result.query_parsed,
+                    parsed_filters=result.parsed_filters,
+                    parsed_constraints=result.parsed_constraints,
+                    interpreted_intent=result.interpreted_intent,
+                    interpreted_needs=result.interpreted_needs,
+                ),
+            )
+            yield (
+                "searching",
+                AiSearchSearchingEventData(
+                    message="Searching properties...",
+                ),
+            )
+            yield "results", _build_results_event_data(result)
+            yield "summary", AiSearchSummaryEventData(ai_summary=result.ai_summary)
+            yield "done", AiSearchStreamEmpty()
+            return
+
+        try:
+            parsed_filters, query_parsed = _parse_filters(query)
+        except Exception:
+            logger.warning("AI query parsing failed", extra={"query": query}, exc_info=True)
+            parsed_filters = SearchFilters()
+            query_parsed = False
+
+        original_parsed_filters = parsed_filters.model_copy()
+        interpreted_intent = _build_interpreted_intent(query)
+        parsed_constraints = _build_parsed_constraints(original_parsed_filters)
+        yield (
+            "parsed",
+            _build_parsed_event_data(
+                query_parsed=query_parsed,
+                parsed_filters=original_parsed_filters,
+                parsed_constraints=parsed_constraints,
+                interpreted_intent=interpreted_intent,
+                interpreted_needs=InterpretedNeeds(),
+            ),
+        )
+        yield (
+            "searching",
+            AiSearchSearchingEventData(
+                message="Searching properties...",
+            ),
+        )
+
+        interpreted_needs = InterpretedNeeds()
+
+        def _run_interpret_needs() -> InterpretedNeeds:
+            interpreted = _interpret_needs(query, original_parsed_filters)
+            return interpreted.model_copy(
+                update={"notices": _detect_tensions(interpreted.needs, original_parsed_filters)}
+            )
+
+        def _run_resolve_result_ids() -> tuple[list[str], Any | None, list[str], bool]:
+            return _resolve_result_ids(
+                query,
+                parsed_filters,
+                query_parsed=query_parsed,
+            )
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            interpret_needs_future = executor.submit(_run_interpret_needs)
+            resolve_result_ids_future = executor.submit(_run_resolve_result_ids)
+
+            try:
+                interpreted_needs = interpret_needs_future.result()
+            except Exception:
+                logger.warning("Need interpretation failed", extra={"query": query}, exc_info=True)
+
+            strict_result_ids, query_embedding, semantic_ids, semantic_search_failed = (
+                resolve_result_ids_future.result()
+            )
+        strict_ids: list[str] = []
+        recommended_ids: list[str] = []
+        relaxations: list[RelaxationRecord] = []
+        relaxed_conditions: list[str] = []
+
+        if query_parsed:
+            strict_ids = _filter_ranked_result_ids(
+                strict_result_ids,
+                original_parsed_filters,
+                hard_constraint_filters=original_parsed_filters,
+            )
+
+            strict_count = len(strict_ids)
+            if strict_count == 0:
+                relaxed_result_ids, relaxed_filters, _, _ = _apply_relaxation(
+                    query,
+                    parsed_filters,
+                    query_parsed,
+                    query_embedding=query_embedding,
+                    semantic_ids=semantic_ids,
+                    semantic_search_failed=semantic_search_failed,
+                )
+                relaxations = _build_relaxations(original_parsed_filters, relaxed_filters)
+                if relaxations:
+                    recommended_ids = _filter_ranked_result_ids(
+                        relaxed_result_ids,
+                        relaxed_filters,
+                        hard_constraint_filters=original_parsed_filters,
+                        must_not_match_filters=original_parsed_filters,
+                    )
+                    relaxed_conditions = _build_relaxation_summary(
+                        strict_ids,
+                        recommended_ids,
+                        relaxations,
+                    )
+            elif strict_count < _RELAX_SUPPLEMENT_THRESHOLD:
+                relaxed_result_ids, relaxed_filters, _, _ = _apply_relaxation(
+                    query,
+                    parsed_filters,
+                    query_parsed,
+                    query_embedding=query_embedding,
+                    semantic_ids=semantic_ids,
+                    semantic_search_failed=semantic_search_failed,
+                )
+                relaxations = _build_relaxations(original_parsed_filters, relaxed_filters)
+                if relaxations:
+                    recommended_ids = _filter_ranked_result_ids(
+                        relaxed_result_ids,
+                        relaxed_filters,
+                        hard_constraint_filters=original_parsed_filters,
+                        exclude_ids=set(strict_ids),
+                        must_not_match_filters=original_parsed_filters,
+                    )
+                    relaxed_conditions = _build_relaxation_summary(
+                        strict_ids,
+                        recommended_ids,
+                        relaxations,
+                    )
+        else:
+            strict_ids = strict_result_ids
+
+        result_ids = [*strict_ids, *recommended_ids]
+        page_items, total = _collect_items(result_ids, resolved_page, resolved_page_size)
+        strict_id_set = set(strict_ids)
+        strict_items = [item for item in page_items if item.id in strict_id_set]
+        recommended_items = [item for item in page_items if item.id not in strict_id_set]
+        items = [*strict_items, *recommended_items]
+        match_reasons = _build_match_reasons(items, original_parsed_filters)
+        result = AiSearchResult(
+            items=items,
+            total=total,
+            page=resolved_page,
+            page_size=resolved_page_size,
+            parsed_filters=original_parsed_filters,
+            ai_summary="",
+            query_parsed=query_parsed,
+            parsed_constraints=parsed_constraints,
+            strict_items=strict_items,
+            recommended_items=recommended_items,
+            relaxations=relaxations,
+            match_reasons=match_reasons,
+            interpreted_intent=interpreted_intent,
+            interpreted_needs=interpreted_needs,
+        )
+        yield "results", _build_results_event_data(result)
+
+        try:
+            ai_summary = _generate_summary(query, parsed_filters, total, items, relaxed_conditions)
+        except Exception:
+            logger.warning("AI summary generation failed", extra={"query": query}, exc_info=True)
+            ai_summary = (
+                f"Found {total} properties matching your search after relaxing some conditions."
+                if relaxed_conditions
+                else f"Found {total} properties matching your search."
+            )
+
+        yield "summary", AiSearchSummaryEventData(ai_summary=ai_summary)
+        yield "done", AiSearchStreamEmpty()
+    except HTTPException as exc:
+        message = exc.detail if isinstance(exc.detail, str) else "AI search failed"
+        yield "error", AiSearchErrorEventData(message=message)
+    except Exception as exc:
+        logger.exception("AI search streaming failed", extra={"query": query})
+        yield "error", AiSearchErrorEventData(message=str(exc) or "AI search failed")
