@@ -41,5 +41,8 @@ async def stream_properties_with_ai(
     return StreamingResponse(
         _event_stream(),
         media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache"},
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
     )
