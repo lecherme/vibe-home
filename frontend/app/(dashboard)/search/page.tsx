@@ -55,6 +55,7 @@ function SearchContent() {
   const [aiResult, setAiResult] = useState<AiSearchResult | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [aiStageMessage, setAiStageMessage] = useState<string | null>(null);
   const [aiPage, setAiPage] = useState(1);
   const [aiParsedResult, setAiParsedResult] = useState<AiSearchParsedEventData | null>(null);
   const aiSearchAbortRef = useRef<AbortController | null>(null);
@@ -166,6 +167,7 @@ function SearchContent() {
     setAiLoading(true);
     setAiError(null);
     setAiResult(null);
+    setAiStageMessage(null);
     setAiParsedResult(null);
 
     void favoritesApi.getAllFavoriteIds()
@@ -176,13 +178,22 @@ function SearchContent() {
       .catch(() => undefined);
 
     const abortController = aiSearchStream(query, pageNum, PAGE_SIZE, {
+      onParsing: (data) => {
+        if (aiSearchRequestRef.current !== requestId) return;
+        setAiStageMessage(data.message);
+      },
       onParsed: (data) => {
         if (aiSearchRequestRef.current !== requestId) return;
         parsedData = data;
         setAiParsedResult(data);
       },
+      onSearching: (data) => {
+        if (aiSearchRequestRef.current !== requestId) return;
+        setAiStageMessage(data.message);
+      },
       onResults: (data) => {
         if (aiSearchRequestRef.current !== requestId) return;
+        setAiStageMessage(null);
         setAiResult({
           ...data,
           ai_summary: "",
@@ -195,6 +206,7 @@ function SearchContent() {
       },
       onSummary: (data) => {
         if (aiSearchRequestRef.current !== requestId) return;
+        setAiStageMessage(null);
         setAiResult((prev) => (
           prev
             ? {
@@ -204,9 +216,14 @@ function SearchContent() {
             : prev
         ));
       },
+      onSummarizing: (data) => {
+        if (aiSearchRequestRef.current !== requestId) return;
+        setAiStageMessage(data.message);
+      },
       onDone: () => {
         if (aiSearchRequestRef.current !== requestId) return;
         setAiLoading(false);
+        setAiStageMessage(null);
         aiSearchAbortRef.current = null;
       },
       onError: (data) => {
@@ -214,6 +231,7 @@ function SearchContent() {
         setAiResult(null);
         setAiError(data.message || "Failed to fetch properties with AI");
         setAiLoading(false);
+        setAiStageMessage(null);
         aiSearchAbortRef.current = null;
       },
     });
@@ -303,6 +321,12 @@ function SearchContent() {
         ) : (
           <div className="mb-8">
             <AiSearchBar onSearch={handleAiSearch} isLoading={aiLoading} />
+            {aiLoading && aiStageMessage && !aiParsedResult && (
+              <div className="mt-3 flex items-center gap-2 text-sm text-gray-500">
+                <div className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+                <span>{aiStageMessage}</span>
+              </div>
+            )}
             {aiParsedResult && (
               <>
                 <AiParsedFiltersCard
@@ -315,6 +339,12 @@ function SearchContent() {
                   interpretedNeeds={aiParsedResult.interpreted_needs}
                   interpretedIntent={aiParsedResult.interpreted_intent}
                 />
+                {aiLoading && aiStageMessage && (
+                  <div className="mt-3 flex items-center gap-2 text-sm text-gray-500">
+                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+                    <span>{aiStageMessage}</span>
+                  </div>
+                )}
               </>
             )}
           </div>
