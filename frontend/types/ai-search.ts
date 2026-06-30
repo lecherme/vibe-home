@@ -65,3 +65,79 @@ export interface AiSearchResult extends SearchResult {
   interpreted_intent?: IntentField[];
   interpreted_needs?: InterpretedNeeds;
 }
+
+export interface AiSearchStreamEmpty {
+  [key: string]: never;
+}
+
+export interface AiSearchParsedEventData {
+  query_parsed: boolean;
+  parsed_filters: SearchFilters;
+  parsed_constraints: ConstraintInfo[];
+  interpreted_intent: IntentField[];
+  interpreted_needs: InterpretedNeeds;
+}
+
+export interface AiSearchSearchingEventData {
+  stage: "searching";
+  message: string;
+}
+
+export interface AiSearchResultsEventData extends SearchResult {
+  strict_items: Property[];
+  recommended_items: Property[];
+  relaxations: RelaxationRecord[];
+  match_reasons: Record<string, MatchReason[]>;
+}
+
+export interface AiSearchSummaryEventData {
+  ai_summary: string;
+}
+
+export interface AiSearchErrorEventData {
+  message: string;
+}
+
+export interface AiSearchStartedEvent {
+  event: "started";
+  data: AiSearchStreamEmpty;
+}
+
+export interface AiSearchParsedEvent {
+  event: "parsed";
+  data: AiSearchParsedEventData;
+}
+
+export interface AiSearchSearchingEvent {
+  event: "searching";
+  data: AiSearchSearchingEventData;
+}
+
+export interface AiSearchResultsEvent {
+  event: "results";
+  data: AiSearchResultsEventData;
+}
+
+export interface AiSearchSummaryEvent {
+  event: "summary";
+  data: AiSearchSummaryEventData;
+}
+
+export interface AiSearchDoneEvent {
+  event: "done";
+  data: AiSearchStreamEmpty;
+}
+
+export interface AiSearchErrorEvent {
+  event: "error";
+  data: AiSearchErrorEventData;
+}
+
+export type AiSearchStreamEvent =
+  | AiSearchStartedEvent
+  | AiSearchParsedEvent
+  | AiSearchSearchingEvent
+  | AiSearchResultsEvent
+  | AiSearchSummaryEvent
+  | AiSearchDoneEvent
+  | AiSearchErrorEvent;
