@@ -1,0 +1,40 @@
+{
+  "feature": "F31-search-progress-stream",
+  "tasks": {
+    "T01": {
+      "allowed_files": [
+        "backend/app/schemas/ai_search.py",
+        "backend/app/services/ai_search/service.py",
+        "backend/tests/test_f31_stream.py"
+      ],
+      "forbidden_patterns": [
+        "frontend/**",
+        ".ai/**/status.json",
+        "backend/requirements.txt"
+      ]
+    },
+    "T02": {
+      "allowed_files": [
+        "frontend/types/ai-search.ts",
+        "frontend/lib/api/ai-search.ts"
+      ],
+      "forbidden_patterns": [
+        "backend/**",
+        "frontend/app/**",
+        "frontend/components/**",
+        ".ai/**/status.json"
+      ]
+    },
+    "T03": {
+      "allowed_files": [
+        "frontend/app/(dashboard)/search/page.tsx"
+      ],
+      "forbidden_patterns": [
+        "backend/**",
+        "frontend/types/**",
+        "frontend/lib/**",
+        ".ai/**/status.json"
+      ]
+    }
+  }
+}

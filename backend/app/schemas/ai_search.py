@@ -83,6 +83,10 @@ class AiSearchParsedEventData(BaseModel):
     interpreted_needs: InterpretedNeeds = Field(default_factory=InterpretedNeeds)
 
 
+class AiSearchParsingEventData(BaseModel):
+    message: str = "理解搜索语义中..."
+
+
 class AiSearchSearchingEventData(BaseModel):
     stage: Literal["searching"] = "searching"
     message: str
@@ -97,6 +101,10 @@ class AiSearchResultsEventData(SearchResult):
 
 class AiSearchSummaryEventData(BaseModel):
     ai_summary: str
+
+
+class AiSearchSummarizingEventData(BaseModel):
+    message: str = "生成摘要中..."
 
 
 class AiSearchErrorEventData(BaseModel):

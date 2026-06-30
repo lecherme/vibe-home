@@ -12,11 +12,13 @@ from app.core.config import get_settings
 from app.data.properties import get_all
 from app.schemas.ai_search import (
     AiSearchErrorEventData,
+    AiSearchParsingEventData,
     AiSearchParsedEventData,
     AiSearchResult,
     AiSearchResultsEventData,
     AiSearchSearchingEventData,
     AiSearchStreamEmpty,
+    AiSearchSummarizingEventData,
     AiSearchSummaryEventData,
     ConstraintInfo,
     InterpretedNeeds,
@@ -1270,6 +1272,18 @@ def _resolve_result_ids(
     )
 
 
+def _run_semantic_prefetch(query: str) -> tuple[Any | None, list[str], bool]:
+    if not query.strip():
+        return None, [], False
+
+    try:
+        query_embedding = embed_text(query)
+        return query_embedding, semantic_search(query_embedding), False
+    except Exception:
+        logger.warning("Semantic search failed", extra={"query": query}, exc_info=True)
+        return None, [], True
+
+
 def ai_search(query: str, page: int, page_size: int) -> AiSearchResult:
     total_started_at = time.perf_counter()
     parse_filters_ms = 0
@@ -1489,6 +1503,7 @@ def ai_search_stream(
     page_size: int,
 ) -> Any:
     yield "started", AiSearchStreamEmpty()
+    yield "parsing", AiSearchParsingEventData()
     try:
         settings = get_settings()
         if not settings.embedding_api_key or not settings.llm_api_key:
@@ -1513,67 +1528,53 @@ def ai_search_stream(
             yield (
                 "searching",
                 AiSearchSearchingEventData(
-                    message="Searching properties...",
+                    message="检索匹配房源中...",
                 ),
             )
             yield "results", _build_results_event_data(result)
+            yield "summarizing", AiSearchSummarizingEventData()
             yield "summary", AiSearchSummaryEventData(ai_summary=result.ai_summary)
             yield "done", AiSearchStreamEmpty()
             return
 
-        try:
-            parsed_filters, query_parsed = _parse_filters(query)
-        except Exception:
-            logger.warning("AI query parsing failed", extra={"query": query}, exc_info=True)
-            parsed_filters = SearchFilters()
-            query_parsed = False
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            semantic_prefetch_future = executor.submit(_run_semantic_prefetch, query)
 
-        original_parsed_filters = parsed_filters.model_copy()
-        interpreted_intent = _build_interpreted_intent(query)
-        parsed_constraints = _build_parsed_constraints(original_parsed_filters)
-        yield (
-            "parsed",
-            _build_parsed_event_data(
-                query_parsed=query_parsed,
-                parsed_filters=original_parsed_filters,
-                parsed_constraints=parsed_constraints,
-                interpreted_intent=interpreted_intent,
-                interpreted_needs=InterpretedNeeds(),
-            ),
-        )
-        yield (
-            "searching",
-            AiSearchSearchingEventData(
-                message="Searching properties...",
-            ),
-        )
+            try:
+                parsed_filters, query_parsed = _parse_filters(query)
+            except Exception:
+                logger.warning("AI query parsing failed", extra={"query": query}, exc_info=True)
+                parsed_filters = SearchFilters()
+                query_parsed = False
 
-        interpreted_needs = InterpretedNeeds()
-
-        def _run_interpret_needs() -> InterpretedNeeds:
-            interpreted = _interpret_needs(query, original_parsed_filters)
-            return interpreted.model_copy(
-                update={"notices": _detect_tensions(interpreted.needs, original_parsed_filters)}
+            original_parsed_filters = parsed_filters.model_copy()
+            interpreted_intent = _build_interpreted_intent(query)
+            parsed_constraints = _build_parsed_constraints(original_parsed_filters)
+            yield (
+                "parsed",
+                _build_parsed_event_data(
+                    query_parsed=query_parsed,
+                    parsed_filters=original_parsed_filters,
+                    parsed_constraints=parsed_constraints,
+                    interpreted_intent=interpreted_intent,
+                    interpreted_needs=InterpretedNeeds(),
+                ),
+            )
+            yield (
+                "searching",
+                AiSearchSearchingEventData(
+                    message="检索匹配房源中...",
+                ),
             )
 
-        def _run_resolve_result_ids() -> tuple[list[str], Any | None, list[str], bool]:
-            return _resolve_result_ids(
+            query_embedding, semantic_ids, semantic_search_failed = semantic_prefetch_future.result()
+            strict_result_ids, query_embedding, semantic_ids, semantic_search_failed = _resolve_result_ids(
                 query,
                 parsed_filters,
                 query_parsed=query_parsed,
-            )
-
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            interpret_needs_future = executor.submit(_run_interpret_needs)
-            resolve_result_ids_future = executor.submit(_run_resolve_result_ids)
-
-            try:
-                interpreted_needs = interpret_needs_future.result()
-            except Exception:
-                logger.warning("Need interpretation failed", extra={"query": query}, exc_info=True)
-
-            strict_result_ids, query_embedding, semantic_ids, semantic_search_failed = (
-                resolve_result_ids_future.result()
+                query_embedding=query_embedding,
+                semantic_ids=semantic_ids,
+                semantic_search_failed=semantic_search_failed,
             )
         strict_ids: list[str] = []
         recommended_ids: list[str] = []
@@ -1657,9 +1658,9 @@ def ai_search_stream(
             relaxations=relaxations,
             match_reasons=match_reasons,
             interpreted_intent=interpreted_intent,
-            interpreted_needs=interpreted_needs,
         )
         yield "results", _build_results_event_data(result)
+        yield "summarizing", AiSearchSummarizingEventData()
 
         try:
             ai_summary = _generate_summary(query, parsed_filters, total, items, relaxed_conditions)
