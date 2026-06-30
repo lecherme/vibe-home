@@ -2,11 +2,13 @@ import { apiUrl } from "@/lib/api/config";
 import { getAccessToken } from "@/lib/auth/session";
 import type {
   AiSearchErrorEventData,
+  AiSearchParsingEventData,
   AiSearchParsedEventData,
   AiSearchResult,
   AiSearchResultsEventData,
   AiSearchSearchingEventData,
   AiSearchStreamEmpty,
+  AiSearchSummarizingEventData,
   AiSearchSummaryEventData,
 } from "@/types/ai-search";
 import type { AiSearchRequest } from "@/types/search";
@@ -87,9 +89,11 @@ export async function aiSearch(
 
 export interface AiSearchStreamCallbacks {
   onStarted?: (data: AiSearchStreamEmpty) => void;
+  onParsing?: (data: AiSearchParsingEventData) => void;
   onParsed?: (data: AiSearchParsedEventData) => void;
   onSearching?: (data: AiSearchSearchingEventData) => void;
   onResults?: (data: AiSearchResultsEventData) => void;
+  onSummarizing?: (data: AiSearchSummarizingEventData) => void;
   onSummary?: (data: AiSearchSummaryEventData) => void;
   onDone?: (data: AiSearchStreamEmpty) => void;
   onError?: (data: AiSearchErrorEventData) => void;
@@ -133,6 +137,9 @@ function dispatchStreamEvent(
     case "started":
       callbacks.onStarted?.(JSON.parse(data) as AiSearchStreamEmpty);
       return;
+    case "parsing":
+      callbacks.onParsing?.(JSON.parse(data) as AiSearchParsingEventData);
+      return;
     case "parsed":
       callbacks.onParsed?.(JSON.parse(data) as AiSearchParsedEventData);
       return;
@@ -141,6 +148,9 @@ function dispatchStreamEvent(
       return;
     case "results":
       callbacks.onResults?.(JSON.parse(data) as AiSearchResultsEventData);
+      return;
+    case "summarizing":
+      callbacks.onSummarizing?.(JSON.parse(data) as AiSearchSummarizingEventData);
       return;
     case "summary":
       callbacks.onSummary?.(JSON.parse(data) as AiSearchSummaryEventData);

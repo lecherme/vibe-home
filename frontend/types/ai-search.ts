@@ -78,6 +78,10 @@ export interface AiSearchParsedEventData {
   interpreted_needs: InterpretedNeeds;
 }
 
+export interface AiSearchParsingEventData {
+  message: string;
+}
+
 export interface AiSearchSearchingEventData {
   stage: "searching";
   message: string;
@@ -94,6 +98,10 @@ export interface AiSearchSummaryEventData {
   ai_summary: string;
 }
 
+export interface AiSearchSummarizingEventData {
+  message: string;
+}
+
 export interface AiSearchErrorEventData {
   message: string;
 }
@@ -101,6 +109,11 @@ export interface AiSearchErrorEventData {
 export interface AiSearchStartedEvent {
   event: "started";
   data: AiSearchStreamEmpty;
+}
+
+export interface AiSearchParsingEvent {
+  event: "parsing";
+  data: AiSearchParsingEventData;
 }
 
 export interface AiSearchParsedEvent {
@@ -123,6 +136,11 @@ export interface AiSearchSummaryEvent {
   data: AiSearchSummaryEventData;
 }
 
+export interface AiSearchSummarizingEvent {
+  event: "summarizing";
+  data: AiSearchSummarizingEventData;
+}
+
 export interface AiSearchDoneEvent {
   event: "done";
   data: AiSearchStreamEmpty;
@@ -135,9 +153,11 @@ export interface AiSearchErrorEvent {
 
 export type AiSearchStreamEvent =
   | AiSearchStartedEvent
+  | AiSearchParsingEvent
   | AiSearchParsedEvent
   | AiSearchSearchingEvent
   | AiSearchResultsEvent
+  | AiSearchSummarizingEvent
   | AiSearchSummaryEvent
   | AiSearchDoneEvent
   | AiSearchErrorEvent;

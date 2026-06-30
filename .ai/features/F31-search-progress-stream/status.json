@@ -1,9 +1,9 @@
 {
   "feature": "F31-search-progress-stream",
   "status": "in_progress",
-  "current_stage": "T01_done",
+  "current_stage": "T02_done",
   "current_owner": null,
-  "next_step": "Start T02 \u2014 Frontend types + API callbacks",
+  "next_step": "Start T03 \u2014 Frontend UI: progress stage display",
   "last_review_failure": null,
   "tasks": [
     {
@@ -24,7 +24,7 @@
       "depends_on": [
         "T01"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "codex-build-T02.md"
     },
@@ -91,6 +91,16 @@
     {
       "timestamp": "2026-06-30T06:24:05Z",
       "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-30T06:27:25Z",
+      "event": "T02 started \u2014 Frontend types + API callbacks",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-30T06:28:35Z",
+      "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
       "by": "claude"
     }
   ]
