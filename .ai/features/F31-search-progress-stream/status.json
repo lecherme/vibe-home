@@ -1,9 +1,9 @@
 {
   "feature": "F31-search-progress-stream",
-  "status": "in_progress",
-  "current_stage": "T03_done",
+  "status": "failed",
+  "current_stage": "T04_done",
   "current_owner": null,
-  "next_step": "Start T04 \u2014 Codex review",
+  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
   "last_review_failure": null,
   "tasks": [
     {
@@ -50,7 +50,7 @@
         "T02",
         "T03"
       ],
-      "status": "pending",
+      "status": "done",
       "retry_count": 0,
       "artifact": "review.md"
     },
@@ -111,6 +111,16 @@
     {
       "timestamp": "2026-06-30T06:32:21Z",
       "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-30T06:37:01Z",
+      "event": "T04 started \u2014 Codex review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-30T06:41:18Z",
+      "event": "T04 done \u2014 review verdict FAIL captured in review.md",
       "by": "claude"
     }
   ]

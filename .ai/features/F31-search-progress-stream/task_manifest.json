@@ -35,6 +35,12 @@
         "frontend/lib/**",
         ".ai/**/status.json"
       ]
+    },
+    "T04": {
+      "allowed_files": [],
+      "forbidden_patterns": [
+        ".ai/**/status.json"
+      ]
     }
   }
 }

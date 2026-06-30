@@ -32,6 +32,8 @@
 | A16 | Progress message transitions correctly: "理解搜索语义中..." → "检索匹配房源中..." → (results appear) → "生成摘要中..." → (summary appears, message clears) |
 | A17 | No progress message is visible after `summary` event or after `done`/`error` |
 | A18 | Starting a new search clears the previous `aiStageMessage` immediately |
+| A19 | **UX: results→summarizing flicker risk** — `onResults` sets `aiStageMessage` to `null`, then `onSummarizing` sets it to "生成摘要中...". Reviewer must explicitly assess: are these two callbacks likely to be dispatched in separate browser render frames (making "生成摘要中..." reliably visible), or can they batch into one frame (causing the message to never appear)? Document the finding and risk level. |
+| A20 | **UX: double loading signal** — after `results` arrives, both the `aiStageMessage` "生成摘要中..." (in the filter card area) and the `isSummaryLoading` spinner inside `AiSearchResults` are visible simultaneously. Reviewer must explicitly assess whether this creates confusing redundant noise, or whether the two signals are spatially distinct enough to be acceptable. Document the finding. |
 
 ---
 
