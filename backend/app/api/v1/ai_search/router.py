@@ -34,12 +34,16 @@ async def stream_properties_with_ai(
 ) -> StreamingResponse:
     del current_user
 
+    # SSE comment padding to exceed ALB buffer thresholds.
+    # Yielded AFTER small events so the combined chunk is large enough to force an
+    # immediate flush through JD Cloud ALB (which re-buffers after each forward).
+    _PADDING = ": " + " " * 32768 + "\n\n"
+
     def _event_stream():
-        # Padding comment to exceed ALB/proxy buffer thresholds and force immediate flush.
-        # Without this, load balancers buffer small initial chunks until the stream closes.
-        yield ": " + " " * 32768 + "\n\n"
         for event, data in ai_search_stream(query, page, page_size):
             yield _encode_sse_event(event, data)
+            if event in ("parsing", "searching", "summarizing"):
+                yield _PADDING
 
     return StreamingResponse(
         _event_stream(),
