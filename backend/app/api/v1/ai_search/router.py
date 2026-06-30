@@ -37,7 +37,7 @@ async def stream_properties_with_ai(
     def _event_stream():
         # Padding comment to exceed ALB/proxy buffer thresholds and force immediate flush.
         # Without this, load balancers buffer small initial chunks until the stream closes.
-        yield ": " + " " * 4096 + "\n\n"
+        yield ": " + " " * 32768 + "\n\n"
         for event, data in ai_search_stream(query, page, page_size):
             yield _encode_sse_event(event, data)
 
