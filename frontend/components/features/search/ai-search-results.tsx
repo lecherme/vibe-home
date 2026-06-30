@@ -6,6 +6,7 @@ import type { AiSearchResult } from "@/types/ai-search";
 interface AiSearchResultsProps {
   result: AiSearchResult;
   favoriteIds: Set<string>;
+  isSummaryLoading?: boolean;
 }
 
 function PropertyResultGrid({
@@ -32,15 +33,35 @@ function PropertyResultGrid({
   );
 }
 
-export function AiSearchResults({ result, favoriteIds }: AiSearchResultsProps) {
+export function AiSearchResults({
+  result,
+  favoriteIds,
+  isSummaryLoading = false,
+}: AiSearchResultsProps) {
   const hasGroupedItems = result.strict_items !== undefined || result.recommended_items !== undefined;
   const strictItems = result.strict_items ?? (hasGroupedItems ? [] : result.items ?? []);
   const recommendedItems = result.recommended_items ?? [];
   const matchReasons = result.match_reasons ?? {};
+  const hasItems = strictItems.length > 0 || recommendedItems.length > 0;
+  const hasSummary = result.ai_summary.trim().length > 0;
 
   return (
     <div className="space-y-8">
       <div className="text-sm text-gray-600">Found {result.total} properties</div>
+
+      {(isSummaryLoading || hasSummary) && (
+        <section className="space-y-3 rounded-lg border border-indigo-100 bg-indigo-50/50 p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900">AI Summary</h2>
+          {hasSummary ? (
+            <p className="text-sm leading-6 text-gray-700">{result.ai_summary}</p>
+          ) : (
+            <div className="flex items-center gap-3 text-sm text-gray-600">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" />
+              <span>Generating AI summary...</span>
+            </div>
+          )}
+        </section>
+      )}
 
       {strictItems.length > 0 && (
         <section className="space-y-4">
@@ -71,6 +92,13 @@ export function AiSearchResults({ result, favoriteIds }: AiSearchResultsProps) {
             matchReasons={matchReasons}
           />
         </section>
+      )}
+
+      {!hasItems && (
+        <div className="rounded-lg border border-dashed border-gray-300 bg-white py-16 text-center">
+          <p className="text-lg font-medium text-gray-600">No properties found matching your AI query.</p>
+          <p className="mt-2 text-sm text-gray-400">Try rewording your prompt or making it broader.</p>
+        </div>
       )}
     </div>
   );

@@ -4,8 +4,8 @@ import React, { useState, useEffect, useCallback, useRef, Suspense } from "react
 import { useSearchParams, useRouter } from "next/navigation";
 import { propertiesApi } from "@/lib/api/properties";
 import { favoritesApi } from "@/lib/api/favorites";
-import { aiSearch } from "@/lib/api/ai-search";
-import type { AiSearchResult } from "@/types/ai-search";
+import { aiSearchStream } from "@/lib/api/ai-search";
+import type { AiSearchParsedEventData, AiSearchResult } from "@/types/ai-search";
 import type { SearchFilters, SearchResult } from "@/types/search";
 import type { PropertyStatus } from "@/types/property";
 import { SearchBar } from "@/components/features/search/search-bar";
@@ -56,6 +56,9 @@ function SearchContent() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiPage, setAiPage] = useState(1);
+  const [aiParsedResult, setAiParsedResult] = useState<AiSearchParsedEventData | null>(null);
+  const aiSearchAbortRef = useRef<AbortController | null>(null);
+  const aiSearchRequestRef = useRef(0);
 
   const performSearch = useCallback(async (
     loc: string,
@@ -138,43 +141,99 @@ function SearchContent() {
     updateURL("", {}, 1);
   };
 
-  const performAiSearch = async (query: string, pageNum: number) => {
+  useEffect(() => {
+    if (searchMode === "ai") {
+      return;
+    }
+
+    aiSearchAbortRef.current?.abort();
+    aiSearchAbortRef.current = null;
+    setAiLoading(false);
+  }, [searchMode]);
+
+  useEffect(() => {
+    return () => {
+      aiSearchAbortRef.current?.abort();
+    };
+  }, []);
+
+  const performAiSearch = useCallback((query: string, pageNum: number) => {
+    aiSearchAbortRef.current?.abort();
+
+    const requestId = ++aiSearchRequestRef.current;
+    let parsedData: AiSearchParsedEventData | null = null;
+
     setAiLoading(true);
     setAiError(null);
-    try {
-      const [data, favRes] = await Promise.all([
-        aiSearch(query, pageNum, PAGE_SIZE),
-        favoritesApi.getAllFavoriteIds().catch(() => new Set<string>())
-      ]);
-      setAiResult(data as AiSearchResult);
-      setFavoriteIds(favRes);
-    } catch (err: any) {
-      setAiResult(null);
-      setAiError(err.message || "Failed to fetch properties with AI");
-    } finally {
-      setAiLoading(false);
-    }
-  };
+    setAiResult(null);
+    setAiParsedResult(null);
 
-  const handleAiSearch = async (query: string) => {
+    void favoritesApi.getAllFavoriteIds()
+      .then((favRes) => {
+        if (aiSearchRequestRef.current !== requestId) return;
+        setFavoriteIds(favRes);
+      })
+      .catch(() => undefined);
+
+    const abortController = aiSearchStream(query, pageNum, PAGE_SIZE, {
+      onParsed: (data) => {
+        if (aiSearchRequestRef.current !== requestId) return;
+        parsedData = data;
+        setAiParsedResult(data);
+      },
+      onResults: (data) => {
+        if (aiSearchRequestRef.current !== requestId) return;
+        setAiResult({
+          ...data,
+          ai_summary: "",
+          parsed_filters: parsedData?.parsed_filters ?? {},
+          query_parsed: parsedData?.query_parsed ?? false,
+          parsed_constraints: parsedData?.parsed_constraints,
+          interpreted_intent: parsedData?.interpreted_intent,
+          interpreted_needs: parsedData?.interpreted_needs,
+        });
+      },
+      onSummary: (data) => {
+        if (aiSearchRequestRef.current !== requestId) return;
+        setAiResult((prev) => (
+          prev
+            ? {
+                ...prev,
+                ai_summary: data.ai_summary,
+              }
+            : prev
+        ));
+      },
+      onDone: () => {
+        if (aiSearchRequestRef.current !== requestId) return;
+        setAiLoading(false);
+        aiSearchAbortRef.current = null;
+      },
+      onError: (data) => {
+        if (aiSearchRequestRef.current !== requestId) return;
+        setAiResult(null);
+        setAiError(data.message || "Failed to fetch properties with AI");
+        setAiLoading(false);
+        aiSearchAbortRef.current = null;
+      },
+    });
+
+    aiSearchAbortRef.current = abortController;
+  }, []);
+
+  const handleAiSearch = (query: string) => {
     setAiQuery(query);
     setAiPage(1);
-    await performAiSearch(query, 1);
+    performAiSearch(query, 1);
   };
 
-  const handleAiPageChange = async (newPage: number) => {
+  const handleAiPageChange = (newPage: number) => {
     setAiPage(newPage);
-    await performAiSearch(aiQuery, newPage);
+    performAiSearch(aiQuery, newPage);
   };
 
   const totalPages = result ? Math.ceil(result.total / PAGE_SIZE) : 0;
   const aiTotalPages = aiResult ? Math.ceil(aiResult.total / PAGE_SIZE) : 0;
-  const hasGroupedAiItems = aiResult != null && (aiResult.strict_items !== undefined || aiResult.recommended_items !== undefined);
-  const hasAiItems = aiResult != null && (
-    hasGroupedAiItems
-      ? (aiResult.strict_items?.length ?? 0) > 0 || (aiResult.recommended_items?.length ?? 0) > 0
-      : aiResult.items.length > 0
-  );
   const hasActiveFilters = Boolean(location.trim()) ||
     filters.min_price !== undefined ||
     filters.max_price !== undefined ||
@@ -244,17 +303,17 @@ function SearchContent() {
         ) : (
           <div className="mb-8">
             <AiSearchBar onSearch={handleAiSearch} isLoading={aiLoading} />
-            {aiResult && (
+            {aiParsedResult && (
               <>
                 <AiParsedFiltersCard
-                  queryParsed={aiResult.query_parsed}
-                  parsedFilters={aiResult.parsed_filters}
-                  aiSummary={aiResult.ai_summary}
-                  parsedConstraints={aiResult.parsed_constraints}
+                  queryParsed={aiParsedResult.query_parsed}
+                  parsedFilters={aiParsedResult.parsed_filters}
+                  aiSummary={aiResult?.ai_summary || "Generating AI summary..."}
+                  parsedConstraints={aiParsedResult.parsed_constraints}
                 />
                 <InterpretedNeedsCard
-                  interpretedNeeds={aiResult.interpreted_needs}
-                  interpretedIntent={aiResult.interpreted_intent}
+                  interpretedNeeds={aiParsedResult.interpreted_needs}
+                  interpretedIntent={aiParsedResult.interpreted_intent}
                 />
               </>
             )}
@@ -352,19 +411,25 @@ function SearchContent() {
       ) : (
         aiLoading && !aiResult ? (
           <PropertyListSkeleton />
-        ) : hasAiItems && aiResult ? (
+        ) : aiResult ? (
           <>
             <div className="mb-8">
-              <AiSearchResults result={aiResult} favoriteIds={favoriteIds} />
+              <AiSearchResults
+                result={aiResult}
+                favoriteIds={favoriteIds}
+                isSummaryLoading={aiLoading && !aiResult.ai_summary}
+              />
             </div>
 
-            <PaginationControls
-              page={aiPage}
-              totalPages={aiTotalPages}
-              onPageChange={handleAiPageChange}
-              isLoading={aiLoading}
-              className="mt-8"
-            />
+            {aiTotalPages > 1 && (
+              <PaginationControls
+                page={aiPage}
+                totalPages={aiTotalPages}
+                onPageChange={handleAiPageChange}
+                isLoading={aiLoading}
+                className="mt-8"
+              />
+            )}
           </>
         ) : (
           !aiLoading && !aiError && aiQuery && (
@@ -381,7 +446,7 @@ function SearchContent() {
         )
       )}
       
-      {((searchMode === "filter" && loading && result) || (searchMode === "ai" && aiLoading && aiResult)) && (
+      {searchMode === "filter" && loading && result && (
         <div className="pointer-events-none fixed inset-0 bg-white/50 flex items-center justify-center z-50">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
         </div>
