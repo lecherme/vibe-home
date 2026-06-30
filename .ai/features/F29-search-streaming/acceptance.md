@@ -5,7 +5,7 @@
 | ID | Criterion |
 |----|-----------|
 | A1 | `GET /api/v1/search/ai/stream` returns `Content-Type: text/event-stream` |
-| A2 | Events are emitted in order: `started` → `parsed` → `searching` → `results` → `summary` → `done` for property searches |
+| A2 | Events are emitted in order: `started` → `parsed` → `searching` → `results` → `summary` → `done` for property searches, with the following strict causality: `parsed` is yielded immediately after `_parse_filters` returns (before `_resolve_result_ids` or `_collect_items` starts or completes); `results` is yielded after `_collect_items` completes and **before** `_generate_summary` is called |
 | A3 | `parsed` payload contains `query_parsed` (bool), `parsed_filters` (object), `parsed_constraints` (array), `interpreted_intent` (array), `interpreted_needs` (object) |
 | A4 | `results` payload contains `items`, `strict_items`, `recommended_items`, `total`, `page`, `page_size`, `relaxations`, `match_reasons` |
 | A5 | `summary` payload contains `ai_summary` (non-empty string) |
@@ -51,7 +51,8 @@ Any of the following causes immediate rejection:
 
 - Existing `POST /api/v1/search/ai` contract changed (response schema, status codes, or behavior)
 - Streaming implementation breaks non-streaming AI search (regression in `aiSearch()`)
-- SSE events emitted out of order
+- SSE events emitted out of order, or `parsed` is delayed until after `_resolve_result_ids`/`_collect_items` completes
+- `results` is not emitted before `_generate_summary` is called (fake streaming)
 - Frontend shows property results only after `summary` arrives (defeat the purpose of streaming)
 - Non-property-search query returns no terminal payload before `done`
 - Any worker modifies `status.json`

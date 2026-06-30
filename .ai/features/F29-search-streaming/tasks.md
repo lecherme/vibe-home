@@ -14,7 +14,7 @@
 
 **Done condition:**
 - `GET /api/v1/search/ai/stream` returns `Content-Type: text/event-stream`
-- The six event types (`started`, `parsed`, `searching`, `results`, `summary`, `done`) are emitted in order
+- The six event types are emitted in strict causal order: `started` is first; `parsed` is yielded immediately after `_parse_filters` returns, before `_resolve_result_ids` or `_collect_items` runs; `results` is yielded after `_collect_items` completes and before `_generate_summary` is called; `summary` follows `_generate_summary`; `done` is last
 - `parsed` event payload includes `query_parsed`, `parsed_filters`, `parsed_constraints`, `interpreted_intent`, `interpreted_needs`
 - `results` event payload includes `items`, `strict_items`, `recommended_items`, `total`, `page`, `page_size`, `relaxations`, `match_reasons`
 - `summary` event payload includes `ai_summary`
