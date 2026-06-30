@@ -1,9 +1,9 @@
 {
   "feature": "F29-search-streaming",
-  "status": "failed",
+  "status": "in_progress",
   "current_stage": "T04_done",
   "current_owner": null,
-  "next_step": "Review failed \u2014 choose task_retry or direct_fixup before rerunning",
+  "next_step": "Start T05 \u2014 Claude acceptance",
   "last_review_failure": null,
   "tasks": [
     {
@@ -111,6 +111,21 @@
     {
       "timestamp": "2026-06-30T04:57:53Z",
       "event": "T04 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-30T05:05:42Z",
+      "event": "T04 prepared for review_rerun \u2014 BLOCKER-1 misread A6: non-property-search path emits empty results event (items=[]) and redirect summary event before done \u2014 both are present before done, satisfying the criterion. BLOCKER-2 misread status.json ownership: orchestration updates are by Claude/run_task.sh, not worker modifications.",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-30T05:10:22Z",
+      "event": "T04 started \u2014 Codex review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-06-30T05:14:34Z",
+      "event": "T04 done \u2014 artifact captured as review.md",
       "by": "claude"
     }
   ]
