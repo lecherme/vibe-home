@@ -1,3 +1,4 @@
+import importlib
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
@@ -5,7 +6,9 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-import app.api.v1.ai_search.router as ai_search_router_module
+# __init__.py shadows the `router` attribute with the APIRouter instance;
+# importlib bypasses attribute lookup and returns the actual module object.
+ai_search_router_module = importlib.import_module("app.api.v1.ai_search.router")
 from app.core.security import get_current_user
 from app.schemas.ai_search import (
     AiSearchSearchingEventData,
@@ -319,7 +322,7 @@ def test_ai_search_stream_endpoint_returns_sse_content_type(monkeypatch: pytest.
         params={"query": "loft"},
         headers={"Authorization": "Bearer ignored"},
     ) as response:
-        body = response.text
+        body = "".join(response.iter_text())
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/event-stream")
