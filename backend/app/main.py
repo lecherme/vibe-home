@@ -4,6 +4,8 @@ from uuid import uuid4
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.datastructures import MutableHeaders
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app.api.v1.admin.router import router as admin_router
 from app.api.v1.ai_search.router import router as ai_search_router
@@ -17,6 +19,41 @@ from app.core.logging import bind_request_id, clear_request_id, configure_loggin
 settings = get_settings()
 configure_logging()
 logger = logging.getLogger(__name__)
+
+
+class _RequestIDMiddleware:
+    """Pure ASGI middleware — passes every response chunk through immediately.
+
+    BaseHTTPMiddleware (used by @app.middleware("http")) buffers streaming
+    responses in an anyio memory channel, breaking SSE delivery timing.
+    This implementation injects X-Request-ID only on the response-start
+    message and forwards body chunks without any additional buffering.
+    """
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        request_id = str(uuid4())
+        if "state" not in scope:
+            scope["state"] = {}
+        scope["state"]["request_id"] = request_id  # type: ignore[index]
+        token = bind_request_id(request_id)
+
+        async def _send(message) -> None:
+            if message["type"] == "http.response.start":
+                headers = MutableHeaders(scope=message)
+                headers.append("X-Request-ID", request_id)
+            await send(message)
+
+        try:
+            await self.app(scope, receive, _send)
+        finally:
+            clear_request_id(token)
 
 
 def _get_cors_allowed_origins() -> list[str]:
@@ -40,20 +77,7 @@ app.add_middleware(
     allow_methods=cors_allowed_methods,
     allow_headers=cors_allowed_headers,
 )
-
-
-@app.middleware("http")
-async def add_request_id(request: Request, call_next):
-    request_id = str(uuid4())
-    request.state.request_id = request_id
-    token = bind_request_id(request_id)
-    try:
-        response = await call_next(request)
-    finally:
-        clear_request_id(token)
-
-    response.headers["X-Request-ID"] = request_id
-    return response
+app.add_middleware(_RequestIDMiddleware)
 
 
 @app.on_event("startup")
