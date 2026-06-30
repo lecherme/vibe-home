@@ -77,13 +77,13 @@ def test_ai_search_stream_emits_events_in_causal_order_and_expected_payloads(
         call_order.append("call:_parse_filters")
         return parsed_filters, True
 
-    def _interpret_needs(query: str, filters: SearchFilters):
-        call_order.append("call:_interpret_needs")
-        return interpreted_needs
+    def _semantic_prefetch(query: str):
+        call_order.append("call:_run_semantic_prefetch")
+        return ("prefetch-embedding", ["prop-1", "prop-2"], False)
 
     def _resolve_result_ids(query: str, filters: SearchFilters, **kwargs):
         call_order.append("call:_resolve_result_ids")
-        return ["prop-1", "prop-2"], None, [], False
+        return ["prop-1", "prop-2"], kwargs.get("query_embedding"), kwargs.get("semantic_ids") or [], False
 
     def _filter_ranked_result_ids(property_ids: list[str], filters: SearchFilters, **kwargs):
         call_order.append("call:_filter_ranked_result_ids")
@@ -139,8 +139,7 @@ def test_ai_search_stream_emits_events_in_causal_order_and_expected_payloads(
 
     monkeypatch.setattr(service, "_parse_filters", _parse_filters)
     monkeypatch.setattr(service, "_build_parsed_constraints", lambda filters: parsed_constraints)
-    monkeypatch.setattr(service, "_interpret_needs", _interpret_needs)
-    monkeypatch.setattr(service, "_detect_tensions", lambda needs, filters: notices)
+    monkeypatch.setattr(service, "_run_semantic_prefetch", _semantic_prefetch)
     monkeypatch.setattr(service, "_resolve_result_ids", _resolve_result_ids)
     monkeypatch.setattr(service, "_filter_ranked_result_ids", _filter_ranked_result_ids)
     monkeypatch.setattr(service, "_apply_relaxation", _apply_relaxation)
@@ -158,18 +157,21 @@ def test_ai_search_stream_emits_events_in_causal_order_and_expected_payloads(
 
     assert [event for event, _ in stream_events] == [
         "started",
+        "parsing",
         "parsed",
         "searching",
         "results",
+        "summarizing",
         "summary",
         "done",
     ]
-    assert call_order.index("call:_parse_filters") < call_order.index("yield:parsed")
-    assert call_order.index("yield:parsed") < call_order.index("submit:_run_resolve_result_ids")
+    assert call_order.index("yield:parsing") < call_order.index("call:_parse_filters")
+    assert call_order.index("submit:_semantic_prefetch") < call_order.index("call:_parse_filters")
     assert call_order.index("yield:parsed") < call_order.index("call:_collect_items")
     assert call_order.index("yield:results") < call_order.index("call:_generate_summary")
+    assert all("_interpret_needs" not in entry for entry in call_order)
 
-    parsed_event = stream_events[1][1]
+    parsed_event = stream_events[2][1]
     assert parsed_event.model_dump() == {
         "query_parsed": True,
         "parsed_filters": parsed_filters.model_dump(),
@@ -178,14 +180,14 @@ def test_ai_search_stream_emits_events_in_causal_order_and_expected_payloads(
         "interpreted_needs": InterpretedNeeds().model_dump(),
     }
 
-    searching_event = stream_events[2][1]
+    searching_event = stream_events[3][1]
     assert isinstance(searching_event, AiSearchSearchingEventData)
     assert searching_event.model_dump() == {
         "stage": "searching",
-        "message": "Searching properties...",
+        "message": "检索匹配房源中...",
     }
 
-    results_event = stream_events[3][1]
+    results_event = stream_events[4][1]
     assert results_event.model_dump() == {
         "items": [strict_item.model_dump(), recommended_item.model_dump()],
         "strict_items": [strict_item.model_dump()],
@@ -200,7 +202,7 @@ def test_ai_search_stream_emits_events_in_causal_order_and_expected_payloads(
         },
     }
 
-    summary_event = stream_events[4][1]
+    summary_event = stream_events[6][1]
     assert summary_event.model_dump() == {"ai_summary": "Two matches found."}
 
 
@@ -215,8 +217,7 @@ def test_ai_search_stream_emits_error_event_on_failure(
     monkeypatch.setattr(service, "_is_property_search", lambda query: True)
     monkeypatch.setattr(service, "_parse_filters", lambda query: (SearchFilters(), True))
     monkeypatch.setattr(service, "_build_parsed_constraints", lambda filters: [])
-    monkeypatch.setattr(service, "_interpret_needs", lambda query, filters: InterpretedNeeds())
-    monkeypatch.setattr(service, "_detect_tensions", lambda needs, filters: [])
+    monkeypatch.setattr(service, "_run_semantic_prefetch", lambda query: (None, [], True))
     monkeypatch.setattr(
         service,
         "_resolve_result_ids",
@@ -249,7 +250,7 @@ def test_ai_search_stream_emits_error_event_on_failure(
 
     stream_events = list(service.ai_search_stream("boom", page=1, page_size=20))
 
-    assert [event for event, _ in stream_events] == ["started", "parsed", "searching", "error"]
+    assert [event for event, _ in stream_events] == ["started", "parsing", "parsed", "searching", "error"]
     assert stream_events[-1][1].model_dump() == {"message": "search exploded"}
 
 
@@ -270,20 +271,22 @@ def test_ai_search_stream_handles_non_search_query(monkeypatch: pytest.MonkeyPat
 
     assert [event for event, _ in stream_events] == [
         "started",
+        "parsing",
         "parsed",
         "searching",
         "results",
+        "summarizing",
         "summary",
         "done",
     ]
-    assert stream_events[1][1].model_dump() == {
+    assert stream_events[2][1].model_dump() == {
         "query_parsed": False,
         "parsed_filters": SearchFilters().model_dump(),
         "parsed_constraints": [],
         "interpreted_intent": [],
         "interpreted_needs": InterpretedNeeds().model_dump(),
     }
-    assert stream_events[3][1].model_dump() == {
+    assert stream_events[4][1].model_dump() == {
         "items": [],
         "strict_items": [],
         "recommended_items": [],
@@ -293,7 +296,7 @@ def test_ai_search_stream_handles_non_search_query(monkeypatch: pytest.MonkeyPat
         "relaxations": [],
         "match_reasons": {},
     }
-    assert stream_events[4][1].model_dump() == {"ai_summary": service._NON_SEARCH_REDIRECT_MESSAGE}
+    assert stream_events[6][1].model_dump() == {"ai_summary": service._NON_SEARCH_REDIRECT_MESSAGE}
 
 
 def test_ai_search_stream_endpoint_returns_sse_content_type(monkeypatch: pytest.MonkeyPatch) -> None:
