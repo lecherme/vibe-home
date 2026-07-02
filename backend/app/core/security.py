@@ -15,7 +15,10 @@ from app.schemas.auth import UserRead
 @lru_cache(maxsize=1)
 def _get_jwks_client() -> PyJWKClient:
     settings = get_settings()
-    return PyJWKClient(f"{settings.supabase_url}/auth/v1/.well-known/jwks.json")
+    return PyJWKClient(
+        f"{settings.supabase_url}/auth/v1/.well-known/jwks.json",
+        lifespan=3600,
+    )
 
 
 def verify_jwt(token: str) -> dict[str, Any]:

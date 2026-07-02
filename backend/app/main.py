@@ -1,3 +1,4 @@
+import asyncio
 import os
 import logging
 from uuid import uuid4
@@ -15,6 +16,7 @@ from app.api.v1.properties.router import router as properties_router
 from app.api.v1 import api_router
 from app.core.config import get_settings
 from app.core.logging import bind_request_id, clear_request_id, configure_logging
+from app.core.security import _get_jwks_client
 
 settings = get_settings()
 configure_logging()
@@ -82,6 +84,12 @@ app.add_middleware(_RequestIDMiddleware)
 
 @app.on_event("startup")
 async def log_application_startup() -> None:
+    loop = asyncio.get_running_loop()
+    try:
+        await loop.run_in_executor(None, _get_jwks_client().fetch_data)
+        logger.info("JWKS cache warmed at startup")
+    except Exception as exc:
+        logger.warning("JWKS prefetch failed at startup, will retry on first request: %s", exc)
     logger.info("Application startup complete")
 
 

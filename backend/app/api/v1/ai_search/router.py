@@ -1,3 +1,6 @@
+import queue
+import threading
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -10,6 +13,8 @@ from app.services.ai_search.service import ai_search_stream
 
 
 router = APIRouter()
+
+_HEARTBEAT_INTERVAL = 3  # seconds between SSE keep-alive comments
 
 
 def _encode_sse_event(event: str, data: BaseModel) -> str:
@@ -35,8 +40,26 @@ async def stream_properties_with_ai(
     del current_user
 
     def _event_stream():
-        for event, data in ai_search_stream(query, page, page_size):
-            yield _encode_sse_event(event, data)
+        q: queue.Queue[str | None] = queue.Queue()
+
+        def _produce() -> None:
+            try:
+                for event, data in ai_search_stream(query, page, page_size):
+                    q.put(_encode_sse_event(event, data))
+            finally:
+                q.put(None)
+
+        threading.Thread(target=_produce, daemon=True).start()
+
+        while True:
+            try:
+                item = q.get(timeout=_HEARTBEAT_INTERVAL)
+                if item is None:
+                    break
+                yield item
+            except queue.Empty:
+                # Keep all proxy/NAT connections alive during LLM silence
+                yield ": ping\n\n"
 
     return StreamingResponse(
         _event_stream(),
