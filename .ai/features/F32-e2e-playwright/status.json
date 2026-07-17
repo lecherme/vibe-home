@@ -1,0 +1,137 @@
+{
+  "feature": "F32-e2e-playwright",
+  "status": "done",
+  "current_stage": "T05_done",
+  "current_owner": null,
+  "next_step": "F32-e2e-playwright complete",
+  "last_review_failure": null,
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Playwright infrastructure",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T01.md"
+    },
+    {
+      "id": "T02",
+      "title": "Core E2E test files",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [
+        "T01"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T02.md"
+    },
+    {
+      "id": "T03",
+      "title": "Execution and stabilization",
+      "owner": "codex",
+      "type": "build",
+      "depends_on": [
+        "T02"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "codex-build-T03.md"
+    },
+    {
+      "id": "T04",
+      "title": "Codex review",
+      "owner": "codex",
+      "type": "review",
+      "depends_on": [
+        "T01",
+        "T02",
+        "T03"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "review.md"
+    },
+    {
+      "id": "T05",
+      "title": "Claude acceptance",
+      "owner": "claude",
+      "type": "acceptance",
+      "depends_on": [
+        "T04"
+      ],
+      "status": "done",
+      "retry_count": 0,
+      "artifact": "final-report.md"
+    }
+  ],
+  "activity_log": [
+    {
+      "timestamp": "2026-07-17T00:00:00Z",
+      "event": "F32 workspace initialized \u2014 spec, tasks, acceptance, owner, status.json created",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-07-17T07:22:33Z",
+      "event": "T01 started \u2014 Playwright infrastructure",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-07-17T07:25:22Z",
+      "event": "T01 done \u2014 artifact captured as codex-build-T01.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-07-17T08:17:25Z",
+      "event": "T02 started \u2014 Core E2E test files",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-07-17T08:25:13Z",
+      "event": "T02 done \u2014 artifact captured as codex-build-T02.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-07-17T09:16:01Z",
+      "event": "T03 started \u2014 Execution and stabilization",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-07-17T10:13:28Z",
+      "event": "T03 done \u2014 artifact captured as codex-build-T03.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-07-17T14:48:25Z",
+      "event": "T04 started \u2014 Codex review",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-07-17T14:51:38Z",
+      "event": "T04 done \u2014 review verdict FAIL captured in review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-07-17T17:42:46Z",
+      "event": "T04 prepared for review_rerun \u2014 direct_fixup applied: fixed A14 (SSE bypass via route.continue for streaming + sequential toBeVisible for all 5 AI stages) and A19 (added table absence assertion for non-admin block test)",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-07-17T17:44:18Z",
+      "event": "T04 started \u2014 Codex review [review_rerun]",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-07-17T17:46:45Z",
+      "event": "T04 done \u2014 artifact captured as review.md",
+      "by": "claude"
+    },
+    {
+      "timestamp": "2026-07-17T17:51:55Z",
+      "event": "T05 done \u2014 final acceptance artifact captured as final-report.md",
+      "by": "claude"
+    }
+  ]
+}

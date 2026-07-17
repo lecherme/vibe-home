@@ -47,6 +47,12 @@ After identifying the current feature, read:
 - Do not add unauthenticated debug/probe endpoints and push them to production.
 - Prefer curl + JWT inside the container, or env-gated endpoints, for diagnostics.
 
+## E2E feature rules
+
+- E2E features must include all five task types: infrastructure, test implementation, execution/stabilization, Codex review, and Claude acceptance.
+- If search is covered, the AI Search SSE streaming chain must be explicitly tested: parsing → searching → results → summarizing → summary.
+- spec.md and tasks.md must cover identical flows — no flows in one that are absent in the other.
+
 ## Language
 
 - Respond only in Chinese or English.
